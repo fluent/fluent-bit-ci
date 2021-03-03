@@ -1,7 +1,7 @@
 package integration
 
 import (
-	"github.com/niedbalski/fluent-bit-ci/integration/providers"
+	"github.com/calyptia/fluent-bit-ci/integration/providers"
 	"github.com/stretchr/testify/suite"
 	"testing"
 )
