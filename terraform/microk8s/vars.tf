@@ -1,4 +1,4 @@
 variable "k8s-version" {
-  type = string
+  type    = string
   default = "1.20/edge"
 }

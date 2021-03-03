@@ -1,13 +1,17 @@
 package providers
 
 import (
+	"fmt"
 	"github.com/gruntwork-io/terratest/modules/helm"
+	http_helper "github.com/gruntwork-io/terratest/modules/http-helper"
 	"github.com/gruntwork-io/terratest/modules/k8s"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	"gopkg.in/yaml.v2"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"os"
 	"strings"
+	"time"
 )
 
 type ChartToInstall struct {
@@ -54,6 +58,25 @@ func getEnv(key string, defaultVal string) string {
 		return value
 	}
 	return defaultVal
+}
+
+func(suite *BaseFluentbitSuite) assertHTTPResponseFromPod(uri string, podName string, status, retries int, sleep time.Duration) {
+	tunnel := k8s.NewTunnel(suite.kubectlOpts, k8s.ResourceTypePod, podName, 0, 9200)
+	defer tunnel.Close()
+	tunnel.ForwardPort(suite.T())
+	endpoint := fmt.Sprintf("http://%s/%s", tunnel.Endpoint(), uri)
+	http_helper.HttpGetWithRetryWithCustomValidation(
+		suite.T(),
+		endpoint,
+		nil,
+		retries,
+		sleep,
+		func(statusCode int, body string) bool {
+			assert.Equal(suite.T(), status, statusCode)
+			assert.NotEmpty(suite.T(), body)
+			return statusCode == status && body != ""
+		},
+	)
 }
 
 func(suite *BaseFluentbitSuite) InstallChart(chart ChartToInstall) {
