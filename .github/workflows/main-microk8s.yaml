@@ -76,5 +76,4 @@ jobs:
       - run: go mod download
         working-directory: integration/
 
-      - run: go test -v
-        working-directory: integration/
+      - run: make integration
