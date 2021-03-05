@@ -60,8 +60,8 @@ func getEnv(key string, defaultVal string) string {
 	return defaultVal
 }
 
-func(suite *BaseFluentbitSuite) assertHTTPResponseFromPod(uri string, podName string, status, retries int, sleep time.Duration) {
-	tunnel := k8s.NewTunnel(suite.kubectlOpts, k8s.ResourceTypePod, podName, 0, 9200)
+func(suite *BaseFluentbitSuite) assertHTTPResponseFromPod(uri string, port int, podName string, status, retries int, sleep time.Duration) {
+	tunnel := k8s.NewTunnel(suite.kubectlOpts, k8s.ResourceTypePod, podName, 0, port)
 	defer tunnel.Close()
 	tunnel.ForwardPort(suite.T())
 	endpoint := fmt.Sprintf("http://%s%s", tunnel.Endpoint(), uri)

@@ -53,9 +53,11 @@ func (suite *ElasticSearchSuite) SetupTest() {
 	}
 
 	k8s.WaitUntilPodAvailable(suite.T(), suite.kubectlOpts, suite.GetPodNameByChartRelease("fluent"), defaultRetries, defaultSleepPeriod)
-
+	k8s.WaitUntilPodAvailable(suite.T(), suite.kubectlOpts, suite.GetPodNameByChartRelease("elastic"), defaultRetries, defaultSleepPeriod)
 }
 
+const elasticSearchSleepPeriod = 15 * time.Second
+
 func (suite *ElasticSearchSuite) TestFluentbitOutputToElasticSearch() {
-	suite.assertHTTPResponseFromPod("/fluentbit/_search/", "elasticsearch-master-0", 200, defaultRetries, defaultSleepPeriod)
+	suite.assertHTTPResponseFromPod("/fluentbit/_search/", 9200, "elasticsearch-master-0", 200, defaultRetries, elasticSearchSleepPeriod)
 }
