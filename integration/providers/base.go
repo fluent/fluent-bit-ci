@@ -61,6 +61,8 @@ func getEnv(key string, defaultVal string) string {
 }
 
 func(suite *BaseFluentbitSuite) assertHTTPResponseFromPod(uri string, port int, podName string, status, retries int, sleep time.Duration) {
+	var retStatus int
+
 	tunnel := k8s.NewTunnel(suite.kubectlOpts, k8s.ResourceTypePod, podName, 0, port)
 	defer tunnel.Close()
 	tunnel.ForwardPort(suite.T())
@@ -72,11 +74,12 @@ func(suite *BaseFluentbitSuite) assertHTTPResponseFromPod(uri string, port int, 
 		retries,
 		sleep,
 		func(statusCode int, body string) bool {
-			assert.Equal(suite.T(), status, statusCode)
-			assert.NotEmpty(suite.T(), body)
+			retStatus = statusCode
 			return statusCode == status && body != ""
 		},
 	)
+
+	assert.Equal(suite.T(), status, retStatus)
 }
 
 func(suite *BaseFluentbitSuite) InstallChart(chart ChartToInstall) {
