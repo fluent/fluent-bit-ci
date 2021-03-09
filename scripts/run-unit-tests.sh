@@ -35,8 +35,7 @@ then
     SKIP="$SKIP -DFLB_WITHOUT_flb-it-parser=1"
 fi
 
-# Disable fstore test on github actions
-[[ ! -z "$GITHUB_TOKEN" ]] && SKIP="$SKIP -DFLB_WITHOUT_flb-it-fstore=1"
+SKIP="$SKIP -DFLB_WITHOUT_flb-it-fstore=1"
 
 # If no v6, disable that test
 [[ ! $(ip a) =~ ::1 ]] && SKIP="$SKIP -DFLB_WITHOUT_flb-it-network=1"
