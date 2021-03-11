@@ -24,8 +24,10 @@ const DefaultElasticsearchConfig =`
         HTTP_Port {{ .Values.service.port }}
   inputs: |
     [INPUT]
-        Name    tail
-        Path    /var/log/syslog
+        Name   dummy
+        Tag    dummy.log
+        Dummy  {"message":"testing"}
+        Rate   100
   outputs: |
     [OUTPUT]
         Name    es
@@ -44,7 +46,8 @@ func (suite *ElasticSearchSuite) TearDownTest() {
 
 func (suite *ElasticSearchSuite) SetupTest() {
 	var ElasticSearchCharts = []ChartToInstall{
-		{fmt.Sprintf("fluent-bit-%s", strings.ToLower(random.UniqueId())),"https://fluent.github.io/helm-charts","fluent","fluent/fluent-bit",suite.helmOpts	},
+		{fmt.Sprintf("fluent-bit-%s", strings.ToLower(random.UniqueId())),"https://fluent.github.io/helm-charts",
+			"fluent","fluent/fluent-bit",suite.helmOpts	},
 		{fmt.Sprintf("elasticsearch-%s", strings.ToLower(random.UniqueId())), "https://helm.elastic.co","elastic", "elastic/elasticsearch",&helm.Options{
 			KubectlOptions: suite.kubectlOpts,
 			SetValues: map[string]string{"replicas": "1", "minMasterNodes": "1"}}},

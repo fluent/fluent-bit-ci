@@ -7,6 +7,6 @@ import (
 )
 
 func TestFluentBitSuites(t *testing.T) {
-	provider, _ := providers.NewBaseFluentbitSuite(providers.DefaultElasticsearchConfig, "", "")
+	provider, _ := providers.NewBaseFluentbitSuite(providers.DefaultElasticsearchConfig, "")
 	suite.Run(t, &providers.ElasticSearchSuite{BaseFluentbitSuite: provider})
 }
