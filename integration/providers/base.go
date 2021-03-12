@@ -137,11 +137,8 @@ func (suite *ElasticSearchSuite) GetPodNameByChartRelease(release string) string
 	return podName
 }
 
-func NewBaseFluentbitSuite(fluentConfig string, k8sClientPath, k8sNamespace string) (*BaseFluentbitSuite, error) {
+func NewBaseFluentbitSuite(fluentConfig string, k8sNamespace string) (*BaseFluentbitSuite, error) {
 	var baseSuite BaseFluentbitSuite
-	if k8sClientPath == "" {
-		k8sClientPath = defaultk8sClientConfigPath
-	}
 	if k8sNamespace == "" {
 		k8sNamespace = defaultK8sNamespace
 	}
@@ -152,7 +149,7 @@ func NewBaseFluentbitSuite(fluentConfig string, k8sClientPath, k8sNamespace stri
 	}
 
 	baseSuite.config = config
-	baseSuite.kubectlOpts = k8s.NewKubectlOptions("", k8sClientPath, k8sNamespace)
+	baseSuite.kubectlOpts = k8s.NewKubectlOptions("", getEnv("KUBECONFIG", defaultk8sClientConfigPath), k8sNamespace)
 	baseSuite.helmOpts = &helm.Options{
 		SetValues: baseSuite.getFluentBitHelmValuesFromConfig(),
 		KubectlOptions: baseSuite.kubectlOpts,
