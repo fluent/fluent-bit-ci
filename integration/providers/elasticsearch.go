@@ -27,7 +27,7 @@ const DefaultElasticsearchConfig =`
         Name   dummy
         Tag    dummy.log
         Dummy  {"message":"testing"}
-        Rate   100
+        Rate   10
   outputs: |
     [OUTPUT]
         Name    es
@@ -45,20 +45,17 @@ func (suite *ElasticSearchSuite) TearDownTest() {
 }
 
 func (suite *ElasticSearchSuite) SetupTest() {
-	var ElasticSearchCharts = []ChartToInstall{
-		{fmt.Sprintf("fluent-bit-%s", strings.ToLower(random.UniqueId())),"https://fluent.github.io/helm-charts",
-			"fluent","fluent/fluent-bit",suite.helmOpts	},
-		{fmt.Sprintf("elasticsearch-%s", strings.ToLower(random.UniqueId())), "https://helm.elastic.co","elastic", "elastic/elasticsearch",&helm.Options{
-			KubectlOptions: suite.kubectlOpts,
-			SetValues: map[string]string{"replicas": "1", "minMasterNodes": "1"}}},
-	}
 
-	for _, chart := range ElasticSearchCharts {
-		suite.InstallChart(chart)
-	}
+	suite.InstallChart(ChartToInstall{fmt.Sprintf("elasticsearch-%s", strings.ToLower(random.UniqueId())), "https://helm.elastic.co","elastic", "elastic/elasticsearch",&helm.Options{
+		KubectlOptions: suite.kubectlOpts,
+		SetValues: map[string]string{"replicas": "1", "minMasterNodes": "1"}}})
+
+	k8s.WaitUntilPodAvailable(suite.T(), suite.kubectlOpts, "elasticsearch-master-0", defaultRetries, defaultSleepPeriod)
+
+	suite.InstallChart(ChartToInstall{fmt.Sprintf("fluent-bit-%s", strings.ToLower(random.UniqueId())),"https://fluent.github.io/helm-charts",
+		"fluent","fluent/fluent-bit",suite.helmOpts	})
 
 	k8s.WaitUntilPodAvailable(suite.T(), suite.kubectlOpts, suite.GetPodNameByChartRelease("fluent"), defaultRetries, defaultSleepPeriod)
-	k8s.WaitUntilPodAvailable(suite.T(), suite.kubectlOpts, "elasticsearch-master-0", defaultRetries, defaultSleepPeriod)
 }
 
 const elasticSearchSleepPeriod = 15 * time.Second
