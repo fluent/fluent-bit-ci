@@ -40,7 +40,7 @@ variable "k8s-cluster-name" {
 
 variable "k8s-machine-type" {
   type    = string
-  default = "n1-standard-2"
+  default = "e2-standard-4"
 }
 
 variable "k8s-additional-zones" {
