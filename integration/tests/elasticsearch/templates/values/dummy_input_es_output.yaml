@@ -1,6 +1,8 @@
 kind: Deployment
 replicaCount: 1
 
+rbac:
+  create: false
 image:
   repository: {{ image_repository }}
   pullPolicy: Always
