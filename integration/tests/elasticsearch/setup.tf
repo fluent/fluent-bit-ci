@@ -19,6 +19,8 @@ data "local_file" "fluent-bit-config" {
 resource "helm_release" "fluent-bit" {
   name       = "fluent-bit"
   namespace  = var.namespace
+  atomic     =  true
+  force_update = true
   repository = "https://fluent.github.io/helm-charts"
   chart      = "fluent-bit"
   values = [data.local_file.fluent-bit-config.content]
@@ -29,6 +31,8 @@ resource "helm_release" "elasticsearch" {
   namespace  = var.namespace
   repository = "https://helm.elastic.co"
   chart      = "elasticsearch"
+  atomic     =  true
+  force_update = true
 
   set {
     name = "replicas"
