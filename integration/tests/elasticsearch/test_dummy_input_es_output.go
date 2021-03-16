@@ -22,7 +22,7 @@ func (suite *Suite) TestDummyInputToElasticSearchOutput() {
 	defer terraform.Destroy(suite.T(), opts)
 	terraform.InitAndApply(suite.T(), opts)
 
-	status := retry.DoWithRetry(suite.T(), "Check if fluentbit index exists", 3, 10*time.Second, func() (string, error) {
+	status := retry.DoWithRetry(suite.T(), "Check if fluentbit index exists", 3, 1*time.Minute, func() (string, error) {
 		output, err := suite.RunKubectlExec("elasticsearch-master-0", "curl", "-s", "-w", "%{http_code}", "http://localhost:9200/fluentbit/_search/", "-o", "/dev/null")
 		if output != "200" || err != nil {
 			return "", fmt.Errorf("Not found index /fluentbit")
