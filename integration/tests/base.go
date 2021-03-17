@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	"io/ioutil"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"os"
 	"os/exec"
 	"path"
@@ -20,16 +21,35 @@ import (
 const defaultk8sClientConfigPath = "/tmp/client.config"
 const defaultk8sImageRepository = "fluentbitdev/fluent-bit"
 const defaultK8sImageTag = "x86_64-master"
-
+const DefaultMaxRetries = 3
+const DefaultRetryTimeout = 1 * time.Minute
 
 type BaseTestSuite struct {
 	suite.Suite
 	Name, Namespace string
-	k8sOptions *k8s.KubectlOptions
+	K8sOptions      *k8s.KubectlOptions
 }
 
-func (suite *BaseTestSuite) RenderCfgFromTpl(tplName string, ctx pongo2.Context) (string, error) {
-	templatePath := path.Join("tests", suite.Name , "templates", "values", tplName + ".yaml")
+func (suite *BaseTestSuite) GetPodNameByPrefix(prefix string) (string, error) {
+	var podName string = ""
+	for _, pod := range k8s.ListPods(suite.T(), suite.K8sOptions, v1.ListOptions{}) {
+		if strings.Contains(pod.Name, prefix) {
+			podName = pod.Name
+			break
+		}
+	}
+	if podName == "" {
+		return "", fmt.Errorf("not found pod for prefix: %s", prefix)
+	}
+	return podName, nil
+}
+
+
+func (suite *BaseTestSuite) RenderCfgFromTpl(tplName string, prefix string, ctx pongo2.Context) (string, error) {
+	if prefix == "" {
+		prefix = "values"
+	}
+	templatePath := path.Join("tests", suite.Name , "templates", prefix, tplName + ".yaml")
 	if _, err := os.Stat(templatePath); os.IsNotExist(err) {
 		return "", err
 	}
@@ -48,6 +68,8 @@ func (suite *BaseTestSuite) RenderCfgFromTpl(tplName string, ctx pongo2.Context)
 		ctx = pongo2.Context{
 			"image_repository": getEnv("IMAGE_REPOSITORY", defaultk8sImageRepository),
 			"image_tag": getEnv("IMAGE_TAG", defaultK8sImageTag),
+			"namespace": suite.Namespace,
+			"suite": suite.Name,
 		}
 	}
 
@@ -90,7 +112,7 @@ func (suite *BaseTestSuite) GetTerraformOpts(extendedOpts map[string]interface{}
 }
 
 func (suite *BaseTestSuite) TearDownSuite() {
-	defer k8s.DeleteNamespace(suite.T(), suite.k8sOptions, suite.Namespace)
+	defer k8s.DeleteNamespace(suite.T(), suite.K8sOptions, suite.Namespace)
 }
 
 func (suite *BaseTestSuite) SetupSuite() {
@@ -107,23 +129,23 @@ func (suite *BaseTestSuite) SetupSuite() {
 		panic(err)
 	}
 
-	suite.k8sOptions = k8s.NewKubectlOptions("", testSuitek8sConfigPath, suite.Namespace)
-	k8s.CreateNamespace(suite.T(), suite.k8sOptions, suite.Namespace)
+	suite.K8sOptions = k8s.NewKubectlOptions("", testSuitek8sConfigPath, suite.Namespace)
+	k8s.CreateNamespace(suite.T(), suite.K8sOptions, suite.Namespace)
 }
 
 func (suite *BaseTestSuite) RunKubectlExec(podName string, cmds...string) (string, error){
-	var args = []string{"kubectl", "exec", "-n", suite.Namespace, "--kubeconfig", suite.k8sOptions.ConfigPath, podName, "--"}
+	var args = []string{"kubectl", "exec", "-n", suite.Namespace, "--kubeconfig", suite.K8sOptions.ConfigPath, podName, "--"}
 	for _, cmd := range cmds {
 		args = append(args, cmd)
 	}
 	output, err := exec.Command(args[0], args[1:]...).CombinedOutput()
-	return string(output), err
+	return strings.TrimSuffix(string(output), "\n"), err
 }
 
 func(suite *BaseTestSuite) AssertPodURL(uri string, port int, podName string, status, retries int, sleep time.Duration) {
 	var retStatus int
 
-	tunnel := k8s.NewTunnel(suite.k8sOptions, k8s.ResourceTypePod, podName, 0, port)
+	tunnel := k8s.NewTunnel(suite.K8sOptions, k8s.ResourceTypePod, podName, 0, port)
 	defer tunnel.Close()
 	tunnel.ForwardPort(suite.T())
 	endpoint := fmt.Sprintf("http://%s%s", tunnel.Endpoint(), uri)
