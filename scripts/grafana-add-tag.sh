@@ -10,6 +10,6 @@ curl -X POST https://fluentbit.grafana.net/api/annotations \
      {
        "time":${START_DATE},
        "tags":["commit-master"],
-       "text":"merge in master, commit: ${COMMIT_ID}"
+       "text":"merge in master, commit: <a href=\"https://github.com/fluent/fluent-bit/commit/${COMMIT_ID}\">${COMMIT_ID}</a>"
      }
 EOF
