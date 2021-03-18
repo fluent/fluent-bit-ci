@@ -15,7 +15,7 @@ resource "google_container_cluster" "fluent-bit-ci-k8s-cluster" {
   name           = "${var.k8s-cluster-name}-gke-${var.k8s-version-formatted}"
   location       = var.gcp-default-zone
   node_locations = var.k8s-additional-zones
-
+  monitoring_service       = "monitoring.googleapis.com/kubernetes"
   release_channel {
     channel = "RAPID"
   }
