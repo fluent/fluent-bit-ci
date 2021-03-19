@@ -4,6 +4,10 @@ provider "helm" {
   }
 }
 
+variable "prometheus-config" {
+  type = string
+}
+
 variable "fluent-bit-config" {
   type = string
 }
@@ -16,6 +20,10 @@ data "local_file" "fluent-bit-config" {
   filename = basename(var.fluent-bit-config)
 }
 
+data "local_file" "prometheus-config" {
+  filename = basename(var.prometheus-config)
+}
+
 resource "helm_release" "fluent-bit" {
   name       = "fluent-bit"
   namespace  = var.namespace
@@ -23,6 +31,14 @@ resource "helm_release" "fluent-bit" {
   repository = "https://fluent.github.io/helm-charts"
   chart      = "fluent-bit"
   values = [data.local_file.fluent-bit-config.content]
+}
+
+resource "helm_release" "prometheus" {
+  name       = "prometheus"
+  repository = "https://prometheus-community.github.io/helm-charts"
+  chart      = "prometheus"
+  namespace  = var.namespace
+  values = [data.local_file.prometheus-config.content]
 }
 
 resource "helm_release" "elasticsearch" {
