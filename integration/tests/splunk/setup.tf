@@ -4,6 +4,10 @@ provider "helm" {
   }
 }
 
+variable "prometheus-config" {
+  type = string
+}
+
 variable "fluent-bit-config" {
   type = string
 }
@@ -14,6 +18,10 @@ variable "namespace" {
 
 data "local_file" "fluent-bit-config" {
   filename = basename(var.fluent-bit-config)
+}
+
+data "local_file" "prometheus-config" {
+  filename = basename(var.prometheus-config)
 }
 
 resource "helm_release" "fluent-bit" {
