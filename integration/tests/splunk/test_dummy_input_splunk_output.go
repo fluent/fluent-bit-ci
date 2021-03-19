@@ -20,7 +20,7 @@ func (suite *Suite) TestDummyInputToSplunkOutput() {
 	k8s.KubectlApply(suite.T(), suite.K8sOptions, k8sDeployment)
 	k8s.WaitUntilServiceAvailable(suite.T(), suite.K8sOptions, "splunk-master", 3, 1*time.Minute)
 
-	cfg, _ := suite.RenderCfgFromTpl("dummy_input_splunk_output", "values", nil
+	cfg, _ := suite.RenderCfgFromTpl("dummy_input_splunk_output", "values", nil)
 	opts, _ := suite.GetTerraformOpts(cfg)
 
 	defer terraform.Destroy(suite.T(), opts)
