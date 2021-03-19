@@ -1,0 +1,33 @@
+rbac:
+  create: false
+alertmanager:
+  enabled: false
+kubeStateMetrics:
+  enabled: false
+nodeExporter:
+  enabled: false
+pushgateway:
+  enabled: false
+server:
+  enabled: true
+  global:
+    scrape_interval: 10s
+    scrape_timeout: 9s
+    external_labels:
+      namespace: {{ namespace }}
+  persistentVolume:
+    enabled: false
+serverFiles:
+  prometheus.yml:
+    remote_write:
+      - url: https://prometheus-us-central1.grafana.net/api/prom/push
+        basic_auth:
+          username: {{ grafana_username }}
+          password: {{ grafana_password }}
+    scrape_configs:
+      - job_name: 'fluent-bit-prometheus'
+        scheme: http
+        metrics_path: /api/v1/metrics/prometheus
+        static_configs:
+          - targets:
+              - "fluent-bit:2020"
