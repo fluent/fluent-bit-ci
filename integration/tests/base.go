@@ -28,6 +28,7 @@ type BaseTestSuite struct {
 	suite.Suite
 	Name, Namespace string
 	K8sOptions      *k8s.KubectlOptions
+	TerraformOptions map[string]string
 }
 
 func (suite *BaseTestSuite) GetPodNameByPrefix(prefix string) (string, error) {
@@ -45,7 +46,7 @@ func (suite *BaseTestSuite) GetPodNameByPrefix(prefix string) (string, error) {
 }
 
 
-func (suite *BaseTestSuite) RenderCfgFromTpl(tplName string, prefix string, ctx pongo2.Context) (string, error) {
+func (suite *BaseTestSuite) RenderCfgFromTpl(tplName string, prefix string, extendedContext pongo2.Context) (string, error) {
 	if prefix == "" {
 		prefix = "values"
 	}
@@ -64,13 +65,15 @@ func (suite *BaseTestSuite) RenderCfgFromTpl(tplName string, prefix string, ctx 
 		return "", err
 	}
 
-	if ctx == nil {
-		ctx = pongo2.Context{
-			"image_repository": getEnv("IMAGE_REPOSITORY", defaultk8sImageRepository),
-			"image_tag": getEnv("IMAGE_TAG", defaultK8sImageTag),
-			"namespace": suite.Namespace,
-			"suite": suite.Name,
-		}
+	ctx := pongo2.Context{
+		"image_repository": GetEnv("IMAGE_REPOSITORY", defaultk8sImageRepository),
+		"image_tag": GetEnv("IMAGE_TAG", defaultK8sImageTag),
+		"namespace": suite.Namespace,
+		"suite": suite.Name,
+	}
+
+	if extendedContext != nil {
+		ctx.Update(extendedContext)
 	}
 
 	renderedTemplate, err := tpl.Execute(ctx)
@@ -88,21 +91,20 @@ func (suite *BaseTestSuite) RenderCfgFromTpl(tplName string, prefix string, ctx 
 }
 
 
-func getEnv(key string, defaultVal string) string {
+func GetEnv(key string, defaultVal string) string {
 	if value, exists := os.LookupEnv(key); exists {
 		return value
 	}
 	return defaultVal
 }
 
-func (suite *BaseTestSuite) GetTerraformOpts(extendedOpts map[string]interface{}) (*terraform.Options, error){
+func (suite *BaseTestSuite) GetTerraformOpts(fluentBitConfig string) (*terraform.Options, error){
 	var variables = make(map[string]interface{})
 	variables["namespace"] = suite.Namespace
+	variables["fluent-bit-config"] = fluentBitConfig
 
-	if extendedOpts != nil {
-		for name, value := range extendedOpts {
-			variables[name] = value
-		}
+	for k, v := range suite.TerraformOptions {
+		variables[k] = v
 	}
 
 	return terraform.WithDefaultRetryableErrors(suite.T(), &terraform.Options{
@@ -117,7 +119,7 @@ func (suite *BaseTestSuite) TearDownSuite() {
 
 func (suite *BaseTestSuite) SetupSuite() {
 	suite.Namespace = fmt.Sprintf("test-%s-%s", suite.Name, strings.ToLower(random.UniqueId()))
-	kubeConfigPath := getEnv("KUBECONFIG", defaultk8sClientConfigPath)
+	kubeConfigPath := GetEnv("KUBECONFIG", defaultk8sClientConfigPath)
 	input, err := ioutil.ReadFile(kubeConfigPath)
 	if err != nil {
 		panic(err)
@@ -131,6 +133,17 @@ func (suite *BaseTestSuite) SetupSuite() {
 
 	suite.K8sOptions = k8s.NewKubectlOptions("", testSuitek8sConfigPath, suite.Namespace)
 	k8s.CreateNamespace(suite.T(), suite.K8sOptions, suite.Namespace)
+
+	prometheusCfg, _ := suite.RenderCfgFromTpl("prometheus", "", pongo2.Context{
+		"grafana_username": GetEnv("GRAFANA_USERNAME", ""),
+		"grafana_password": GetEnv("GRAFANA_PASSWORD", ""),
+	})
+
+	if suite.TerraformOptions == nil {
+		suite.TerraformOptions = make(map[string]string)
+	}
+
+	suite.TerraformOptions["prometheus-config"] = prometheusCfg
 }
 
 func (suite *BaseTestSuite) RunKubectlExec(podName string, cmds...string) (string, error){

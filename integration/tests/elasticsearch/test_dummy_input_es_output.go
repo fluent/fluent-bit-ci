@@ -12,11 +12,8 @@ type Suite struct {
 }
 
 func (suite *Suite) TestDummyInputToElasticSearchOutput() {
-
 	cfg, _ := suite.RenderCfgFromTpl("dummy_input_es_output", "",nil)
-	opts, _ := suite.GetTerraformOpts(map[string]interface{}{
-		"fluent-bit-config": cfg,
-	})
+	opts, _ := suite.GetTerraformOpts(cfg)
 
 	defer terraform.Destroy(suite.T(), opts)
 	terraform.InitAndApply(suite.T(), opts)
