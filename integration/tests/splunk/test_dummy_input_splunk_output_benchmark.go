@@ -1,10 +1,11 @@
-// +build integration
+// +build benchmark
 
 package splunk
 
 import (
 	"fmt"
 	"github.com/calyptia/fluent-bit-ci/integration/tests"
+	"github.com/flosch/pongo2/v4"
 	"github.com/gruntwork-io/terratest/modules/k8s"
 	"github.com/gruntwork-io/terratest/modules/retry"
 	"github.com/gruntwork-io/terratest/modules/terraform"
@@ -22,7 +23,9 @@ func (suite *Suite) TestDummyInputToSplunkOutput() {
 	k8s.KubectlApply(suite.T(), suite.K8sOptions, k8sDeployment)
 	k8s.WaitUntilServiceAvailable(suite.T(), suite.K8sOptions, "splunk-master", 3, 1*time.Minute)
 
-	cfg, _ := suite.RenderCfgFromTpl("dummy_input_splunk_output", "values", nil)
+	cfg, _ := suite.RenderCfgFromTpl("dummy_input_splunk_output", "values", pongo2.Context{
+		"input_rate": suite.InputRate,
+	})
 	opts, _ := suite.GetTerraformOpts(cfg)
 
 	defer terraform.Destroy(suite.T(), opts)
