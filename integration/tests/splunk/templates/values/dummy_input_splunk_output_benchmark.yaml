@@ -1,0 +1,34 @@
+kind: Deployment
+replicaCount: 1
+
+rbac:
+  create: false
+image:
+  repository: {{ image_repository }}
+  pullPolicy: Always
+  tag: {{ image_tag }}
+
+config:
+  service: |
+    [SERVICE]
+        Flush 5
+        Daemon Off
+        Log_Level debug
+        HTTP_Server On
+        HTTP_Listen 0.0.0.0
+        HTTP_Port 2020
+  inputs: |
+    [INPUT]
+        Name dummy
+        Tag dummy.log
+        Dummy {"message": "testing"}
+        Rate {{ input_rate }}
+  outputs: |
+    [OUTPUT]
+        Name        splunk
+        Match       *
+        Host        splunk-master
+        Port        8088
+        TLS         On
+        TLS.Verify  Off
+        splunk_token fd27eae6-3951-4f84-95dd-3e450979305a

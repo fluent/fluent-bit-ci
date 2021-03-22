@@ -1,8 +1,9 @@
-// +build integration
+// +build benchmark
 
 package tests
 
 import (
+	"flag"
 	"fmt"
 	"github.com/flosch/pongo2/v4"
 	http_helper "github.com/gruntwork-io/terratest/modules/http-helper"
@@ -26,11 +27,14 @@ const defaultK8sImageTag = "x86_64-master"
 const DefaultMaxRetries = 3
 const DefaultRetryTimeout = 1 * time.Minute
 
+var InputRate = flag.Int("rate", 0, "Input rate value")
+
 type BaseTestSuite struct {
 	suite.Suite
 	Name, Namespace  string
 	K8sOptions       *k8s.KubectlOptions
 	TerraformOptions map[string]string
+	InputRate        int
 }
 
 func (suite *BaseTestSuite) GetPodNameByPrefix(prefix string) (string, error) {
@@ -118,7 +122,8 @@ func (suite *BaseTestSuite) TearDownSuite() {
 }
 
 func (suite *BaseTestSuite) SetupSuite() {
-	suite.Namespace = fmt.Sprintf("test-%s-%s", suite.Name, strings.ToLower(random.UniqueId()))
+	suite.Namespace = fmt.Sprintf("test-benchmark-%s-%d-%s", suite.Name, *InputRate, strings.ToLower(random.UniqueId()))
+	suite.InputRate = *InputRate
 	kubeConfigPath := GetEnv("KUBECONFIG", defaultk8sClientConfigPath)
 	input, err := ioutil.ReadFile(kubeConfigPath)
 	if err != nil {
