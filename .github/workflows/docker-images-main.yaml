@@ -20,12 +20,11 @@ jobs:
         uses: docker/login-action@v1
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
       - run: |
           docker build --no-cache -f ./dockerfiles/Dockerfile.${{ env.image }} -t ${{ env.dockerhub_organization }}/fluent-bit-ci:${{ env.image }} .
           docker push ${{ env.dockerhub_organization}}/fluent-bit-ci:${{ env.image }}
-
         name: build and publish ${{ matrix.image }} image.
         env:
           image: ${{ matrix.image }}
