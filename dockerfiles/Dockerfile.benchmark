@@ -1,3 +1,3 @@
 FROM python:3
-COPY ./scripts/run-log-generator.py /
+COPY ./scripts/run_log_generator.py /
 CMD [ "python", "/run_log_generator.py" ]
