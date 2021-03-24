@@ -1,9 +1,10 @@
-// +build integration
+// +build benchmark
 
 package elasticsearch
 
 import (
 	"fmt"
+	"github.com/flosch/pongo2/v4"
 	"github.com/calyptia/fluent-bit-ci/integration/tests"
 	"github.com/gruntwork-io/terratest/modules/retry"
 	"github.com/gruntwork-io/terratest/modules/terraform"
@@ -14,7 +15,10 @@ type Suite struct {
 }
 
 func (suite *Suite) TestDummyInputToElasticSearchOutput() {
-	cfg, _ := suite.RenderCfgFromTpl("dummy_input_es_output", "", nil)
+	cfg, _ := suite.RenderCfgFromTpl("dummy_input_es_output_benchmark", "", pongo2.Context{
+		"input_rate": suite.InputRate,
+	})
+
 	opts, _ := suite.GetTerraformOpts(cfg)
 
 	defer terraform.Destroy(suite.T(), opts)
