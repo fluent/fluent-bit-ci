@@ -1,5 +1,3 @@
-// +build long-run
-
 package tests
 
 import (

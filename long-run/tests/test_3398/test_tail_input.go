@@ -1,9 +1,7 @@
-// +build long-run
-
 package test_3398
 
 import (
-	"github.com/calyptia/fluent-bit-ci/integration/tests"
+	"github.com/calyptia/fluent-bit-ci/long-run/tests"
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"time"
 )

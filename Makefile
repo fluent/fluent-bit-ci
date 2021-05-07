@@ -14,4 +14,4 @@ benchmark:
 	$(foreach var, $(RATES), cd integration && go test -timeout $(TIMEOUT) . --tags=benchmark -v -rate=$(var) && cd ../;)
 
 long-run:
-	cd integration && go test . --tags=long-run -v
+	cd long-run && go test . -v
