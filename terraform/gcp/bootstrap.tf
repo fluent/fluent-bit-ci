@@ -55,7 +55,7 @@ resource "google_filestore_instance" "test-nfs-server" {
   zone = var.gcp-default-zone
 
   file_shares {
-    capacity_gb = 200
+    capacity_gb = 1024
     name        = "vol1"
   }
 

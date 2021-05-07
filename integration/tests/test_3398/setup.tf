@@ -53,7 +53,7 @@ resource "kubernetes_persistent_volume" "nfs-volume" {
   }
   spec {
     capacity = {
-      storage = "200G"
+      storage = "1T"
     }
     storage_class_name = kubernetes_storage_class.nfs.metadata[0].name
     access_modes       = ["ReadWriteMany"]
@@ -77,7 +77,7 @@ resource "kubernetes_persistent_volume_claim" "testing-data" {
     volume_name        = kubernetes_persistent_volume.nfs-volume.metadata[0].name
     resources {
       requests = {
-        storage = "200G"
+        storage = "1T"
       }
     }
   }
