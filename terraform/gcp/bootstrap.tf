@@ -21,7 +21,7 @@ resource "google_container_cluster" "fluent-bit-ci-k8s-cluster" {
   name           = "${var.k8s-cluster-name}-gke-${var.k8s-version-formatted}"
   location       = var.gcp-default-zone
   node_locations = var.k8s-additional-zones
-  monitoring_service       = "monitoring.googleapis.com/kubernetes"
+  monitoring_service = "monitoring.googleapis.com/kubernetes"
   network            = google_compute_network.vpc.name
   release_channel {
     channel = "RAPID"
@@ -64,7 +64,17 @@ resource "google_filestore_instance" "test-nfs-server" {
   }
 }
 
-resource "kubernetes_storage_class" "new_nfs" {
+provider "kubernetes" {
+  host     = google_container_cluster.fluent-bit-ci-k8s-cluster.endpoint
+  username = google_container_cluster.fluent-bit-ci-k8s-cluster.master_auth.0.username
+  password = google_container_cluster.fluent-bit-ci-k8s-cluster.master_auth.0.password
+  client_certificate     = base64decode(google_container_cluster.fluent-bit-ci-k8s-cluster.master_auth.0.client_certificate)
+  client_key             = base64decode(google_container_cluster.fluent-bit-ci-k8s-cluster.master_auth.0.client_key)
+  cluster_ca_certificate = base64decode(google_container_cluster.fluent-bit-ci-k8s-cluster.master_auth.0.cluster_ca_certificate)
+  load_config_file = false
+}
+
+resource "kubernetes_storage_class" "nfs" {
   metadata {
     name = "filestore"
   }
@@ -81,7 +91,7 @@ resource "kubernetes_persistent_volume" "nfs-volume" {
     capacity = {
       storage = "1T"
     }
-    storage_class_name = kubernetes_storage_class.new_nfs.metadata[0].name
+    storage_class_name = kubernetes_storage_class.nfs.metadata[0].name
     access_modes       = ["ReadWriteMany"]
     persistent_volume_source {
       nfs {
@@ -93,7 +103,7 @@ resource "kubernetes_persistent_volume" "nfs-volume" {
 }
 
 output "nfs-storage-class" {
-  value = kubernetes_storage_class.new_nfs.metadata[0].name
+  value = kubernetes_storage_class.nfs.metadata[0].name
 }
 
 output "nfs-storage-volume" {
