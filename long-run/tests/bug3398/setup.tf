@@ -35,7 +35,7 @@ resource "helm_release" "fluent-bit" {
   repository = "https://fluent.github.io/helm-charts"
   chart      = "fluent-bit"
   values = [data.local_file.fluent-bit-config.content]
-  depends_on = [kubernetes_persistent_volume_claim.testing-data]
+  depends_on = [kubernetes_persistent_volume_claim.testing-data, kubernetes_deployment.benchmark-tool]
   wait = true
 }
 
@@ -51,6 +51,58 @@ resource "kubernetes_persistent_volume_claim" "testing-data" {
     resources {
       requests = {
         storage = "1T"
+      }
+    }
+  }
+}
+
+
+resource "kubernetes_deployment" "benchmark-tool" {
+  metadata {
+    name      = "benchmark-tool"
+    namespace = var.namespace
+    labels = {
+      mylabel = "benchmark-tool"
+    }
+  }
+
+  spec {
+    replicas = 1
+
+    template {
+      metadata {
+        labels = {
+          mylabel = "benchmark-tool"
+        }
+      }
+
+      spec {
+        container {
+          image = "fluentbitdev/fluent-bit-ci:benchmark"
+          name  = "benchmark-tool"
+          args = ["--log-size-in-bytes 1000", "--log-rate 200000", "--log-agent-input-type tail", "--tail-file-path /data/test.log"]
+          resources {
+            limits = {
+              cpu    = "2000m"
+              memory = "2048Mi"
+            }
+            requests = {
+              cpu    = "2000m"
+              memory = "1024Mi"
+            }
+          }
+
+          volume_mount {
+            mount_path = "/data"
+            name       = "nfs-data"
+          }
+        }
+        volume {
+          name = "nfs-data"
+          persistent_volume_claim {
+            claim_name = kubernetes_persistent_volume_claim.testing-data.metadata.name
+          }
+        }
       }
     }
   }
