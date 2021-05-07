@@ -78,7 +78,7 @@ resource "kubernetes_persistent_volume_claim" "testing-data" {
     volume_name        = kubernetes_persistent_volume.nfs-volume.metadata.0.name
     resources {
       requests = {
-        storage = "250G"
+        storage = "1T"
       }
     }
   }
