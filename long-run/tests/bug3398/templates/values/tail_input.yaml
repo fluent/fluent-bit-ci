@@ -21,15 +21,17 @@ extraVolumeMounts:
 config:
   service: |
     [SERVICE]
+        Daemon Off
+        Log_Level debug
+        HTTP_Server On
+        HTTP_Listen 0.0.0.0
+        HTTP_Port 2020
         flush        0.5
-        daemon       Off
-        log_level    info
-        log_file     /tmp/fluent.log
         HTTP_Server  On
         HTTP_Listen  0.0.0.0
         HTTP_PORT    2020
         storage.metrics           on
-        storage.path              storage
+        storage.path              /data/storage
         storage.sync              normal
         storage.checksum          off
         storage.backlog.mem_limit 10G
