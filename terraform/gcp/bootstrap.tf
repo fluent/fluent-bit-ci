@@ -50,7 +50,7 @@ resource "google_container_cluster" "fluent-bit-ci-k8s-cluster" {
 }
 
 resource "google_filestore_instance" "test-nfs-server" {
-  name = "test-nfs-server"
+  name = "test-nfs-server-${var.k8s-version-formatted}"
   tier = "STANDARD"
   zone = var.gcp-default-zone
 
