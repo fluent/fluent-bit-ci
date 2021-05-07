@@ -8,11 +8,11 @@ provider "kubernetes" {
   config_path = "client.config"
 }
 
-variable "nfs-storage-class" {
+variable "nfs-server" {
   type = string
 }
 
-variable "nfs-storage-volume" {
+variable "nfs-path" {
   type = string
 }
 
@@ -39,6 +39,34 @@ resource "helm_release" "fluent-bit" {
   wait = true
 }
 
+resource "kubernetes_storage_class" "nfs" {
+  metadata {
+    name = "nfs-${var.namespace}"
+  }
+  reclaim_policy      = "Retain"
+  storage_provisioner = "nfs"
+}
+
+resource "kubernetes_persistent_volume" "nfs-volume" {
+  metadata {
+    name = "nfs-volume-${var.namespace}"
+  }
+  spec {
+    capacity = {
+      storage = "1T"
+    }
+
+    storage_class_name = kubernetes_storage_class.nfs.metadata.0.name
+    access_modes       = ["ReadWriteMany"]
+    persistent_volume_source {
+      nfs {
+        server = var.nfs-server
+        path   = var.nfs-path
+      }
+    }
+  }
+}
+
 resource "kubernetes_persistent_volume_claim" "testing-data" {
   metadata {
     name      = "testing-data"
@@ -46,11 +74,11 @@ resource "kubernetes_persistent_volume_claim" "testing-data" {
   }
   spec {
     access_modes       = ["ReadWriteMany"]
-    storage_class_name = var.nfs-storage-class
-    volume_name        = var.nfs-storage-volume
+    storage_class_name = kubernetes_storage_class.nfs.metadata.0.name
+    volume_name        = kubernetes_persistent_volume.nfs-volume.metadata.0.name
     resources {
       requests = {
-        storage = "1T"
+        storage = "250G"
       }
     }
   }

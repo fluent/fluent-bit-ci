@@ -65,47 +65,20 @@ resource "google_filestore_instance" "test-nfs-server" {
   }
 }
 
-provider "kubernetes" {
-  host                   = "https://${google_container_cluster.fluent-bit-ci-k8s-cluster.endpoint}"
-  token                  = data.google_client_config.current.access_token
-  client_certificate     = base64decode(google_container_cluster.fluent-bit-ci-k8s-cluster.master_auth.0.client_certificate)
-  client_key             = base64decode(google_container_cluster.fluent-bit-ci-k8s-cluster.master_auth.0.client_key)
-  cluster_ca_certificate = base64decode(google_container_cluster.fluent-bit-ci-k8s-cluster.master_auth.0.cluster_ca_certificate)
+//provider "kubernetes" {
+//  host                   = "https://${google_container_cluster.fluent-bit-ci-k8s-cluster.endpoint}"
+//  token                  = data.google_client_config.current.access_token
+//  client_certificate     = base64decode(google_container_cluster.fluent-bit-ci-k8s-cluster.master_auth.0.client_certificate)
+//  client_key             = base64decode(google_container_cluster.fluent-bit-ci-k8s-cluster.master_auth.0.client_key)
+//  cluster_ca_certificate = base64decode(google_container_cluster.fluent-bit-ci-k8s-cluster.master_auth.0.cluster_ca_certificate)
+//}
+
+output "nfs-server" {
+  value = google_filestore_instance.test-nfs-server.networks[0].ip_addresses[0]
 }
 
-resource "kubernetes_storage_class" "nfs" {
-  metadata {
-    name = "fstore"
-  }
-  reclaim_policy      = "Retain"
-  storage_provisioner = "nfs"
-}
-
-resource "kubernetes_persistent_volume" "nfs-volume" {
-  metadata {
-    name = "nfs-volume-1t"
-  }
-  spec {
-    capacity = {
-      storage = "1T"
-    }
-    storage_class_name = kubernetes_storage_class.nfs.metadata[0].name
-    access_modes       = ["ReadWriteMany"]
-    persistent_volume_source {
-      nfs {
-        server = google_filestore_instance.test-nfs-server.networks[0].ip_addresses[0]
-        path   = "/${google_filestore_instance.test-nfs-server.file_shares[0].name}"
-      }
-    }
-  }
-}
-
-output "nfs-storage-class" {
-  value = kubernetes_storage_class.nfs.metadata[0].name
-}
-
-output "nfs-storage-volume" {
-  value = kubernetes_persistent_volume.nfs-volume.metadata[0].name
+output "nfs-path" {
+  value = "/${google_filestore_instance.test-nfs-server.file_shares[0].name}"
 }
 
 output "k8s-cluster-name" {
