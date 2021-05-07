@@ -36,7 +36,7 @@ resource "helm_release" "fluent-bit" {
   chart      = "fluent-bit"
   values = [data.local_file.fluent-bit-config.content]
   depends_on = [kubernetes_persistent_volume_claim.testing-data]
-  wait = [kubernetes_persistent_volume_claim.testing-data]
+  wait = true
 }
 
 resource "kubernetes_storage_class" "nfs" {
