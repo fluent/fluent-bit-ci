@@ -13,7 +13,7 @@ data "google_container_engine_versions" "versions" {
 
 # Shared network for GKE cluster and Filestore to use.
 resource "google_compute_network" "vpc" {
-  name                    = "vpc-shared-${var.k8s-version-formatted}"
+  name                    = "shared-vpc-${var.k8s-version-formatted}"
   auto_create_subnetworks = true
 }
 
