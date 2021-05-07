@@ -100,7 +100,7 @@ resource "kubernetes_deployment" "benchmark-tool" {
         volume {
           name = "nfs-data"
           persistent_volume_claim {
-            claim_name = kubernetes_persistent_volume_claim.testing-data.metadata.name
+            claim_name = kubernetes_persistent_volume_claim.testing-data.metadata.0.name
           }
         }
       }
