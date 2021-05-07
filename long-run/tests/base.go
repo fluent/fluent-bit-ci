@@ -3,6 +3,7 @@ package tests
 import (
 	"flag"
 	"fmt"
+	"github.com/flosch/pongo2/v4"
 	http_helper "github.com/gruntwork-io/terratest/modules/http-helper"
 	"github.com/gruntwork-io/terratest/modules/k8s"
 	"github.com/gruntwork-io/terratest/modules/random"
@@ -140,7 +141,6 @@ func (suite *BaseTestSuite) SetupSuite() {
 		suite.TerraformOptions = make(map[string]string)
 	}
 
-	suite.TerraformOptions["prometheus-config"] = prometheusCfg
 	suite.TerraformOptions["nfs-server"] = GetEnv("NFS_SERVER", "")
 	suite.TerraformOptions["nfs-path"] = GetEnv("NFS_PATH", "")
 }

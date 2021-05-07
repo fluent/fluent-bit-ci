@@ -27,7 +27,6 @@ resource "google_container_cluster" "fluent-bit-ci-k8s-cluster" {
     channel = "RAPID"
   }
 
-
   node_version       = var.k8s-version
   min_master_version = var.k8s-version
 

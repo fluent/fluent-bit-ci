@@ -10,12 +10,12 @@ type Suite struct {
 	tests.BaseTestSuite
 }
 
-func (suite *Suite) TestDummyInputToElasticSearchOutput() {
+func (suite *Suite) TestTailInputLoad() {
 	cfg, _ := suite.RenderCfgFromTpl("tail_input", "", nil)
 	opts, _ := suite.GetTerraformOpts(cfg)
 
 	defer terraform.Destroy(suite.T(), opts)
 	terraform.InitAndApply(suite.T(), opts)
 
-	time.Sleep(15*time.Minute)
+	time.Sleep(15 * time.Minute)
 }
