@@ -66,8 +66,6 @@ resource "google_filestore_instance" "test-nfs-server" {
 
 provider "kubernetes" {
   host     = google_container_cluster.fluent-bit-ci-k8s-cluster.endpoint
-  username = google_container_cluster.fluent-bit-ci-k8s-cluster.master_auth.0.username
-  password = google_container_cluster.fluent-bit-ci-k8s-cluster.master_auth.0.password
   client_certificate     = base64decode(google_container_cluster.fluent-bit-ci-k8s-cluster.master_auth.0.client_certificate)
   client_key             = base64decode(google_container_cluster.fluent-bit-ci-k8s-cluster.master_auth.0.client_key)
   cluster_ca_certificate = base64decode(google_container_cluster.fluent-bit-ci-k8s-cluster.master_auth.0.cluster_ca_certificate)
