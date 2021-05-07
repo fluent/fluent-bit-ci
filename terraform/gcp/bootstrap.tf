@@ -5,6 +5,7 @@ provider "google" {
 }
 
 data "google_project" "project" {}
+data "google_client_config" "current" {}
 
 data "google_container_engine_versions" "versions" {
   location       = var.gcp-default-zone
@@ -65,7 +66,8 @@ resource "google_filestore_instance" "test-nfs-server" {
 }
 
 provider "kubernetes" {
-  host     = google_container_cluster.fluent-bit-ci-k8s-cluster.endpoint
+  host                   = "https://${google_container_cluster.fluent-bit-ci-k8s-cluster.endpoint}"
+  token                  = data.google_client_config.current.access_token
   client_certificate     = base64decode(google_container_cluster.fluent-bit-ci-k8s-cluster.master_auth.0.client_certificate)
   client_key             = base64decode(google_container_cluster.fluent-bit-ci-k8s-cluster.master_auth.0.client_key)
   cluster_ca_certificate = base64decode(google_container_cluster.fluent-bit-ci-k8s-cluster.master_auth.0.cluster_ca_certificate)
