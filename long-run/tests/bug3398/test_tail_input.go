@@ -17,5 +17,5 @@ func (suite *Suite) TestTailInputLoad() {
 	defer terraform.Destroy(suite.T(), opts)
 	terraform.InitAndApply(suite.T(), opts)
 
-	time.Sleep(5 * time.Minute)
+	time.Sleep(15 * time.Minute)
 }
