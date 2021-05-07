@@ -62,17 +62,23 @@ resource "kubernetes_deployment" "benchmark-tool" {
     name      = "benchmark-tool"
     namespace = var.namespace
     labels = {
-      mylabel = "benchmark-tool"
+      app = "benchmark-tool"
     }
   }
 
   spec {
     replicas = 1
+    selector {
+      match_labels = {
+        app = "benchmark-tool"
+      }
+    }
+
 
     template {
       metadata {
         labels = {
-          mylabel = "benchmark-tool"
+          app = "benchmark-tool"
         }
       }
 
