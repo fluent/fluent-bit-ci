@@ -114,7 +114,7 @@ resource "kubernetes_deployment" "benchmark-tool" {
         container {
           image = "fluentbitdev/fluent-bit-ci:benchmark"
           name  = "benchmark-tool"
-          args = ["--log-size-in-bytes 1000", "--log-rate 200000", "--log-agent-input-type tail", "--tail-file-path /data/test.log"]
+          command = ["/run_log_generator.py", "--log-size-in-bytes 1000", "--log-rate 200000", "--log-agent-input-type tail", "--tail-file-path /data/test.log"]
           resources {
             limits = {
               cpu    = "2000m"
