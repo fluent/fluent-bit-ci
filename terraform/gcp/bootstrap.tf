@@ -83,7 +83,7 @@ resource "kubernetes_storage_class" "nfs" {
 
 resource "kubernetes_persistent_volume" "nfs-volume" {
   metadata {
-    name = "nfs-volume"
+    name = "nfs-volume-1t"
   }
   spec {
     capacity = {
