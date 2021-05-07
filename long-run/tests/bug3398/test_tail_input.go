@@ -1,4 +1,4 @@
-package test_3398
+package bug3398
 
 import (
 	"github.com/calyptia/fluent-bit-ci/long-run/tests"
