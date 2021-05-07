@@ -64,7 +64,7 @@ resource "google_filestore_instance" "test-nfs-server" {
   }
 }
 
-resource "kubernetes_storage_class" "nfs" {
+resource "kubernetes_storage_class" "new_nfs" {
   metadata {
     name = "filestore"
   }
@@ -81,7 +81,7 @@ resource "kubernetes_persistent_volume" "nfs-volume" {
     capacity = {
       storage = "1T"
     }
-    storage_class_name = kubernetes_storage_class.nfs.metadata[0].name
+    storage_class_name = kubernetes_storage_class.new_nfs.metadata[0].name
     access_modes       = ["ReadWriteMany"]
     persistent_volume_source {
       nfs {
@@ -93,7 +93,7 @@ resource "kubernetes_persistent_volume" "nfs-volume" {
 }
 
 output "nfs-storage-class" {
-  value = kubernetes_storage_class.nfs.metadata[0].name
+  value = kubernetes_storage_class.new_nfs.metadata[0].name
 }
 
 output "nfs-storage-volume" {
