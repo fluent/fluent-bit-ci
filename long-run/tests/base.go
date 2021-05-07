@@ -141,8 +141,8 @@ func (suite *BaseTestSuite) SetupSuite() {
 		suite.TerraformOptions = make(map[string]string)
 	}
 
-	suite.TerraformOptions["nfs-server"] = GetEnv("NFS_SERVER", "")
-	suite.TerraformOptions["nfs-path"] = GetEnv("NFS_PATH", "")
+	suite.TerraformOptions["nfs-storage-class"] = GetEnv("NFS_STORAGE_CLASS", "")
+	suite.TerraformOptions["nfs-storage-volume"] = GetEnv("NFS_STORAGE_VOLUME", "")
 }
 
 func (suite *BaseTestSuite) RunKubectlExec(podName string, cmds ...string) (string, error) {

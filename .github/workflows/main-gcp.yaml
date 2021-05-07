@@ -85,14 +85,14 @@ jobs:
         run: terraform output -no-color -raw gcp-project-id
         working-directory: terraform/gcp/
 
-      - name: Get NFS server address
-        id: get-gcp-nfs-server
-        run: terraform output -no-color -raw nfs-server
+      - name: Get NFS storage class
+        id: get-gcp-nfs-storage-class
+        run: terraform output -no-color -raw nfs-storage-class
         working-directory: terraform/gcp/
 
-      - name: Get NFS path address
-        id: get-gcp-nfs-path
-        run: terraform output -no-color -raw nfs-path
+      - name: Get NFS storage volume
+        id: get-gcp-nfs-storage-volume
+        run: terraform output -no-color -raw nfs-storage-volume
         working-directory: terraform/gcp/
 
       - uses: google-github-actions/setup-gcloud@master
@@ -117,5 +117,5 @@ jobs:
 
       - run: make long
         env:
-          NFS_SERVER: ${{ steps.get-gcp-nfs-server.outputs.stdout }}
-          NFS_PATH: ${{ steps.get-gcp-nfs-path.outputs.stdout }}
+          NFS_STORAGE_CLASS: ${{ steps.get-gcp-nfs-storage-class.outputs.stdout }}
+          NFS_STORAGE_VOLUME: ${{ steps.get-gcp-nfs-storage-volume.outputs.stdout }}

@@ -64,12 +64,40 @@ resource "google_filestore_instance" "test-nfs-server" {
   }
 }
 
-output "nfs-server" {
-  value = google_filestore_instance.test-nfs-server.networks[0].ip_addresses[0]
+resource "kubernetes_storage_class" "nfs" {
+  metadata {
+    name = "filestore"
+  }
+
+  reclaim_policy      = "Retain"
+  storage_provisioner = "nfs"
 }
 
-output "nfs-path" {
-  value = "/${google_filestore_instance.test-nfs-server.file_shares[0].name}"
+resource "kubernetes_persistent_volume" "nfs-volume" {
+  metadata {
+    name = "nfs-volume"
+  }
+  spec {
+    capacity = {
+      storage = "1T"
+    }
+    storage_class_name = kubernetes_storage_class.nfs.metadata[0].name
+    access_modes       = ["ReadWriteMany"]
+    persistent_volume_source {
+      nfs {
+        server = google_filestore_instance.test-nfs-server.networks[0].ip_addresses[0]
+        path   = "/${google_filestore_instance.test-nfs-server.file_shares[0].name}"
+      }
+    }
+  }
+}
+
+output "nfs-storage-class" {
+  value = kubernetes_storage_class.nfs.metadata[0].name
+}
+
+output "nfs-storage-volume" {
+  value = kubernetes_persistent_volume.nfs-volume.metadata[0].name
 }
 
 output "k8s-cluster-name" {
