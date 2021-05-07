@@ -113,7 +113,7 @@ jobs:
         id: install
 
       - run: go mod download
-        working-directory: integration/
+        working-directory: long-run/
 
       - run: make long-run
         env:
