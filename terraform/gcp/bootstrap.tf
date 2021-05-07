@@ -75,9 +75,8 @@ provider "kubernetes" {
 
 resource "kubernetes_storage_class" "nfs" {
   metadata {
-    name = "filestore"
+    name = "fstore"
   }
-
   reclaim_policy      = "Retain"
   storage_provisioner = "nfs"
 }
