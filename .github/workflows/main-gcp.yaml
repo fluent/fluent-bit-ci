@@ -85,6 +85,16 @@ jobs:
         run: terraform output -no-color -raw gcp-project-id
         working-directory: terraform/gcp/
 
+      - name: Get NFS server address
+        id: get-gcp-nfs-server
+        run: terraform output -no-color -raw nfs-server
+        working-directory: terraform/gcp/
+
+      - name: Get NFS path address
+        id: get-gcp-nfs-path
+        run: terraform output -no-color -raw nfs-path
+        working-directory: terraform/gcp/
+
       - uses: google-github-actions/setup-gcloud@master
         with:
           service_account_key: ${{ secrets.GCP_SA_KEY }}
@@ -105,4 +115,7 @@ jobs:
       - run: go mod download
         working-directory: integration/
 
-      - run: make integration
+      - run: make long-run
+        env:
+          NFS_SERVER: ${{ steps.get-gcp-nfs-server.outputs.stdout }}
+          NFS_PATH: ${{ steps.get-gcp-nfs-path.outputs.stdout }}

@@ -11,11 +11,18 @@ data "google_container_engine_versions" "versions" {
   version_prefix = "${var.k8s-version}."
 }
 
+# Shared network for GKE cluster and Filestore to use.
+resource "google_compute_network" "vpc" {
+  name                    = "shared"
+  auto_create_subnetworks = true
+}
+
 resource "google_container_cluster" "fluent-bit-ci-k8s-cluster" {
   name           = "${var.k8s-cluster-name}-gke-${var.k8s-version-formatted}"
   location       = var.gcp-default-zone
   node_locations = var.k8s-additional-zones
   monitoring_service       = "monitoring.googleapis.com/kubernetes"
+  network            = google_compute_network.vpc.name
   release_channel {
     channel = "RAPID"
   }
@@ -40,7 +47,30 @@ resource "google_container_cluster" "fluent-bit-ci-k8s-cluster" {
   }
 
   depends_on         = [data.google_project.project, data.google_container_engine_versions.versions]
+}
 
+resource "google_filestore_instance" "test-nfs-server" {
+  name = "test-nfs-server"
+  tier = "STANDARD"
+  zone = var.gcp-default-zone
+
+  file_shares {
+    capacity_gb = 200
+    name        = "vol1"
+  }
+
+  networks {
+    network = google_compute_network.vpc.name
+    modes   = ["MODE_IPV4"]
+  }
+}
+
+output "nfs-server" {
+  value = google_filestore_instance.test-nfs-server.networks[0].ip_addresses[0]
+}
+
+output "nfs-path" {
+  value = "/${google_filestore_instance.test-nfs-server.file_shares[0].name}"
 }
 
 output "k8s-cluster-name" {

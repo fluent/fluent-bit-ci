@@ -1,0 +1,46 @@
+kind: Deployment
+replicaCount: 1
+
+rbac:
+  create: false
+
+image:
+  repository: {{ image_repository }}
+  pullPolicy: Always
+  tag: {{ image_tag }}
+
+extraVolumes:
+  - name: testing-data-storage
+    persistentVolumeClaim:
+      claimName: testing-data
+
+extraVolumeMounts:
+  - name: testing-data-storage
+    mountPath: /data/
+
+config:
+  service: |
+    [SERVICE]
+        flush        0.5
+        daemon       Off
+        log_level    info
+        log_file     /tmp/fluent.log
+        HTTP_Server  On
+        HTTP_Listen  0.0.0.0
+        HTTP_PORT    2020
+        storage.metrics           on
+        storage.path              storage
+        storage.sync              normal
+        storage.checksum          off
+        storage.backlog.mem_limit 10G
+        storage.max_chunks_up     100
+  inputs: |
+    [INPUT]
+        Name                tail
+        Path                /data/test.log
+        storage.type        filesystem
+        Buffer_Chunk_Size   32000
+        Buffer_Max_Size     32000
+  outputs: |
+    [OUTPUT]
+        Name stdout

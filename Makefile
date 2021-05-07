@@ -12,3 +12,6 @@ integration:
 RATES = 100 1000 10000
 benchmark:
 	$(foreach var, $(RATES), cd integration && go test -timeout $(TIMEOUT) . --tags=benchmark -v -rate=$(var) && cd ../;)
+
+long-run:
+    cd integration && go test . --tags=long-run -v
