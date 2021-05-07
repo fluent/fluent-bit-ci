@@ -8,5 +8,5 @@ import (
 )
 
 func TestLongRunningSuites(t *testing.T) {
-	suite.Run(t, &test_3398.Suite{BaseTestSuite: tests.BaseTestSuite{Name: "test_3398"}})
+	suite.Run(t, &test_3398.Suite{BaseTestSuite: tests.BaseTestSuite{Name: "test-3398"}})
 }
