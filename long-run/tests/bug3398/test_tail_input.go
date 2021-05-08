@@ -30,10 +30,10 @@ func (suite *Suite) TestTailInputLoad() {
 	suite.Nil(err)
 
 	retry.DoWithRetry(suite.T(), "check if pod has crashed",
-		tests.DefaultMaxRetries, tests.DefaultRetryTimeout, func() (string, error) {
+		MaxRetries, RetrySleepInterval, func() (string, error) {
 			return func() (string, error) {
 				suite.True(k8s.IsPodAvailable(pod))
 				return "", fmt.Errorf("pod: %s still running, retrying", pod.Name)
 			}()
-		})
+	})
 }
