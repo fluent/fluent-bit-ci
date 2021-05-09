@@ -50,5 +50,5 @@ variable "k8s-additional-zones" {
 
 variable "k8s-disk-size" {
   type    = string
-  default = 50
+  default = 250
 }

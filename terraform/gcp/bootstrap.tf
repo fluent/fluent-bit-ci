@@ -36,7 +36,7 @@ resource "google_container_cluster" "fluent-bit-ci-k8s-cluster" {
   node_config {
     machine_type = var.k8s-machine-type
     disk_size_gb = var.k8s-disk-size
-    disk_type    = "pd-standard"
+    disk_type    = "pd-ssd"
 
     oauth_scopes = [
       "https://www.googleapis.com/auth/compute",
