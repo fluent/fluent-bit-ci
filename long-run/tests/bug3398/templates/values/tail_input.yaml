@@ -47,4 +47,3 @@ config:
     [OUTPUT]
         Name file
         Match *
-        Path /tmp/output.txt
