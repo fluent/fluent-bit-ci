@@ -2,7 +2,6 @@ package bug3398
 
 import (
 	"github.com/calyptia/fluent-bit-ci/long-run/tests"
-	"github.com/gruntwork-io/terratest/modules/k8s"
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"time"
 )
@@ -23,8 +22,8 @@ func (suite *Suite) TestTailInputLoad() {
 	podName, err := suite.GetPodNameByPrefix("fluent-bit")
 	suite.Nil(err)
 
-	pod, err := k8s.GetPodE(suite.T(), suite.K8sOptions, podName)
-	suite.Nil(err)
+	//pod, err := k8s.GetPodE(suite.T(), suite.K8sOptions, podName)
+	//suite.Nil(err)
 
 	_, err = suite.RunKubectlExec(podName, "/bin/sh", "-c",
 		"/run_log_generator.py --log-size-in-bytes 1000 --log-rate 200000 --log-agent-input-type tail --tail-file-path /tmp/test.log > /dev/null 2> /dev/null &")
