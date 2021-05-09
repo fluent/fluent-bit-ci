@@ -13,7 +13,7 @@ type Suite struct {
 	tests.BaseTestSuite
 }
 
-const MaxRetries = 15
+const MaxRetries = 25
 const RetrySleepInterval = 1 * time.Minute
 
 func (suite *Suite) TestTailInputLoad() {
