@@ -8,11 +8,7 @@ provider "kubernetes" {
   config_path = "client.config"
 }
 
-variable "nfs-server" {
-  type = string
-}
-
-variable "nfs-path" {
+variable "prometheus-config" {
   type = string
 }
 
@@ -28,6 +24,10 @@ data "local_file" "fluent-bit-config" {
   filename = basename(var.fluent-bit-config)
 }
 
+data "local_file" "prometheus-config" {
+  filename = basename(var.prometheus-config)
+}
+
 resource "helm_release" "fluent-bit" {
   name       = "fluent-bit"
   namespace  = var.namespace
@@ -38,6 +38,15 @@ resource "helm_release" "fluent-bit" {
   #depends_on = [kubernetes_persistent_volume_claim.testing-data, kubernetes_deployment.benchmark-tool]
   #wait = true
 }
+
+resource "helm_release" "prometheus" {
+  name       = "prometheus"
+  repository = "https://prometheus-community.github.io/helm-charts"
+  chart      = "prometheus"
+  namespace  = var.namespace
+  values = [data.local_file.prometheus-config.content]
+}
+
 //
 //resource "kubernetes_storage_class" "nfs" {
 //  metadata {

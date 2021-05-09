@@ -137,12 +137,17 @@ func (suite *BaseTestSuite) SetupSuite() {
 	suite.K8sOptions = k8s.NewKubectlOptions("", testSuitek8sConfigPath, suite.Namespace)
 	k8s.CreateNamespace(suite.T(), suite.K8sOptions, suite.Namespace)
 
+	prometheusCfg, _ := suite.RenderCfgFromTpl("prometheus", "", pongo2.Context{
+		"grafana_username": GetEnv("GRAFANA_USERNAME", ""),
+		"grafana_password": GetEnv("GRAFANA_PASSWORD", ""),
+	})
+
 	if suite.TerraformOptions == nil {
 		suite.TerraformOptions = make(map[string]string)
 	}
 
-	suite.TerraformOptions["nfs-server"] = GetEnv("NFS_SERVER", "")
-	suite.TerraformOptions["nfs-path"] = GetEnv("NFS_PATH", "")
+	suite.TerraformOptions["prometheus-config"] = prometheusCfg
+
 }
 
 func (suite *BaseTestSuite) RunKubectlExec(podName string, cmds ...string) (string, error) {
