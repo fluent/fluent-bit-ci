@@ -49,38 +49,6 @@ resource "google_container_cluster" "fluent-bit-ci-k8s-cluster" {
   depends_on         = [data.google_project.project, data.google_container_engine_versions.versions]
 }
 
-resource "google_filestore_instance" "test-nfs-server" {
-  name = "test-nfs-server-${var.k8s-version-formatted}"
-  tier = "STANDARD"
-  zone = var.gcp-default-zone
-
-  file_shares {
-    capacity_gb = 1024
-    name        = "vol1"
-  }
-
-  networks {
-    network = google_compute_network.vpc.name
-    modes   = ["MODE_IPV4"]
-  }
-}
-
-provider "kubernetes" {
-  host                   = "https://${google_container_cluster.fluent-bit-ci-k8s-cluster.endpoint}"
-  token                  = data.google_client_config.current.access_token
-  client_certificate     = base64decode(google_container_cluster.fluent-bit-ci-k8s-cluster.master_auth.0.client_certificate)
-  client_key             = base64decode(google_container_cluster.fluent-bit-ci-k8s-cluster.master_auth.0.client_key)
-  cluster_ca_certificate = base64decode(google_container_cluster.fluent-bit-ci-k8s-cluster.master_auth.0.cluster_ca_certificate)
-}
-
-output "nfs-server" {
-  value = google_filestore_instance.test-nfs-server.networks[0].ip_addresses[0]
-}
-
-output "nfs-path" {
-  value = "/${google_filestore_instance.test-nfs-server.file_shares[0].name}"
-}
-
 output "k8s-cluster-name" {
   value = google_container_cluster.fluent-bit-ci-k8s-cluster.name
 }
