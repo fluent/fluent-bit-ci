@@ -45,4 +45,6 @@ config:
         Buffer_Max_Size     32000
   outputs: |
     [OUTPUT]
-        Name stdout
+        Name file
+        Match *
+        Path /tmp/output.txt
