@@ -10,7 +10,7 @@ type Suite struct {
 	tests.BaseTestSuite
 }
 
-const WaitInterval = 30 * time.Minute
+const WaitInterval = 180 * time.Minute
 
 func (suite *Suite) TestTailInputLoad() {
 	cfg, _ := suite.RenderCfgFromTpl("tail_input", "", nil)
