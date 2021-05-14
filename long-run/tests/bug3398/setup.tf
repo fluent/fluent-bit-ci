@@ -80,6 +80,25 @@ resource "helm_release" "prometheus" {
 //  }
 //}
 //
+
+resource "kubernetes_persistent_volume" "testing-data-volume" {
+  metadata {
+    name = "testing-data-volume"
+  }
+  spec {
+    capacity = {
+      storage = "450Gi"
+    }
+    access_modes = ["ReadWriteOnce"]
+    persistent_volume_source {
+      gce_persistent_disk {
+        pd_name = var.gcp-disk-id
+        fs_type = "ext4"
+      }
+    }
+  }
+}
+
 resource "kubernetes_persistent_volume_claim" "testing-data" {
   metadata {
     name      = "testing-data-pvc"
@@ -87,10 +106,10 @@ resource "kubernetes_persistent_volume_claim" "testing-data" {
   }
   spec {
     access_modes       = ["ReadWriteMany"]
-    volume_name        = var.gcp-disk-id
+    volume_name        = kubernetes_persistent_volume.testing-data-volume.metadata.name
     resources {
       requests = {
-        storage = "400Gi"
+        storage = "450Gi"
       }
     }
   }
