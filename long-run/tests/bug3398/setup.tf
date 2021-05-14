@@ -89,6 +89,7 @@ resource "kubernetes_persistent_volume" "testing-data-volume" {
     capacity = {
       storage = "450Gi"
     }
+    storage_class_name = "standard"
     access_modes = ["ReadWriteOnce"]
     persistent_volume_source {
       gce_persistent_disk {
@@ -100,14 +101,14 @@ resource "kubernetes_persistent_volume" "testing-data-volume" {
 }
 
 resource "kubernetes_persistent_volume_claim" "testing-data" {
-  metadata {
+    metadata {
     name      = "testing-data-pvc"
     namespace = var.namespace
   }
   spec {
-    storage_class_name = "pd-ssd"
+    storage_class_name = "standard"
     access_modes       = ["ReadWriteOnce"]
-    //volume_name        = kubernetes_persistent_volume.testing-data-volume.metadata.0.name
+    volume_name        = kubernetes_persistent_volume.testing-data-volume.metadata.0.name
     resources {
       requests = {
         storage = "450Gi"
