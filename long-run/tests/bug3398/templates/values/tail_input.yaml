@@ -53,5 +53,9 @@ config:
         Buffer_Max_Size     32000
   outputs: |
     [OUTPUT]
-        Name file
-        Match *
+        Name        stackdriver
+        storage.total_limit_size    10737418240
+        Alias       output_main
+        Match       *
+        Resource    gce_instance
+        workers    10
