@@ -17,7 +17,12 @@ resources:
     cpu: 12
     memory: 10Gi
 
+
 extraVolumes:
+  - name: gcs-credentials
+    secret:
+      secretName: google_service_account_sa_key
+
   - name: testing-data-storage
     persistentVolumeClaim:
       claimName: testing-data-claim
@@ -25,6 +30,10 @@ extraVolumes:
 extraVolumeMounts:
   - name: testing-data-storage
     mountPath: /data/
+
+  - name: gcs-credentials
+    mountPath: /google_service_credentials.json
+    subPath: google_service_credentials.json
 
 config:
   service: |
@@ -57,5 +66,5 @@ config:
         storage.total_limit_size    10737418240
         Alias       output_main
         Match       *
-        Resource    gce_instance
         workers    10
+        google_service_credentials /google_service_credentials.json

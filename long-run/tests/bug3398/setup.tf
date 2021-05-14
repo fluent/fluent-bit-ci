@@ -20,6 +20,10 @@ variable "gcp-disk-id" {
   type = string
 }
 
+variable "gcp-sa-key" {
+  type = string
+}
+
 variable "namespace" {
   type = string
 }
@@ -32,6 +36,20 @@ data "local_file" "prometheus-config" {
   filename = basename(var.prometheus-config)
 }
 
+data "local_file" "gcp_sa_key" {
+  filename = basename(var.gcp-sa-key)
+}
+
+resource "kubernetes_secret" "service_account_data" {
+  metadata {
+    name      = "google_service_account_sa_key"
+    namespace = var.namespace
+  }
+  data = {
+    "google_service_credentials.json" = data.local_file.gcp_sa_key.content
+  }
+}
+
 resource "helm_release" "fluent-bit" {
   name       = "fluent-bit"
   namespace  = var.namespace
@@ -39,8 +57,9 @@ resource "helm_release" "fluent-bit" {
   repository = "https://fluent.github.io/helm-charts"
   chart      = "fluent-bit"
   values = [data.local_file.fluent-bit-config.content]
+  depends_on = [kubernetes_secret.service_account_data]
   #depends_on = [kubernetes_persistent_volume_claim.testing-data, kubernetes_deployment.benchmark-tool]
-  #wait = true
+  wait = true
 }
 
 resource "helm_release" "prometheus" {

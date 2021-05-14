@@ -146,9 +146,15 @@ func (suite *BaseTestSuite) SetupSuite() {
 		suite.TerraformOptions = make(map[string]string)
 	}
 
+	testSuiteSAKeyPath := path.Join(".", "tests", suite.Name, "gcp_sa_key.json")
+	err = ioutil.WriteFile(testSuiteSAKeyPath, []byte(GetEnv("GCP_SA_KEY", "")), 0700)
+	if err != nil {
+		panic(err)
+	}
+
+	suite.TerraformOptions["gcp-sa-key"] = testSuiteSAKeyPath
 	suite.TerraformOptions["gcp-disk-id"] = GetEnv("GCP_DISK_ID", "")
 	suite.TerraformOptions["prometheus-config"] = prometheusCfg
-
 }
 
 func (suite *BaseTestSuite) RunKubectlExec(podName string, cmds ...string) (string, error) {
