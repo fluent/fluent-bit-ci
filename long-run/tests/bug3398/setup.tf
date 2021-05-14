@@ -82,16 +82,15 @@ resource "helm_release" "prometheus" {
 //
 resource "kubernetes_persistent_volume_claim" "testing-data" {
   metadata {
-    name      = "testing-data"
+    name      = "testing-data-pvc"
     namespace = var.namespace
   }
-
   spec {
-    access_modes       = ["ReadWriteOnce"]
+    access_modes       = ["ReadWriteMany"]
     volume_name        = var.gcp-disk-id
     resources {
       requests = {
-        storage = "450Gi"
+        storage = "400Gi"
       }
     }
   }

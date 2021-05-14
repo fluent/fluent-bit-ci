@@ -20,7 +20,7 @@ resources:
 extraVolumes:
   - name: testing-data-storage
     persistentVolumeClaim:
-      claimName: testing-data
+      claimName: testing-data-pvc
 
 extraVolumeMounts:
   - name: testing-data-storage

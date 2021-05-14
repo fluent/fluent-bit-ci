@@ -12,7 +12,6 @@ data "google_container_engine_versions" "versions" {
   version_prefix = "${var.k8s-version}."
 }
 
-# Shared network for GKE cluster and Filestore to use.
 resource "google_compute_network" "vpc" {
   name                    = "shared-vpc-${var.k8s-version-formatted}"
   auto_create_subnetworks = true
@@ -51,7 +50,7 @@ resource "google_container_cluster" "fluent-bit-ci-k8s-cluster" {
 }
 
 resource "random_id" "disk" {
-  byte_length = 8
+  byte_length = 6
 }
 
 resource "google_compute_disk" "testing-data" {
