@@ -105,7 +105,7 @@ resource "kubernetes_persistent_volume_claim" "testing-data" {
     namespace = var.namespace
   }
   spec {
-    storage_class_name = "premium-rwo"
+    storage_class_name = "pd-ssd"
     access_modes       = ["ReadWriteMany"]
     volume_name        = kubernetes_persistent_volume.testing-data-volume.metadata.0.name
     resources {
