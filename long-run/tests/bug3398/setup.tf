@@ -126,7 +126,7 @@ resource "kubernetes_persistent_volume_claim" "testing_storage" {
     namespace = var.namespace
 
     annotations = {
-      "volume.beta.kubernetes.io/storage-class" = "fast"
+      "volume.beta.kubernetes.io/storage-class" = "fast-${random_id.disk.hex}"
     }
   }
 
