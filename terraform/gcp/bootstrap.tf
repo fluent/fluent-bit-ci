@@ -58,7 +58,7 @@ resource "google_compute_disk" "testing-data" {
   name = "testing-data-${random_id.disk.hex}"
   type = "pd-ssd"
   zone = var.gcp-default-zone
-  size = 500
+  size = 450
 }
 
 output "k8s-cluster-name" {

@@ -91,7 +91,7 @@ resource "kubernetes_persistent_volume_claim" "testing-data" {
     volume_name        = var.gcp-disk-id
     resources {
       requests = {
-        storage = "500Gi"
+        storage = "450Gi"
       }
     }
   }
