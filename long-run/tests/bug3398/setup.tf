@@ -106,7 +106,7 @@ resource "kubernetes_persistent_volume_claim" "testing-data" {
   }
   spec {
     access_modes       = ["ReadWriteMany"]
-    volume_name        = kubernetes_persistent_volume.testing-data-volume.metadata.name
+    volume_name        = kubernetes_persistent_volume.testing-data-volume.metadata.0.name
     resources {
       requests = {
         storage = "450Gi"
