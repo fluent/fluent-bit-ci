@@ -146,6 +146,7 @@ func (suite *BaseTestSuite) SetupSuite() {
 		suite.TerraformOptions = make(map[string]string)
 	}
 
+	suite.TerraformOptions["gcp-disk-id"] = GetEnv("GCP_DISK_ID", "")
 	suite.TerraformOptions["prometheus-config"] = prometheusCfg
 
 }

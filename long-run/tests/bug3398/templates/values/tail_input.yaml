@@ -9,14 +9,22 @@ image:
   pullPolicy: Always
   tag: {{ image_tag }}
 
-#extraVolumes:
-#  - name: testing-data-storage
-#    persistentVolumeClaim:
-#      claimName: testing-data
-#
-#extraVolumeMounts:
-#  - name: testing-data-storage
-#    mountPath: /data/
+resources:
+  limits:
+    cpu: 12
+    memory: 10Gi
+  requests:
+    cpu: 12
+    memory: 10Gi
+
+extraVolumes:
+  - name: testing-data-storage
+    persistentVolumeClaim:
+      claimName: testing-data
+
+extraVolumeMounts:
+  - name: testing-data-storage
+    mountPath: /data/
 
 config:
   service: |
@@ -39,7 +47,7 @@ config:
   inputs: |
     [INPUT]
         Name                tail
-        Path                /tmp/test.log
+        Path                /data/test.log
         storage.type        filesystem
         Buffer_Chunk_Size   32000
         Buffer_Max_Size     32000

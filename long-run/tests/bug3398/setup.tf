@@ -16,6 +16,10 @@ variable "fluent-bit-config" {
   type = string
 }
 
+variable "gcp-disk-id" {
+  type = string
+}
+
 variable "namespace" {
   type = string
 }
@@ -76,22 +80,22 @@ resource "helm_release" "prometheus" {
 //  }
 //}
 //
-//resource "kubernetes_persistent_volume_claim" "testing-data" {
-//  metadata {
-//    name      = "testing-data"
-//    namespace = var.namespace
-//  }
-//  spec {
-//    access_modes       = ["ReadWriteMany"]
-//    storage_class_name = kubernetes_storage_class.nfs.metadata.0.name
-//    volume_name        = kubernetes_persistent_volume.nfs-volume.metadata.0.name
-//    resources {
-//      requests = {
-//        storage = "1T"
-//      }
-//    }
-//  }
-//}
+resource "kubernetes_persistent_volume_claim" "testing-data" {
+  metadata {
+    name      = "testing-data"
+    namespace = var.namespace
+  }
+
+  spec {
+    access_modes       = ["ReadWriteOnce"]
+    volume_name        = var.gcp-disk-id
+    resources {
+      requests = {
+        storage = "500Gi"
+      }
+    }
+  }
+}
 //
 //
 //resource "kubernetes_deployment" "benchmark-tool" {
