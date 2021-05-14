@@ -26,7 +26,7 @@ func (suite *Suite) TestTailInputLoad() {
 	//suite.Nil(err)
 
 	_, err = suite.RunKubectlExec(podName, "/bin/sh", "-c",
-		"/run_log_generator.py --log-size-in-bytes 1000 --log-rate 200000 --log-agent-input-type tail --tail-file-path /tmp/test.log > /dev/null 2> /dev/null &")
+		"/run_log_generator.py --log-size-in-bytes 1000 --log-rate 500000 --log-agent-input-type tail --tail-file-path /tmp/test.log > /dev/null 2> /dev/null &")
 	suite.Nil(err)
 
 	time.Sleep(WaitInterval)
