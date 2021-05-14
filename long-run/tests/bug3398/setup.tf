@@ -80,17 +80,35 @@ resource "helm_release" "prometheus" {
 //  }
 //}
 //
-
-resource "kubernetes_persistent_volume" "testing-data-volume" {
+//
+resource "kubernetes_storage_class" "testing_storage" {
   metadata {
-    name = "testing-data-volume"
+    name  = "fast-${random_id.disk.hex}"
   }
+
+  storage_provisioner = "kubernetes.io/gce-pd"
+
+  parameters = {
+    type = "pd-ssd"
+  }
+
+  allow_volume_expansion = true
+}
+
+resource "kubernetes_persistent_volume" "testing_storage" {
+  metadata {
+    name  = "testing-data-volume-${random_id.disk.hex}"
+  }
+
   spec {
-    capacity = {
-      storage = "450Gi"
-    }
-    storage_class_name = "standard"
     access_modes = ["ReadWriteOnce"]
+    capacity = {
+      storage = "300Gi"
+    }
+
+    persistent_volume_reclaim_policy  = "Retain"
+    storage_class_name                = "fast-${random_id.disk.hex}"
+
     persistent_volume_source {
       gce_persistent_disk {
         pd_name = var.gcp-disk-id
@@ -98,24 +116,71 @@ resource "kubernetes_persistent_volume" "testing-data-volume" {
       }
     }
   }
+
+  depends_on = [kubernetes_storage_class.testing_storage]
 }
 
-resource "kubernetes_persistent_volume_claim" "testing-data" {
-    metadata {
-    name      = "testing-data-pvc"
+resource "kubernetes_persistent_volume_claim" "testing_storage" {
+  metadata {
+    name      = "testing-data-claim"
     namespace = var.namespace
+
+    annotations = {
+      "volume.beta.kubernetes.io/storage-class" = "fast"
+    }
   }
+
   spec {
-    storage_class_name = "standard"
-    access_modes       = ["ReadWriteOnce"]
-    volume_name        = kubernetes_persistent_volume.testing-data-volume.metadata.0.name
+    access_modes = ["ReadWriteOnce"]
     resources {
       requests = {
-        storage = "450Gi"
+        storage = "300Gi"
       }
     }
   }
+
+  depends_on = [kubernetes_persistent_volume.testing_storage]
 }
+
+resource "random_id" "disk" {
+  byte_length = 4
+}
+//
+//resource "kubernetes_persistent_volume" "testing-data-volume" {
+//  metadata {
+//    name = "testing-data-volume-${random_id.disk.hex}"
+//  }
+//  spec {
+//    capacity = {
+//      storage = "450Gi"
+//    }
+//    storage_class_name = "standard"
+//    access_modes = ["ReadWriteOnce"]
+//    persistent_volume_source {
+//      gce_persistent_disk {
+//        pd_name = var.gcp-disk-id
+//        fs_type = "ext4"
+//      }
+//    }
+//  }
+//}
+//
+//resource "kubernetes_persistent_volume_claim" "testing-data" {
+//    metadata {
+//    name      = "testing-data-pvc"
+//    namespace = var.namespace
+//  }
+//  spec {
+//    storage_class_name = "standard"
+//    access_modes       = ["ReadWriteOnce"]
+//    volume_name        = kubernetes_persistent_volume.testing-data-volume.metadata.0.name
+//    resources {
+//      requests = {
+//        storage = "450Gi"
+//      }
+//    }
+//  }
+//}
 //
 //
 //resource "kubernetes_deployment" "benchmark-tool" {
