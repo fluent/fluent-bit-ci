@@ -106,7 +106,7 @@ resource "kubernetes_persistent_volume_claim" "testing-data" {
   }
   spec {
     storage_class_name = "pd-ssd"
-    access_modes       = ["ReadWriteMany"]
+    access_modes       = ["ReadWriteOnce"]
     volume_name        = kubernetes_persistent_volume.testing-data-volume.metadata.0.name
     resources {
       requests = {
