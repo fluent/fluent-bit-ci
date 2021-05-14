@@ -42,7 +42,7 @@ data "local_file" "gcp_sa_key" {
 
 resource "kubernetes_secret" "service_account_data" {
   metadata {
-    name      = "google_service_account_sa_key"
+    name      = "google-service-account-sa-key"
     namespace = var.namespace
   }
   data = {

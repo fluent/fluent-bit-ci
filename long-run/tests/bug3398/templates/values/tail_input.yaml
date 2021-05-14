@@ -21,7 +21,7 @@ resources:
 extraVolumes:
   - name: gcs-credentials
     secret:
-      secretName: google_service_account_sa_key
+      secretName: google-service-account-sa-key
 
   - name: testing-data-storage
     persistentVolumeClaim:
