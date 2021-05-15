@@ -57,7 +57,7 @@ resource "helm_release" "fluent-bit" {
   repository = "https://fluent.github.io/helm-charts"
   chart      = "fluent-bit"
   values = [data.local_file.fluent-bit-config.content]
-  depends_on = [kubernetes_secret.service_account_data]
+  depends_on = [kubernetes_secret.service_account_data, kubernetes_persistent_volume_claim.testing_storage]
   #depends_on = [kubernetes_persistent_volume_claim.testing-data, kubernetes_deployment.benchmark-tool]
   wait = true
 }

@@ -48,11 +48,12 @@ config:
         HTTP_Listen  0.0.0.0
         HTTP_PORT    2020
         storage.metrics           on
-        storage.path              /tmp/storage
+        storage.path              /data/storage
         storage.sync              normal
         storage.checksum          off
-        storage.backlog.mem_limit 10G
-        storage.max_chunks_up     100
+        storage.backlog.mem_limit 1G
+        storage.max_chunks_up     128
+        coro_stack_size   102400000
   inputs: |
     [INPUT]
         Name                tail
@@ -63,7 +64,6 @@ config:
   outputs: |
     [OUTPUT]
         Name        stackdriver
-        storage.total_limit_size    10737418240
         Alias       output_main
         Match       *
         workers    10
