@@ -49,24 +49,24 @@ resource "google_container_cluster" "fluent-bit-ci-k8s-cluster" {
   depends_on         = [data.google_project.project, data.google_container_engine_versions.versions]
 }
 
-resource "random_id" "disk" {
-  byte_length = 6
-}
-
-resource "google_compute_disk" "testing-data" {
-  name = "testing-data-${random_id.disk.hex}"
-  type = "pd-ssd"
-  zone = var.gcp-default-zone
-  size = 450
-}
+//resource "random_id" "disk" {
+//  byte_length = 6
+//}
+//
+//resource "google_compute_disk" "testing-data" {
+//  name = "testing-data-${random_id.disk.hex}"
+//  type = "pd-ssd"
+//  zone = var.gcp-default-zone
+//  size = 450
+//}
 
 output "k8s-cluster-name" {
   value = google_container_cluster.fluent-bit-ci-k8s-cluster.name
 }
 
-output "gcp-disk-id" {
-  value = google_compute_disk.testing-data.name
-}
+//output "gcp-disk-id" {
+//  value = google_compute_disk.testing-data.name
+//}
 
 output "gcp-project-id" {
   value = var.gcp-project-id
