@@ -40,7 +40,7 @@ variable "k8s-cluster-name" {
 
 variable "k8s-machine-type" {
   type    = string
-  default = "e2-highcpu-16"
+  default = "e2-standard-4"
 }
 
 variable "k8s-additional-zones" {
