@@ -67,12 +67,12 @@ func (suite *BaseTestSuite) RenderCfgFromTpl(tplName string, prefix string, exte
 	}
 
 	ctx := pongo2.Context{
-		"image_repository": GetEnv("IMAGE_REPOSITORY", defaultk8sImageRepository),
-		"image_tag":        GetEnv("IMAGE_TAG", defaultK8sImageTag),
+		"image_repository":    GetEnv("IMAGE_REPOSITORY", defaultk8sImageRepository),
+		"image_tag":           GetEnv("IMAGE_TAG", defaultK8sImageTag),
 		"bigquery_dataset_id": GetEnv("GCP_BQ_DATASET_ID", ""),
-		"bigquery_table_id": GetEnv("GCP_BQ_TABLE_ID", ""),
-		"namespace":        suite.Namespace,
-		"suite":            suite.Name,
+		"bigquery_table_id":   GetEnv("GCP_BQ_TABLE_ID", ""),
+		"namespace":           suite.Namespace,
+		"suite":               suite.Name,
 	}
 
 	if extendedContext != nil {

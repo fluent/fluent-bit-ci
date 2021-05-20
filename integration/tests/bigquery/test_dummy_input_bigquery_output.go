@@ -2,7 +2,6 @@ package bigquery
 
 import (
 	"github.com/calyptia/fluent-bit-ci/integration/tests"
-	"github.com/flosch/pongo2/v4"
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"time"
 )
