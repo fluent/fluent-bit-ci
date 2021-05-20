@@ -16,10 +16,6 @@ variable "fluent-bit-config" {
   type = string
 }
 
-variable "gcp-disk-id" {
-  type = string
-}
-
 variable "gcp-sa-key" {
   type = string
 }
