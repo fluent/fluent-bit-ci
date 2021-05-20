@@ -49,6 +49,30 @@ resource "google_container_cluster" "fluent-bit-ci-k8s-cluster" {
   depends_on         = [data.google_project.project, data.google_container_engine_versions.versions]
 }
 
+resource "random_id" "random_prefix" {
+  byte_length = 6
+}
+
+resource "google_bigquery_dataset" "testing-dataset" {
+  dataset_id                  = "testing_dataset"
+  friendly_name               = "test_dataset"
+}
+
+resource "google_bigquery_table" "testing-table" {
+  dataset_id = google_bigquery_dataset.testing-dataset.dataset_id
+  table_id   = "testing-table-${random_id.random_prefix.hex}"
+  schema = <<EOF
+[
+  {
+    "name": "message",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "message"
+  }
+]
+EOF
+}
+
 //resource "random_id" "disk" {
 //  byte_length = 6
 //}
@@ -62,6 +86,14 @@ resource "google_container_cluster" "fluent-bit-ci-k8s-cluster" {
 
 output "k8s-cluster-name" {
   value = google_container_cluster.fluent-bit-ci-k8s-cluster.name
+}
+
+output "gcp-bigquery-dataset-id" {
+  value = google_bigquery_dataset.testing-dataset.dataset_id
+}
+
+output "gcp-bigquery-table-id" {
+  value = google_bigquery_table.testing-table.table_id
 }
 
 //output "gcp-disk-id" {
