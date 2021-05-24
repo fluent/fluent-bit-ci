@@ -25,7 +25,7 @@ resource "google_container_cluster" "fluent-bit-ci-k8s-cluster" {
   network            = google_compute_network.vpc.name
 
   release_channel {
-    channel = "RAPID"
+    channel = "REGULAR"
   }
 
   node_version       = data.google_container_engine_versions.versions.latest_node_version
