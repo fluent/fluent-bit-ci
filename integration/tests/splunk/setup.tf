@@ -4,6 +4,10 @@ provider "helm" {
   }
 }
 
+variable "gcp-sa-key" {
+  type = string
+}
+
 variable "prometheus-config" {
   type = string
 }
