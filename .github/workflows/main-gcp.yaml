@@ -104,6 +104,7 @@ jobs:
           cluster_name: ${{ steps.get-k8s-cluster-name.outputs.stdout }}
           location: ${{ steps.get-k8s-cluster-location.outputs.stdout }}
           credentials: ${{ secrets.GCP_SA_KEY }}
+          export_default_credentials: true
 
       - uses: actions/setup-go@v2
         with:
