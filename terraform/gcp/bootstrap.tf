@@ -10,6 +10,7 @@ data "google_client_config" "current" {}
 data "google_container_engine_versions" "versions" {
   location       = var.gcp-default-zone
   version_prefix = "${var.k8s-version}."
+
 }
 
 resource "google_compute_network" "vpc" {
@@ -25,7 +26,7 @@ resource "google_container_cluster" "fluent-bit-ci-k8s-cluster" {
   network            = google_compute_network.vpc.name
 
   release_channel {
-    channel = "REGULAR"
+    channel = "RAPID"
   }
 
   node_version       = var.k8s-version
