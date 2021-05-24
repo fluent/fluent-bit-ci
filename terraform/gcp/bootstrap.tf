@@ -9,7 +9,7 @@ data "google_client_config" "current" {}
 
 data "google_container_engine_versions" "versions" {
   location       = var.gcp-default-zone
-  version_prefix = "${var.k8s-version}."
+  version_prefix = "${var.k8s-version}"
 
 }
 
