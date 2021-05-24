@@ -15,10 +15,10 @@ import (
 )
 
 type Suite struct {
-	tests
+	tests.BaseTestSuite
 }
 
-func queryBasic(projectID string, tableID string) ([]bq.value, error) {
+func queryBasic(projectID string, tableID string) ([]bq.Value, error) {
 	ctx := context.Background()
 	client, err := bq.NewClient(ctx, projectID)
 	if err != nil {
@@ -75,7 +75,7 @@ func (suite *Suite) TestDummyInputBigQueryOutput() {
 	terraform.InitAndApply(suite.T(), opts)
 
 	retry.DoWithRetry(suite.T(), "Check if bigquery table has entries", tests.DefaultMaxRetries, tests.DefaultRetryTimeout, func() (string, error) {
-		var results []bq.result
+		var results []bq.Value
 		var err error
 		if results, err = queryBasic(GetEnv("GCP_PROJECT_ID", ""), GetEnv("GCP_BQ_TABLE_ID", "")); err != nil {
 			return "", err
