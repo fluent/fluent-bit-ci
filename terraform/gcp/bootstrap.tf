@@ -23,10 +23,10 @@ resource "google_container_cluster" "fluent-bit-ci-k8s-cluster" {
   node_locations = var.k8s-additional-zones
   monitoring_service = "monitoring.googleapis.com/kubernetes"
   network            = google_compute_network.vpc.name
-
-  release_channel {
-    channel = "REGULAR"
-  }
+//
+//  release_channel {
+//    channel = "REGULAR"
+//  }
 
   node_version       = data.google_container_engine_versions.versions.latest_node_version
   min_master_version = data.google_container_engine_versions.versions.latest_master_version
