@@ -9,8 +9,7 @@ data "google_client_config" "current" {}
 
 data "google_container_engine_versions" "versions" {
   location       = var.gcp-default-zone
-  version_prefix = "${var.k8s-version}"
-
+  version_prefix = "${var.k8s-version}."
 }
 
 resource "google_compute_network" "vpc" {
@@ -29,8 +28,8 @@ resource "google_container_cluster" "fluent-bit-ci-k8s-cluster" {
     channel = "RAPID"
   }
 
-  node_version       = var.k8s-version
-  min_master_version = var.k8s-version
+  node_version       = data.google_container_engine_versions.versions.latest_node_version
+  min_master_version = data.google_container_engine_versions.versions.latest_master_version
 
   initial_node_count = 1
 
