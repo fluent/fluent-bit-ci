@@ -160,7 +160,7 @@ func (suite *BaseTestSuite) RunKubectlExec(podName string, cmds ...string) (stri
 	for _, cmd := range cmds {
 		args = append(args, cmd)
 	}
-	output, err := exec.Command(args[0], args[1:]...).CombinedOutput()
+	output, err := exec.Command(args[0], args[1:]...).Output()
 	return strings.TrimSuffix(string(output), "\n"), err
 }
 
