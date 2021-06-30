@@ -15,11 +15,13 @@ jobs:
         with:
           version: latest
           working-directory: integration
+          args: --build-tags integration,benchmark
       - name: golang-lint for long running tests
         uses: golangci/golangci-lint-action@v2
         with:
           version: latest
           working-directory: long-run
+          args: --build-tags integration,benchmark
   terraform:
     runs-on: ubuntu-latest
     steps:
