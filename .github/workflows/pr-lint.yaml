@@ -1,0 +1,25 @@
+---
+name: Lint Pull Requests
+on:
+  pull_request:
+    branches:
+      - main
+jobs:
+  golang:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v2
+      - name: golang-lint
+        uses: golangci/golangci-lint-action@v2
+        with:
+          version: latest
+  terraform:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v2
+      - name: terraform format check 
+        run: >
+          find ./ -name '*.tf' -exec dirname \{\} \; | sort | uniq | 
+          parallel terraform fmt -diff -check
