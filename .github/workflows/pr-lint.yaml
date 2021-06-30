@@ -10,10 +10,16 @@ jobs:
     steps:
       - name: checkout code
         uses: actions/checkout@v2
-      - name: golang-lint
+      - name: golang-lint for integration tests
         uses: golangci/golangci-lint-action@v2
         with:
           version: latest
+          working-directory: integration
+      - name: golang-lint for long running tests
+        uses: golangci/golangci-lint-action@v2
+        with:
+          version: latest
+          working-directory: long-run
   terraform:
     runs-on: ubuntu-latest
     steps:
