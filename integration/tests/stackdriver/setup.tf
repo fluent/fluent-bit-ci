@@ -3,6 +3,9 @@ provider "helm" {
     config_path = "client.config"
   }
 }
+provider "kubernetes" {
+  config_path = "client.config"
+}
 
 variable "gcp-sa-key" {
   type = string
