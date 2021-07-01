@@ -5,6 +5,7 @@ package stackdriver
 import (
 	"context"
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/calyptia/fluent-bit-ci/integration/tests"
@@ -14,6 +15,7 @@ import (
 	"cloud.google.com/go/logging"
 	"cloud.google.com/go/logging/logadmin"
 	"google.golang.org/api/iterator"
+	"google.golang.org/api/option"
 )
 
 type Suite struct {
@@ -58,13 +60,15 @@ func (suite *Suite) TestDummyInputToStackdriverOutput() {
 	terraform.InitAndApply(suite.T(), opts)
 
 	ctx := context.Background()
-	cli, err := logging.NewClient(ctx, "integration-fluent-bit")
+	cli, err := logging.NewClient(ctx, "fluent-bit-ci",
+		option.WithCredentialsJSON([]byte(os.Getenv("GCP_SA_KEY"))))
 	suite.Nil(err)
 	suite.NotNil(cli)
 
 	defer cli.Close()
 
-	admin, err := logadmin.NewClient(ctx, "integration-fluent-bit")
+	admin, err := logadmin.NewClient(ctx, "fluent-bit-ci",
+		option.WithCredentialsJSON([]byte(os.Getenv("GCP_SA_KEY"))))
 	suite.Nil(err)
 	suite.NotNil(admin)
 
