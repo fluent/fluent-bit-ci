@@ -33,6 +33,8 @@ config:
         Tag dummy.log
         Dummy {"message": "testing"}
         Rate 10
+  filters: |
+    [FILTER]
   outputs: |
     [OUTPUT]
         Name stackdriver
