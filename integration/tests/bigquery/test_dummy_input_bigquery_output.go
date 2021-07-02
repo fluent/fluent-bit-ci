@@ -43,20 +43,16 @@ func queryBasic(projectID string, tableID string) ([]bq.Value, error) {
 	if err != nil {
 		return nil, err
 	}
-	for {
-		var row []bq.Value
-		err := it.Next(&row)
-		if err == iterator.Done {
-			break
-		}
-		if err != nil {
-			return nil, err
-		}
 
+	var row []bq.Value
+	err = it.Next(&row)
+	if err == nil {
 		return row, nil
 	}
-
-	return nil, fmt.Errorf("no results found")
+	if err == iterator.Done {
+		return nil, fmt.Errorf("no results found")
+	}
+	return nil, err
 }
 
 func GetEnv(key string, defaultVal string) string {
