@@ -15,13 +15,13 @@ jobs:
         with:
           version: latest
           working-directory: integration
-          args: --build-tags integration
+          args: --build-tags integration --timeout=10m
       - name: golang-lint for long running tests
         uses: golangci/golangci-lint-action@v2
         with:
           version: latest
           working-directory: long-run
-          args: --build-tags integration
+          args: --build-tags integration --timeout=10m
   terraform:
     runs-on: ubuntu-latest
     steps:
