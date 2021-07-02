@@ -30,7 +30,7 @@ config:
   inputs: |
     [INPUT]
         Name dummy
-        Tag dummy.log
+        Tag {{ logid }}
         Dummy {"message": "testing"}
         Rate 10
   filters: |

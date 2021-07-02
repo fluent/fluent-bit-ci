@@ -5,7 +5,9 @@ package stackdriver
 import (
 	"context"
 	"fmt"
+	"math/rand"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/calyptia/fluent-bit-ci/integration/tests"
@@ -16,23 +18,26 @@ import (
 	"cloud.google.com/go/logging/logadmin"
 	"google.golang.org/api/iterator"
 	"google.golang.org/api/option"
+
+	"github.com/flosch/pongo2/v4"
+	"google.golang.org/protobuf/types/known/structpb"
 )
 
 type Suite struct {
 	tests.BaseTestSuite
 }
 
-func getEntries(adminClient *logadmin.Client, projID string) ([]*logging.Entry, error) {
+func getEntries(adminClient *logadmin.Client, projID, name string) ([]*logging.Entry, error) {
 	ctx := context.Background()
 
 	// [START logging_list_log_entries]
 	var entries []*logging.Entry
-	const name = "log-example"
 	lastHour := time.Now().Add(-1 * time.Hour).Format(time.RFC3339)
 
 	iter := adminClient.Entries(ctx,
 		// Only get entries from the "log-example" log within the last hour.
-		logadmin.Filter(fmt.Sprintf(`logName = "projects/%s/logs/%s" AND timestamp > "%s"`, projID, name, lastHour)),
+		logadmin.Filter(fmt.Sprintf(`logName = "projects/%s/logs/%s" AND timestamp > "%s"`,
+			projID, name, lastHour)),
 		// Get most recent entries first.
 		logadmin.NewestFirst(),
 	)
@@ -53,7 +58,13 @@ func getEntries(adminClient *logadmin.Client, projID string) ([]*logging.Entry, 
 }
 
 func (suite *Suite) TestDummyInputToStackdriverOutput() {
-	cfg, _ := suite.RenderCfgFromTpl("dummy_input_stackdriver_output", "values", nil)
+	// create a unique log id to use as a tag for filtering
+	random := fmt.Sprintf("%d", rand.Int())
+	logid := strings.Join([]string{"dummy", random}, "-")
+
+	cfg, _ := suite.RenderCfgFromTpl("dummy_input_stackdriver_output", "values", pongo2.Context{
+		"logid": logid,
+	})
 	opts, _ := suite.GetTerraformOpts(cfg)
 
 	defer terraform.Destroy(suite.T(), opts)
@@ -74,17 +85,24 @@ func (suite *Suite) TestDummyInputToStackdriverOutput() {
 
 	defer admin.Close()
 
-	retry.DoWithRetryInterface(suite.T(), "Check to see if we get any log entries from stackdriver", tests.DefaultMaxRetries, tests.DefaultRetryTimeout, func() (interface{}, error) {
-		logs, err := getEntries(admin, "integration-fluent-bit")
+	logs := retry.DoWithRetryInterface(suite.T(), "Check to see if we get any log entries from stackdriver", tests.DefaultMaxRetries, tests.DefaultRetryTimeout, func() (interface{}, error) {
+		logs, err := getEntries(admin, "fluent-bit-ci", logid)
 		if err != nil {
-			return "", err
+			return nil, err
+		}
+		if len(logs) <= 0 {
+			return nil, fmt.Errorf("empty logs")
 		}
 		return logs, nil
 	})
-	//for, _ entry := range entries {
-	//fmt.Printf("Entry: %6s @%s: %v\n",
-	//	entry.Severity,
-	//	entry.Timestamp.Format(time.RFC3339),
-	//	entry.Payload)
-	//}
+
+	assert := suite.Assert()
+	assert.NotEmpty(logs)
+	for _, log := range logs.([]*logging.Entry) {
+		val, ok := log.Payload.(*structpb.Struct)
+		assert.True(ok)
+		json, err := val.MarshalJSON()
+		assert.Nil(err)
+		assert.Equal(`{"message":"testing"}`, string(json))
+	}
 }
