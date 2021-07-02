@@ -46,14 +46,14 @@ resource "kubernetes_secret" "service_account_data" {
 }
 
 resource "helm_release" "fluent-bit" {
-  name       = "fluent-bit"
-  namespace  = var.namespace
+  name         = "fluent-bit"
+  namespace    = var.namespace
   force_update = true
-  repository = "https://fluent.github.io/helm-charts"
-  chart      = "fluent-bit"
-  values = [data.local_file.fluent-bit-config.content]
-  depends_on = [kubernetes_secret.service_account_data]
-  wait = true
+  repository   = "https://fluent.github.io/helm-charts"
+  chart        = "fluent-bit"
+  values       = [data.local_file.fluent-bit-config.content]
+  depends_on   = [kubernetes_secret.service_account_data]
+  wait         = true
 }
 
 resource "helm_release" "prometheus" {
@@ -61,5 +61,5 @@ resource "helm_release" "prometheus" {
   repository = "https://prometheus-community.github.io/helm-charts"
   chart      = "prometheus"
   namespace  = var.namespace
-  values = [data.local_file.prometheus-config.content]
+  values     = [data.local_file.prometheus-config.content]
 }
