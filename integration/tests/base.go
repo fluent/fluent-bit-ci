@@ -157,9 +157,7 @@ func (suite *BaseTestSuite) SetupSuite() {
 
 func (suite *BaseTestSuite) RunKubectlExec(podName string, cmds ...string) (string, error) {
 	var args = []string{"kubectl", "exec", "-n", suite.Namespace, "--kubeconfig", suite.K8sOptions.ConfigPath, podName, "--"}
-	for _, cmd := range cmds {
-		args = append(args, cmd)
-	}
+	args = append(args, cmds...)
 	output, err := exec.Command(args[0], args[1:]...).CombinedOutput()
 	return strings.TrimSuffix(string(output), "\n"), err
 }
