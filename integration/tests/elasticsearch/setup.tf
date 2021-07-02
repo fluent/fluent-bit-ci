@@ -29,12 +29,12 @@ data "local_file" "prometheus-config" {
 }
 
 resource "helm_release" "fluent-bit" {
-  name       = "fluent-bit"
-  namespace  = var.namespace
+  name         = "fluent-bit"
+  namespace    = var.namespace
   force_update = true
-  repository = "https://fluent.github.io/helm-charts"
-  chart      = "fluent-bit"
-  values = [data.local_file.fluent-bit-config.content]
+  repository   = "https://fluent.github.io/helm-charts"
+  chart        = "fluent-bit"
+  values       = [data.local_file.fluent-bit-config.content]
 }
 
 resource "helm_release" "prometheus" {
@@ -42,23 +42,23 @@ resource "helm_release" "prometheus" {
   repository = "https://prometheus-community.github.io/helm-charts"
   chart      = "prometheus"
   namespace  = var.namespace
-  values = [data.local_file.prometheus-config.content]
+  values     = [data.local_file.prometheus-config.content]
 }
 
 resource "helm_release" "elasticsearch" {
-  name       = "elasticsearch"
-  namespace  = var.namespace
-  repository = "https://helm.elastic.co"
-  chart      = "elasticsearch"
+  name         = "elasticsearch"
+  namespace    = var.namespace
+  repository   = "https://helm.elastic.co"
+  chart        = "elasticsearch"
   force_update = true
 
   set {
-    name = "replicas"
+    name  = "replicas"
     value = "1"
   }
 
   set {
-    name = "minMasterNodes"
+    name  = "minMasterNodes"
     value = "1"
   }
 }

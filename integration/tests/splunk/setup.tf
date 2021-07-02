@@ -29,12 +29,12 @@ data "local_file" "prometheus-config" {
 }
 
 resource "helm_release" "fluent-bit" {
-  name       = "fluent-bit"
-  namespace  = var.namespace
+  name         = "fluent-bit"
+  namespace    = var.namespace
   force_update = true
-  repository = "https://fluent.github.io/helm-charts"
-  chart      = "fluent-bit"
-  values = [data.local_file.fluent-bit-config.content]
+  repository   = "https://fluent.github.io/helm-charts"
+  chart        = "fluent-bit"
+  values       = [data.local_file.fluent-bit-config.content]
 }
 
 resource "helm_release" "prometheus" {
@@ -42,5 +42,5 @@ resource "helm_release" "prometheus" {
   repository = "https://prometheus-community.github.io/helm-charts"
   chart      = "prometheus"
   namespace  = var.namespace
-  values = [data.local_file.prometheus-config.content]
+  values     = [data.local_file.prometheus-config.content]
 }

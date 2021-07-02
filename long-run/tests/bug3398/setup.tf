@@ -51,15 +51,15 @@ resource "kubernetes_secret" "service_account_data" {
 }
 
 resource "helm_release" "fluent-bit" {
-  name       = "fluent-bit"
-  namespace  = var.namespace
+  name         = "fluent-bit"
+  namespace    = var.namespace
   force_update = true
-  repository = "https://fluent.github.io/helm-charts"
-  chart      = "fluent-bit"
-  values = [data.local_file.fluent-bit-config.content]
-  depends_on = [kubernetes_secret.service_account_data, kubernetes_persistent_volume_claim.testing_storage]
+  repository   = "https://fluent.github.io/helm-charts"
+  chart        = "fluent-bit"
+  values       = [data.local_file.fluent-bit-config.content]
+  depends_on   = [kubernetes_secret.service_account_data, kubernetes_persistent_volume_claim.testing_storage]
+  wait         = true
   #depends_on = [kubernetes_persistent_volume_claim.testing-data, kubernetes_deployment.benchmark-tool]
-  wait = true
 }
 
 resource "helm_release" "prometheus" {
@@ -67,7 +67,7 @@ resource "helm_release" "prometheus" {
   repository = "https://prometheus-community.github.io/helm-charts"
   chart      = "prometheus"
   namespace  = var.namespace
-  values = [data.local_file.prometheus-config.content]
+  values     = [data.local_file.prometheus-config.content]
 }
 
 //
@@ -102,7 +102,7 @@ resource "helm_release" "prometheus" {
 //
 resource "kubernetes_storage_class" "testing_storage" {
   metadata {
-    name  = "fast-${random_id.disk.hex}"
+    name = "fast-${random_id.disk.hex}"
   }
 
   storage_provisioner = "kubernetes.io/gce-pd"
@@ -116,7 +116,7 @@ resource "kubernetes_storage_class" "testing_storage" {
 
 resource "kubernetes_persistent_volume" "testing_storage" {
   metadata {
-    name  = "testing-data-volume-${random_id.disk.hex}"
+    name = "testing-data-volume-${random_id.disk.hex}"
   }
 
   spec {
@@ -125,8 +125,8 @@ resource "kubernetes_persistent_volume" "testing_storage" {
       storage = "300Gi"
     }
 
-    persistent_volume_reclaim_policy  = "Retain"
-    storage_class_name                = "fast-${random_id.disk.hex}"
+    persistent_volume_reclaim_policy = "Retain"
+    storage_class_name               = "fast-${random_id.disk.hex}"
 
     persistent_volume_source {
       gce_persistent_disk {
