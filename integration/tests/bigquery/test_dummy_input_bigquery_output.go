@@ -40,6 +40,9 @@ func queryBasic(projectID string, tableID string) ([]bq.Value, error) {
 		return nil, err
 	}
 	it, err := job.Read(ctx)
+	if err != nil {
+		return nil, err
+	}
 	for {
 		var row []bq.Value
 		err := it.Next(&row)
