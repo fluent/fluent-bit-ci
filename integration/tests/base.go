@@ -26,6 +26,21 @@ const defaultK8sImageTag = "x86_64-master"
 const DefaultMaxRetries = 3
 const DefaultRetryTimeout = 1 * time.Minute
 
+var suites []suite.TestingSuite
+
+func init() {
+	suites = make([]suite.TestingSuite, 0)
+}
+
+func AddSuite(s suite.TestingSuite) error {
+	suites = append(suites, s)
+	return nil
+}
+
+func GetSuites() []suite.TestingSuite {
+	return suites
+}
+
 type BaseTestSuite struct {
 	suite.Suite
 	Name, Namespace  string
