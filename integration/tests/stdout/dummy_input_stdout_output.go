@@ -16,14 +16,16 @@ type Suite struct {
 }
 
 func init() {
-	tests.AddSuite(&Suite{BaseTestSuite: tests.BaseTestSuite{Name: "stdout"}})
+	if err := tests.AddSuite(&Suite{BaseTestSuite: tests.BaseTestSuite{Name: "stdout"}}); err != nil {
+		panic(err)
+	}
 }
 
 func (suite *Suite) TestDummyInputToStdoutOutput() {
 	assert := suite.BaseTestSuite.Assert()
 
 	fluentbitbin, present := os.LookupEnv("FLUENT_BIT_BIN")
-	if present == false {
+	if !present {
 		fluentbitbin = "fluent-bit"
 	}
 
