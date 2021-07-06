@@ -27,7 +27,7 @@ func (s *Suite) TestDummyInputToStdoutOutput() {
 	assert := s.BaseTestSuite.Assert()
 
 	fluentbitbin, present := os.LookupEnv("FLUENT_BIT_BIN")
-	if present == false {
+	if !present {
 		fluentbitbin = "fluent-bit"
 	}
 
