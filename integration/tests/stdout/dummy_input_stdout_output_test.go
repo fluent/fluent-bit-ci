@@ -1,4 +1,5 @@
 // +build integration
+// +build smoketest
 
 package stdout
 
@@ -7,20 +8,23 @@ import (
 	"os/exec"
 	"regexp"
 	"strings"
+	"testing"
 
 	"github.com/calyptia/fluent-bit-ci/integration/tests"
+	"github.com/stretchr/testify/suite"
 )
 
 type Suite struct {
 	tests.BaseTestSuite
 }
 
-func init() {
-	tests.AddSuite(&Suite{BaseTestSuite: tests.BaseTestSuite{Name: "stdout"}})
+func TestSuite(t *testing.T) {
+	s := &Suite{BaseTestSuite: tests.BaseTestSuite{Name: "stdout"}}
+	suite.Run(t, s)
 }
 
-func (suite *Suite) TestDummyInputToStdoutOutput() {
-	assert := suite.BaseTestSuite.Assert()
+func (s *Suite) TestDummyInputToStdoutOutput() {
+	assert := s.BaseTestSuite.Assert()
 
 	fluentbitbin, present := os.LookupEnv("FLUENT_BIT_BIN")
 	if present == false {
@@ -37,7 +41,7 @@ func (suite *Suite) TestDummyInputToStdoutOutput() {
 		"-p", "match=*")
 
 	out, err := cmd.Output()
-	suite.Nil(err)
+	s.Nil(err)
 
 	lines := strings.Split(string(out), "\n")
 	r := "^\\[\\d+\\] dummy\\.0: \\[\\d+\\.\\d+, \\{\\\"message\\\"\\=\\>\\\"dummy\\\"\\}\\]$"
