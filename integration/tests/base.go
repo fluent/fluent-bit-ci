@@ -142,7 +142,7 @@ func (suite *BaseTestSuite) SetupSuite() {
 		panic(err)
 	}
 
-	testSuitek8sConfigPath := path.Join(".", "tests", suite.Name, "client.config")
+	testSuitek8sConfigPath := "client.config"
 	err = ioutil.WriteFile(testSuitek8sConfigPath, input, 0700)
 	if err != nil {
 		panic(err)
@@ -160,7 +160,7 @@ func (suite *BaseTestSuite) SetupSuite() {
 		suite.TerraformOptions = make(map[string]string)
 	}
 
-	testSuiteSAKeyPath := path.Join(".", "tests", suite.Name, "gcp_sa_key.json")
+	testSuiteSAKeyPath := "gcp_sa_key.json"
 	err = ioutil.WriteFile(testSuiteSAKeyPath, []byte(GetEnv("GCP_SA_KEY", "")), 0700)
 	if err != nil {
 		panic(err)
