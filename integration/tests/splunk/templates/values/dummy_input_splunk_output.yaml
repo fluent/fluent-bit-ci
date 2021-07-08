@@ -20,15 +20,39 @@ config:
   inputs: |
     [INPUT]
         Name dummy
-        Tag dummy.log
-        Dummy {"message": "testing"}
-        Rate 10
+        Tag raw
+        Dummy {"message": "dummy", "raw": "on", "test_id": "{{ test_id }}"}
+        Rate 1
+    [INPUT]
+        Name nested
+        Tag rawoff
+        Dummy {"message": "dummy", "raw": "off", "test_id": "{{ test_id }}"}
+        Rate 1
+  filter: |
+    [FILTER]
+        Name nested
+        Match raw
+        Operation nest
+        Wildcard *
+        Nest_under event
   outputs: |
     [OUTPUT]
         Name        splunk
-        Match       *
+        Match       dummy
         Host        splunk-master
         Port        8088
         TLS         On
         TLS.Verify  Off
         splunk_token fd27eae6-3951-4f84-95dd-3e450979305a
+    [OUTPUT]
+        Name            splunk
+        Match           nested
+        Splunk_Send_Raw On
+        Host            splunk-master
+        Port            8088
+        TLS             On
+        TLS.Verify      Off
+        splunk_token    fd27eae6-3951-4f84-95dd-3e450979305a
+    [OUTPUT]
+      Name exit
+      Match *
