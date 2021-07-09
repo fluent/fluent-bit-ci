@@ -7,7 +7,7 @@ default:
 
 .PHONY: integration
 integration:
-	cd integration && go test -timeout $(TIMEOUT) . --tags=integration -v
+	cd integration && go test -timeout $(TIMEOUT) ./... --tags=integration -v
 
 RATES = 100 1000 10000
 benchmark:

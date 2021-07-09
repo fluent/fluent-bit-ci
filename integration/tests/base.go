@@ -4,6 +4,13 @@ package tests
 
 import (
 	"fmt"
+	"io/ioutil"
+	"os"
+	"os/exec"
+	"path"
+	"strings"
+	"time"
+
 	"github.com/flosch/pongo2/v4"
 	http_helper "github.com/gruntwork-io/terratest/modules/http-helper"
 	"github.com/gruntwork-io/terratest/modules/k8s"
@@ -11,13 +18,7 @@ import (
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
-	"io/ioutil"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"os"
-	"os/exec"
-	"path"
-	"strings"
-	"time"
 )
 
 const defaultk8sClientConfigPath = "/tmp/client.config"
@@ -51,7 +52,7 @@ func (suite *BaseTestSuite) RenderCfgFromTpl(tplName string, prefix string, exte
 	if prefix == "" {
 		prefix = "values"
 	}
-	templatePath := path.Join("tests", suite.Name, "templates", prefix, tplName+".yaml")
+	templatePath := path.Join("templates", prefix, tplName+".yaml")
 	if _, err := os.Stat(templatePath); os.IsNotExist(err) {
 		return "", err
 	}
@@ -61,7 +62,7 @@ func (suite *BaseTestSuite) RenderCfgFromTpl(tplName string, prefix string, exte
 		return "", err
 	}
 
-	tempFile, err := ioutil.TempFile(path.Join(".", "tests", suite.Name), "test")
+	tempFile, err := ioutil.TempFile(".", "test")
 	if err != nil {
 		return "", err
 	}
@@ -110,7 +111,7 @@ func (suite *BaseTestSuite) GetTerraformOpts(fluentBitConfig string) (*terraform
 	}
 
 	return terraform.WithDefaultRetryableErrors(suite.T(), &terraform.Options{
-		TerraformDir: path.Join(".", "tests", suite.Name),
+		TerraformDir: "./",
 		Vars:         variables,
 	}), nil
 }
@@ -127,7 +128,7 @@ func (suite *BaseTestSuite) SetupSuite() {
 		panic(err)
 	}
 
-	testSuitek8sConfigPath := path.Join(".", "tests", suite.Name, "client.config")
+	testSuitek8sConfigPath := "client.config"
 	err = ioutil.WriteFile(testSuitek8sConfigPath, input, 0700)
 	if err != nil {
 		panic(err)
@@ -145,7 +146,7 @@ func (suite *BaseTestSuite) SetupSuite() {
 		suite.TerraformOptions = make(map[string]string)
 	}
 
-	testSuiteSAKeyPath := path.Join(".", "tests", suite.Name, "gcp_sa_key.json")
+	testSuiteSAKeyPath := "gcp_sa_key.json"
 	err = ioutil.WriteFile(testSuiteSAKeyPath, []byte(GetEnv("GCP_SA_KEY", "")), 0700)
 	if err != nil {
 		panic(err)
