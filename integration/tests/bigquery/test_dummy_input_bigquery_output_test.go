@@ -9,13 +9,20 @@ import (
 	"github.com/calyptia/fluent-bit-ci/integration/tests"
 	"github.com/gruntwork-io/terratest/modules/retry"
 	"github.com/gruntwork-io/terratest/modules/terraform"
+	"github.com/stretchr/testify/suite"
 	"google.golang.org/api/iterator"
 	"os"
+	"testing"
 	"time"
 )
 
 type Suite struct {
 	tests.BaseTestSuite
+}
+
+func TestSuite(t *testing.T) {
+	s := &Suite{BaseTestSuite: tests.BaseTestSuite{Name: "bigquery"}}
+	suite.Run(t, s)
 }
 
 func queryBasic(projectID string, tableID string) ([]bq.Value, error) {
