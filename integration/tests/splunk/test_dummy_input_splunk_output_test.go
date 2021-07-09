@@ -4,6 +4,9 @@ package splunk
 
 import (
 	"fmt"
+	"github.com/stretchr/testify/suite"
+	"testing"
+
 	"github.com/calyptia/fluent-bit-ci/integration/tests"
 	"github.com/gruntwork-io/terratest/modules/k8s"
 	"github.com/gruntwork-io/terratest/modules/retry"
@@ -14,6 +17,11 @@ import (
 
 type Suite struct {
 	tests.BaseTestSuite
+}
+
+func TestSuite(t *testing.T) {
+	s := &Suite{BaseTestSuite: tests.BaseTestSuite{Name: "splunk"}}
+	suite.Run(t, s)
 }
 
 func (suite *Suite) TestDummyInputToSplunkOutput() {
