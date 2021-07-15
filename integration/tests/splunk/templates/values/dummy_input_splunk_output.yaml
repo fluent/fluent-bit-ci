@@ -67,7 +67,6 @@ config:
         TLS             On
         TLS.Verify      Off
         splunk_token    fd27eae6-3951-4f84-95dd-3e450979305a
-#   [OUTPUT]
-#       Name exit
-#       Match *
-#       Flush_Count 2
+    [OUTPUT]
+        Name exit
+        Match *
