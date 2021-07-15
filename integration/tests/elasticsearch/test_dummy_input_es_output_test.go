@@ -4,6 +4,9 @@ package elasticsearch
 
 import (
 	"fmt"
+	"github.com/stretchr/testify/suite"
+	"testing"
+
 	"github.com/calyptia/fluent-bit-ci/integration/tests"
 	"github.com/gruntwork-io/terratest/modules/retry"
 	"github.com/gruntwork-io/terratest/modules/terraform"
@@ -11,6 +14,11 @@ import (
 
 type Suite struct {
 	tests.BaseTestSuite
+}
+
+func TestSuite(t *testing.T) {
+	s := &Suite{BaseTestSuite: tests.BaseTestSuite{Name: "elasticsearch"}}
+	suite.Run(t, s)
 }
 
 func (suite *Suite) TestDummyInputToElasticSearchOutput() {

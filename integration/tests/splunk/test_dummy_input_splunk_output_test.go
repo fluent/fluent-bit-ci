@@ -7,7 +7,10 @@ import (
 	"math/rand"
 	"strconv"
 	"strings"
+	"testing"
 	"time"
+
+	"github.com/stretchr/testify/suite"
 
 	"github.com/calyptia/fluent-bit-ci/integration/tests"
 	"github.com/flosch/pongo2/v4"
@@ -73,6 +76,11 @@ func (suite *Suite) countResults(qry string) int {
 
 	suite.Nil(err)
 	return count.(int)
+}
+
+func TestSuite(t *testing.T) {
+	s := &Suite{BaseTestSuite: tests.BaseTestSuite{Name: "splunk"}}
+	suite.Run(t, s)
 }
 
 func (suite *Suite) TestDummyInputToSplunkOutput() {
