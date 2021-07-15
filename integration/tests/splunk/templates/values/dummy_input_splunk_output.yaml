@@ -11,7 +11,7 @@ image:
 config:
   service: |
     [SERVICE]
-        Flush 5
+        Flush 1
         Daemon Off
         Log_Level debug
         HTTP_Server On
@@ -20,39 +20,54 @@ config:
   inputs: |
     [INPUT]
         Name dummy
-        Tag raw
-        Dummy {"message": "dummy", "raw": "on", "test_id": "{{ test_id }}"}
-        Rate 1
-    [INPUT]
-        Name nested
         Tag rawoff
         Dummy {"message": "dummy", "raw": "off", "test_id": "{{ test_id }}"}
         Rate 1
-  filter: |
+    [INPUT]
+        Name dummy
+        Tag raw
+        Dummy {"message": "dummy", "raw": "on", "nested": "off", "test_id": "{{ test_id }}"}
+        Rate 1
+    [INPUT]
+        Name dummy
+        Tag raw_nested
+        Dummy {"message": "dummy", "raw": "on", "nested": "on", "test_id": "{{ test_id }}"}
+        Rate 1
+  filters: |
     [FILTER]
-        Name nested
-        Match raw
+        Name nest
+        Match raw_nested
         Operation nest
         Wildcard *
-        Nest_under event
+        Nest_Under event
   outputs: |
     [OUTPUT]
         Name        splunk
-        Match       dummy
+        Match       raw
         Host        splunk-master
         Port        8088
+        Splunk_Send_Raw On
+        TLS         On
+        TLS.Verify  Off
+        splunk_token fd27eae6-3951-4f84-95dd-3e450979305a
+    [OUTPUT]
+        Name        splunk
+        Match       raw_nested
+        Host        splunk-master
+        Port        8088
+        Splunk_Send_Raw On
         TLS         On
         TLS.Verify  Off
         splunk_token fd27eae6-3951-4f84-95dd-3e450979305a
     [OUTPUT]
         Name            splunk
-        Match           nested
-        Splunk_Send_Raw On
+        Match           rawoff
         Host            splunk-master
         Port            8088
         TLS             On
         TLS.Verify      Off
         splunk_token    fd27eae6-3951-4f84-95dd-3e450979305a
-    [OUTPUT]
-      Name exit
-      Match *
+#   [OUTPUT]
+#       Name exit
+#       Match *
+#       Flush_Count 2
