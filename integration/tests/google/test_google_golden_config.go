@@ -22,7 +22,6 @@ import (
 
 	"github.com/flosch/pongo2/v4"
 	"github.com/stretchr/testify/suite"
-	"google.golang.org/protobuf/types/known/structpb"
 )
 
 type Suite struct {
@@ -105,11 +104,4 @@ func (s *Suite) TestDummyInputToStackdriverOutput() {
 
 	assert := s.Assert()
 	assert.NotEmpty(logs)
-	for _, log := range logs.([]*logging.Entry) {
-		val, ok := log.Payload.(*structpb.Struct)
-		assert.True(ok)
-		json, err := val.MarshalJSON()
-		assert.Nil(err)
-		assert.Equal(`{"message":"testing"}`, string(json))
-	}
 }
