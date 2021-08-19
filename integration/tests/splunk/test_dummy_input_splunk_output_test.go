@@ -26,15 +26,6 @@ type Suite struct {
 	tests.BaseTestSuite
 }
 
-type result struct {
-	Raw     string `json:"_raw"`
-	LastRow bool   `json:"lastrow"`
-}
-
-type header struct {
-	Result result `json:"result"`
-}
-
 func (suite *Suite) countResults(qry string, cond func(int) bool) (int, error) {
 	podName, _ := suite.GetPodNameByPrefix("splunk")
 	count, err := retry.DoWithRetryInterfaceE(suite.T(), fmt.Sprintf("Count results for: %s", qry), tests.DefaultMaxRetries, tests.DefaultRetryTimeout, func() (interface{}, error) {
@@ -137,7 +128,7 @@ func (suite *Suite) TestDummyInputToSplunkOutput() {
 
 	suite.waitMinResults(
 		fmt.Sprintf("event.test_id=%s event.raw=on event.nested=on", testID), 1)
-	suite.checkResults(fmt.Sprintf("event.test_id=%s event.raw=on event.nested=on", testID),
+	_, err := suite.checkResults(fmt.Sprintf("event.test_id=%s event.raw=on event.nested=on", testID),
 		func(record []string) bool {
 			raw := struct {
 				Event struct {
@@ -159,10 +150,11 @@ func (suite *Suite) TestDummyInputToSplunkOutput() {
 				raw.Event.Raw == "on" &&
 				raw.Event.Nested == "on"
 		})
+	suite.Nil(err)
 
 	suite.waitMinResults(
 		fmt.Sprintf("test_id=%s raw=on nested=off", testID), 1)
-	suite.checkResults(fmt.Sprintf("test_id=%s raw=on nested=off", testID),
+	_, err = suite.checkResults(fmt.Sprintf("test_id=%s raw=on nested=off", testID),
 		func(record []string) bool {
 			raw := struct {
 				Message string `json:"message"`
@@ -182,5 +174,5 @@ func (suite *Suite) TestDummyInputToSplunkOutput() {
 				raw.Raw == "on" &&
 				raw.Nested == "off"
 		})
-
+	suite.Nil(err)
 }
