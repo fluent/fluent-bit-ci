@@ -13,7 +13,7 @@ data "google_container_engine_versions" "versions" {
 }
 
 resource "google_compute_network" "vpc" {
-  name                    = "shared-vpc-${var.k8s-version-formatted}"
+  name                    = "vpc-${var.k8s-version-formatted}"
   auto_create_subnetworks = true
 }
 
