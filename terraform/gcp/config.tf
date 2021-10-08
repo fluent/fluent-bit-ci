@@ -10,7 +10,7 @@ terraform {
     hostname     = "app.terraform.io"
 
     workspaces {
-      name = "fluent-bit-ci-gke-$K8S_FORMATTED"
+      name = "fluent-bit-ci-gke-1.19"
     }
   }
 }
