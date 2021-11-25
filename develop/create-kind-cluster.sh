@@ -30,18 +30,32 @@ fi
 # Delete the old cluster (if it exists)
 kind delete cluster --name="${CLUSTER_NAME}"
 
-# Create KIND cluster with 3 worker nodes
+# Create KIND cluster with 3 worker nodes, control node can support ingress too if required
 kind create cluster --name="${CLUSTER_NAME}" --config - <<EOF
 kind: Cluster
 apiVersion: kind.x-k8s.io/v1alpha4
 nodes:
 - role: control-plane
+    kubeadmConfigPatches:
+    - |
+      kind: InitConfiguration
+      nodeRegistration:
+        kubeletExtraArgs:
+          node-labels: "ingress-ready=true"
+    extraPortMappings:
+    - containerPort: 80
+      hostPort: 80
+      protocol: TCP
+    - containerPort: 443
+      hostPort: 443
+      protocol: TCP
 - role: worker
 - role: worker
 - role: worker
 EOF
 
 # Preload the cluster with the Fluent Bit image on every node
+docker pull "${FLUENT_BIT_IMAGE}"
 kind load docker-image "${FLUENT_BIT_IMAGE}" --name="${CLUSTER_NAME}"
 
 echo "Cluster created successfully"

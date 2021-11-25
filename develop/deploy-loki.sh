@@ -16,6 +16,11 @@ set -eu
 # Simple script to deploy Loki to a Kubernetes cluster with context already set
 LOKI_NAMESPACE=${LOKI_NAMESPACE:-loki}
 
+if [[ "${INSTALL_HELM:-no}" == "yes" ]]; then
+    # See https://helm.sh/docs/intro/install/
+    curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+fi
+
 helm repo add grafana https://grafana.github.io/helm-charts || helm repo add grafana https://grafana.github.io/helm-charts/
 helm repo update
 
