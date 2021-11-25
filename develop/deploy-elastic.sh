@@ -15,8 +15,17 @@
 set -eu
 # Simple script to deploy Elastic to a Kubernetes cluster with context already set
 
+# Only really tested with this version, others may need some changes to YAML
+ES_VERSION=${ES_VERSION:-7.2.0}
+
 ES_NAMESPACE=${ES_NAMESPACE:-elastic}
 CLUSTER_NAME=${CLUSTER_NAME:-kind}
+
+# Pre-load our images to speed things up
+docker pull "docker.elastic.co/kibana/kibana:$ES_VERSION"
+kind load docker-image "docker.elastic.co/kibana/kibana:$ES_VERSION" --name="${CLUSTER_NAME}"
+docker pull "docker.elastic.co/elasticsearch/elasticsearch:$ES_VERSION"
+kind load docker-image "docker.elastic.co/elasticsearch/elasticsearch:$ES_VERSION" --name="${CLUSTER_NAME}"
 
 cat << EOF | kubectl apply -f -
 ---
@@ -60,7 +69,7 @@ spec:
     spec:
       containers:
       - name: elasticsearch
-        image: docker.elastic.co/elasticsearch/elasticsearch:7.2.0
+        image: docker.elastic.co/elasticsearch/elasticsearch:$ES_VERSION
         resources:
             limits:
               cpu: 1000m
@@ -119,7 +128,7 @@ spec:
     spec:
       containers:
       - name: kibana
-        image: docker.elastic.co/kibana/kibana:7.2.0
+        image: docker.elastic.co/kibana/kibana:$ES_VERSION
         resources:
           limits:
             cpu: 1000m
@@ -132,4 +141,6 @@ spec:
 ---
 EOF
 
+# TODO: wait for completion
+echo "Wait for the pods to be deploying in the $ES_NAMESPACE: watch kubectl get pods --namespace=$ES_NAMESPACE"
 echo "Elasticsearch deployed to elasticsearch.$ES_NAMESPACE"
