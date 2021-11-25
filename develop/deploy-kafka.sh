@@ -25,6 +25,3 @@ helm repo add bitnami https://charts.bitnami.com/bitnami || helm repo add bitnam
 helm repo update
 
 helm upgrade --install --namespace="$KAFKA_NAMESPACE" --create-namespace --wait kafka bitnami/kafka
-
-# TODO: get any creds, port forwards required
-echo "Kafka is installed to $KAFKA_NAMESPACE"
