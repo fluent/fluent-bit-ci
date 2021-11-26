@@ -36,10 +36,13 @@ MINIO_CONSOLE_PORT=${MINIO_CONSOLE_PORT:-9001}
 echo "Started minio on http://localhost:$MINIO_CONSOLE_PORT"
 echo "Access using $MINIO_ROOT_USER:$MINIO_ROOT_PASSWORD"
 
-# Create a bucket
-BUCKET_NAME=${BUCKET_NAME:-testbucket}
-AWS_CLI=${AWS_CLI:-docker run --rm -it -e AWS_ACCESS_KEY_ID=$MINIO_ROOT_USER -e AWS_SECRET_ACCESS_KEY=$MINIO_ROOT_PASSWORD amazon/aws-cli --api S3v4 --endpoint-url https://localhost:9000}
-set +xe
-$AWS_CLI --version s3 ls
-# "$AWS_CLI" configure set default.s3.signature_version s3v4
-$AWS_CLI s3 mb "s3://$BUCKET_NAME"
+# Create a bucket without having to install the AWS CLI
+BUCKET_NAME=${BUCKET_NAME:-fluentbit-ci-testbucket}
+# We use host networking to simplify the URL lookup - otherwise we have to map the container network namespace to the host
+AWS_CLI=${AWS_CLI:-docker run --rm -it --network host -e AWS_ACCESS_KEY_ID=$MINIO_ROOT_USER -e AWS_SECRET_ACCESS_KEY=$MINIO_ROOT_PASSWORD amazon/aws-cli}
+# Disable any SSL although it is by default unsecured
+AWS_ARGS=${AWS_ARGS:---no-verify-ssl --endpoint-url http://localhost:9000}
+
+# We do want to split on spaces for the command
+# shellcheck disable=SC2086
+$AWS_CLI s3 mb "s3://$BUCKET_NAME" $AWS_ARGS
