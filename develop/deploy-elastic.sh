@@ -15,132 +15,15 @@
 set -eu
 # Simple script to deploy Elastic to a Kubernetes cluster with context already set
 
-# Only really tested with this version, others may need some changes to YAML
-ES_VERSION=${ES_VERSION:-7.2.0}
-
 ES_NAMESPACE=${ES_NAMESPACE:-elastic}
-CLUSTER_NAME=${CLUSTER_NAME:-kind}
 
-# Pre-load our images to speed things up
-docker pull "docker.elastic.co/kibana/kibana:$ES_VERSION"
-kind load docker-image "docker.elastic.co/kibana/kibana:$ES_VERSION" --name="${CLUSTER_NAME}"
-docker pull "docker.elastic.co/elasticsearch/elasticsearch:$ES_VERSION"
-kind load docker-image "docker.elastic.co/elasticsearch/elasticsearch:$ES_VERSION" --name="${CLUSTER_NAME}"
+if [[ "${INSTALL_HELM:-no}" == "yes" ]]; then
+    # See https://helm.sh/docs/intro/install/
+    curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+fi
 
-cat << EOF | kubectl apply -f -
----
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: $ES_NAMESPACE
----
-kind: Service
-apiVersion: v1
-metadata:
-  name: elasticsearch
-  namespace: $ES_NAMESPACE
-  labels:
-    app: elasticsearch
-spec:
-  selector:
-    app: elasticsearch
-  clusterIP: None
-  ports:
-    - port: 9200
-      name: rest
-    - port: 9300
-      name: inter-node
----
-apiVersion: apps/v1
-kind: StatefulSet
-metadata:
-  name: es-cluster
-  namespace: $ES_NAMESPACE
-spec:
-  serviceName: elasticsearch
-  replicas: 1
-  selector:
-    matchLabels:
-      app: elasticsearch
-  template:
-    metadata:
-      labels:
-        app: elasticsearch
-    spec:
-      containers:
-      - name: elasticsearch
-        image: docker.elastic.co/elasticsearch/elasticsearch:$ES_VERSION
-        resources:
-            limits:
-              cpu: 1000m
-            requests:
-              cpu: 100m
-        ports:
-        - containerPort: 9200
-          name: rest
-          protocol: TCP
-        - containerPort: 9300
-          name: inter-node
-          protocol: TCP
-        env:
-          - name: cluster.name
-            value: k8s-logs
-          - name: node.name
-            valueFrom:
-              fieldRef:
-                fieldPath: metadata.name
-          - name: discovery.seed_hosts
-            value: "es-cluster-0.elasticsearch"
-          - name: cluster.initial_master_nodes
-            value: "es-cluster-0"
-          - name: ES_JAVA_OPTS
-            value: "-Xms512m -Xmx512m"
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: kibana
-  namespace: $ES_NAMESPACE
-  labels:
-    app: kibana
-spec:
-  ports:
-  - port: 5601
-  selector:
-    app: kibana
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: kibana
-  namespace: $ES_NAMESPACE
-  labels:
-    app: kibana
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: kibana
-  template:
-    metadata:
-      labels:
-        app: kibana
-    spec:
-      containers:
-      - name: kibana
-        image: docker.elastic.co/kibana/kibana:$ES_VERSION
-        resources:
-          limits:
-            cpu: 1000m
-          requests:
-            cpu: 100m
-        env:
-          - name: ELASTICSEARCH_URL
-            value: http://elasticsearch:9200
-        ports:
----
-EOF
+helm repo add elasticsearch https://helm.elastic.co || helm repo add elasticsearch https://helm.elastic.co/
+helm repo update
 
-# TODO: wait for completion
-echo "Wait for the pods to be deploying in the $ES_NAMESPACE: watch kubectl get pods --namespace=$ES_NAMESPACE"
-echo "Elasticsearch deployed to elasticsearch.$ES_NAMESPACE"
+helm upgrade --install --namespace="$ES_NAMESPACE" --create-namespace --wait elasticsearch elasticsearch/elasticsearch \
+  --set replicas=1,minMasterNodes=1
