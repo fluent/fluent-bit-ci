@@ -21,7 +21,8 @@ SPLUNK_NAMESPACE=${SPLUNK_NAMESPACE:-splunk}
 # Use the config in this repo by default
 SPLUNK_DEPLOYMENT_CONFIG=${SPLUNK_DEPLOYMENT_CONFIG:-$SCRIPT_DIR/../integration/tests/splunk/templates/k8s/splunk-deployment.yaml}
 
-sed "s/{{ namespace }}/$SPLUNK_NAMESPACE" "$SPLUNK_DEPLOYMENT_CONFIG" | kubectl apply -f -
+kubectl create ns "$SPLUNK_NAMESPACE"
+sed "s/{{ namespace }}/$SPLUNK_NAMESPACE/g" "$SPLUNK_DEPLOYMENT_CONFIG" | kubectl apply -f -
 
 # TODO: wait for completion
 echo "Wait for the pods to be deploying in the $SPLUNK_NAMESPACE:"
