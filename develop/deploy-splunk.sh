@@ -13,7 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 set -eu
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+
 # Simple script to deploy Splunk to a Kubernetes cluster with context already set
+
 SPLUNK_NAMESPACE=${SPLUNK_NAMESPACE:-splunk}
 # Use the config in this repo by default
 SPLUNK_DEPLOYMENT_CONFIG=${SPLUNK_DEPLOYMENT_CONFIG:-$SCRIPT_DIR/../integration/tests/splunk/templates/k8s/splunk-deployment.yaml}
