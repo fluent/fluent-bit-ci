@@ -27,3 +27,8 @@ helm repo update
 
 helm upgrade --install --namespace="$ES_NAMESPACE" --create-namespace --wait elasticsearch elasticsearch/elasticsearch \
   --set replicas=1,minMasterNodes=1
+
+helm upgrade --install --namespace="$ES_NAMESPACE" --create-namespace --wait kibana elasticsearch/kibana
+
+echo "Kibana deployed, now set up indexes by going to http://localhost:5601/app/management/kibana/indexPatterns after running:"
+echo "kubectl port-forward -n elastic svc/kibana-kibana 5601"
