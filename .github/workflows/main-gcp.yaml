@@ -3,6 +3,9 @@ on:
   push:
     branches:
       - main
+  # Trigger from this repository manually
+  workflow_dispatch:
+
 # Just invoke the reusable one with the repo values
 jobs:
   run-integration-gcp:
