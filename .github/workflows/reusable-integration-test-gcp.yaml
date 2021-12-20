@@ -58,6 +58,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+        with:
+          repository: calyptia/fluent-bit-ci
 
       - uses: frabert/replace-string-action@master
         id: formatted_release
