@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Really should not rely on PWD here
+SOURCE_DIR=${SOURCE_DIR:-$PWD}
 nparallel=$(( $(getconf _NPROCESSORS_ONLN) > 8 ? 8 : $(getconf _NPROCESSORS_ONLN) ))
 
 [ -x /usr/bin/llvm-symbolizer-5.0 ] && export ASAN_SYMBOLIZER_PATH=/usr/bin/llvm-symbolizer-5.0
@@ -26,42 +28,36 @@ do
     SKIP="$SKIP -DFLB_WITHOUT_${skip}=1"
 done
 
-[ -f /etc/lsb-release ] && . /etc/lsb-release
-if [ "$DISTRIB_RELEASE" = "14.04" ]
-then
-    # On 'Trusty', gmtime_r doesn't parse this properly:
-    # {"generic_TZ"   , "07/18/2017 01:47:03 +05:30"  , 1500322623, 0,   0},
-    echo "Skip flb-it-parser (trusty)"
-    SKIP="$SKIP -DFLB_WITHOUT_flb-it-parser=1"
-fi
-
 SKIP="$SKIP -DFLB_WITHOUT_flb-it-fstore=1"
-
 # If no v6, disable that test
 [[ ! $(ip a) =~ ::1 ]] && SKIP="$SKIP -DFLB_WITHOUT_flb-it-network=1"
 
 GLOBAL_OPTS="-DFLB_BACKTRACE=Off -DFLB_SHARED_LIB=Off -DFLB_DEBUG=On -DFLB_ALL=On -DFLB_EXAMPLES=Off"
 set -e
-mkdir -p build
-cd build
+mkdir -p "$SOURCE_DIR"/build
+pushd "$SOURCE_DIR"/build || exit 1
 echo "Build unit tests for $FLB_OPT on $nparallel VCPU"
-echo cmake $LDFLAG $GLOBAL_OPTS $FLB_OPT -DFLB_TESTS_INTERNAL=On -DFLB_TESTS_RUNTIME=On $SKIP ../
+echo "cmake $LDFLAG $GLOBAL_OPTS $FLB_OPT -DFLB_TESTS_INTERNAL=On -DFLB_TESTS_RUNTIME=On $SKIP ../"
+# We do want splitting for parameters here
+# shellcheck disable=SC2086
 cmake $LDFLAG $GLOBAL_OPTS $FLB_OPT -DFLB_TESTS_INTERNAL=On -DFLB_TESTS_RUNTIME=On $SKIP ../
 make -j $nparallel
 
 echo
 echo "Run unit tests for $FLB_OPT on $nparallel VCPU"
 echo
-ctest -j $nparallel --build-run-dir $PWD --output-on-failure
+ctest -j $nparallel --build-run-dir "$SOURCE_DIR"/build --output-on-failure
 res=$?
 
 if [[ "$FLB_OPT" =~ COVERAGE  ]]
 then
-    mkdir -p coverage
-    find lib -name "*.gcda" -o -name "*.gcno" -print0 | xargs -0 -r rm
+    mkdir -p "$SOURCE_DIR"/coverage
+    find lib \( -name "*.gcda" -o -name "*.gcno" \) -print0 | xargs -0 -r rm
     gcovr -e "build/sql.l" -e "build/sql.y" -e "build/ra.l" -e "build/ra.y" -p -r .. . | cut -c1-100
-    gcovr -e "build/sql.l" -e "build/sql.y" -e "build/ra.l" -e "build/ra.y" --html --html-details -p -r .. -o coverage/index.html .
+    gcovr -e "build/sql.l" -e "build/sql.y" -e "build/ra.l" -e "build/ra.y" --html --html-details -p -r .. -o "$SOURCE_DIR"/coverage/index.html .
     echo
     echo "See coverage/index.html for code-coverage details"
 fi
+popd || true
+
 exit $res
