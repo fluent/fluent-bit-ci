@@ -1,37 +1,64 @@
-name: Reusable workflow to run integration tests on GCP
+---
+name: Reusable workflow to run integration tests with specific images
 on:
   workflow_call:
     inputs:
-      image-name:
+      terraform_api_host:
+        description: The hostname to use for Terraform to invoke the CLI.
+        default: app.terraform.io
+        required: false
         type: string
+      grafana_username:
+        description: The Grafana (Cloud) username to deploy with.
         required: true
-      image-tag:
         type: string
-        required: true
-    # Reusable workflows are slightly different and require all secrets to be defined
-    # by the caller and passed in.
+      image_name:
+        description: The image repository and name to use.
+        required: false
+        default: "fluentbitdev/fluent-bit"
+        type: string
+      image_tag:
+        description: The image tag to use.
+        required: false
+        default: "x86_64-master"
+        type: string
+      gcp_project_id:
+        description: The GCP project to use.
+        default: fluent-bit-ci
+        required: false
+        type: string
     secrets:
-      TF_API_TOKEN:
+      terraform_api_token:
+        description: Terraform API Token
         required: true
-      GCP_SA_KEY:
+      gcp_service_account_key:
+        description: The GCP service account we want to use provides this token.
         required: true
-      GRAFANA_USERNAME:
-        required: true
-      GRAFANA_PASSWORD:
+      grafana_password:
+        description: The Grafana (Cloud) credentials to deploy with.
         required: true
 
 jobs:
-  run-integration-gcp:
-    name: run-integration on GCP - k8s ${{ matrix.k8s-release }}
+
+  call-run-integration-test-images-exist:
+    name: Test $IMAGE exists
+    # Non-matrix, test images exist first
+    runs-on: ubuntu-latest
+    env:
+      IMAGE: ${{ inputs.image }}:${{ inputs.image_tag }}
+    steps:
+      - run: docker pull $IMAGE
+
+  call-run-integration-gcp:
+    name: k8s ${{ matrix.k8s-release }} run integration tests on GCP
+    needs: call-run-integration-test-images-exist
     strategy:
-      max-parallel: 3
       fail-fast: false
       matrix:
-        k8s-release: [ '1.21' ] #, '1.20' ] #, 1.19/stable, 1.18/stable ]
+        k8s-release: [ '1.21' ]
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v2
 
       - uses: frabert/replace-string-action@master
         id: formatted_release
@@ -53,36 +80,32 @@ jobs:
 
       - uses: hashicorp/setup-terraform@v1
         with:
-          cli_config_credentials_hostname: 'app.terraform.io'
-          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+          cli_config_credentials_hostname: ${{ inputs.terraform_api_host }}
+          cli_config_credentials_token: ${{ secrets.terraform_api_token }}
 
       - name: Replace the GCP service account key
         run: |
           cat <<EOT >> default.auto.tfvars
           gcp-sa-key    =  <<-EOF
-          ${{ secrets.GCP_SA_KEY }}
+          ${{ secrets.gcp_service_account_key }}
           EOF
           EOT
         working-directory: terraform/gcp/
 
       - name: Terraform fmt
-        id: fmt
         run: terraform fmt -check
         continue-on-error: true
         working-directory: terraform/gcp/
 
       - name: Terraform Init
-        id: init
         run: terraform init
         working-directory: terraform/gcp/
 
       - name: Terraform Validate
-        id: validate
         run: terraform validate -no-color
         working-directory: terraform/gcp/
 
       - name: Terraform Apply
-        id: apply
         run: |
           terraform apply -input=false -auto-approve
         working-directory: terraform/gcp/
@@ -114,14 +137,14 @@ jobs:
 
       - uses: google-github-actions/setup-gcloud@master
         with:
-          service_account_key: ${{ secrets.GCP_SA_KEY }}
+          service_account_key: ${{ secrets.gcp_service_account_key }}
           export_default_credentials: true
 
       - uses: google-github-actions/get-gke-credentials@main
         with:
           cluster_name: ${{ steps.get-k8s-cluster-name.outputs.stdout }}
           location: ${{ steps.get-k8s-cluster-location.outputs.stdout }}
-          credentials: ${{ secrets.GCP_SA_KEY }}
+          credentials: ${{ secrets.gcp_service_account_key }}
           export_default_credentials: true
 
       - uses: actions/setup-go@v2
@@ -136,11 +159,11 @@ jobs:
 
       - run: make integration
         env:
-          GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
+          GCP_SA_KEY: ${{ secrets.gcp_service_account_key }}
           GCP_BQ_DATASET_ID: ${{ steps.get-gcp-bigquery-dataset-id.outputs.stdout }}
           GCP_BQ_TABLE_ID: ${{ steps.get-gcp-bigquery-table-id.outputs.stdout }}
-          GCP_PROJECT_ID: fluent-bit-ci
-          IMAGE_REPOSITORY: ${{ inputs.image-name }}
-          IMAGE_TAG: ${{ inputs.image-tag }}
-          GRAFANA_USERNAME: ${{ secrets.GRAFANA_USERNAME }}
-          GRAFANA_PASSWORD: ${{ secrets.GRAFANA_PASSWORD }}
+          GCP_PROJECT_ID: ${{ inputs.gcp_project_id }}
+          IMAGE_REPOSITORY: ${{ inputs.image_name }}
+          IMAGE_TAG: ${{ inputs.image_tag }}
+          GRAFANA_USERNAME: ${{ secrets.grafana_username }}
+          GRAFANA_PASSWORD: ${{ secrets.grafana_password }}
