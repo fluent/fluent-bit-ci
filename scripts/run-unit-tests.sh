@@ -26,6 +26,7 @@ do
     SKIP="$SKIP -DFLB_WITHOUT_${skip}=1"
 done
 
+# shellcheck disable=SC1091
 [ -f /etc/lsb-release ] && . /etc/lsb-release
 if [ "$DISTRIB_RELEASE" = "14.04" ]
 then
@@ -45,7 +46,9 @@ set -e
 mkdir -p build
 cd build
 echo "Build unit tests for $FLB_OPT on $nparallel VCPU"
-echo cmake $LDFLAG $GLOBAL_OPTS $FLB_OPT -DFLB_TESTS_INTERNAL=On -DFLB_TESTS_RUNTIME=On $SKIP ../
+echo "cmake $LDFLAG $GLOBAL_OPTS $FLB_OPT -DFLB_TESTS_INTERNAL=On -DFLB_TESTS_RUNTIME=On $SKIP ../"
+# We do want splitting for parameters here
+# shellcheck disable=SC2086
 cmake $LDFLAG $GLOBAL_OPTS $FLB_OPT -DFLB_TESTS_INTERNAL=On -DFLB_TESTS_RUNTIME=On $SKIP ../
 make -j $nparallel
 
@@ -58,7 +61,7 @@ res=$?
 if [[ "$FLB_OPT" =~ COVERAGE  ]]
 then
     mkdir -p coverage
-    find lib -name "*.gcda" -o -name "*.gcno" -print0 | xargs -0 -r rm
+    find lib \( -name "*.gcda" -o -name "*.gcno" \) -print0 | xargs -0 -r rm
     gcovr -e "build/sql.l" -e "build/sql.y" -e "build/ra.l" -e "build/ra.y" -p -r .. . | cut -c1-100
     gcovr -e "build/sql.l" -e "build/sql.y" -e "build/ra.l" -e "build/ra.y" --html --html-details -p -r .. -o coverage/index.html .
     echo
