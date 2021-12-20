@@ -11,12 +11,12 @@ on:
       image_name:
         description: The image repository and name to use.
         required: false
-        default: "fluentbitdev/fluent-bit"
+        default: fluentbitdev/fluent-bit
         type: string
       image_tag:
         description: The image tag to use.
         required: false
-        default: "x86_64-master"
+        default: x86_64-master
         type: string
       gcp_project_id:
         description: The GCP project to use.
@@ -44,7 +44,7 @@ jobs:
     # Non-matrix, test images exist first
     runs-on: ubuntu-latest
     env:
-      IMAGE: ${{ inputs.image }}:${{ inputs.image_tag }}
+      IMAGE: ${{ inputs.image_name }}:${{ inputs.image_tag }}
     steps:
       - run: docker pull $IMAGE
 
