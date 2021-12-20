@@ -13,8 +13,8 @@ jobs:
     with:
       image_name: fluentbitdev/fluent-bit
       image_tag: x86_64-master
-      grafana_username: ${{ secrets.GRAFANA_USERNAME }}
     secrets:
+      grafana_username: ${{ secrets.GRAFANA_USERNAME }}
       terraform_api_token: ${{ secrets.TF_API_TOKEN }}
       gcp_service_account_key: ${{ secrets.GCP_SA_KEY }}
       grafana_password: ${{ secrets.GRAFANA_PASSWORD }}

@@ -8,10 +8,6 @@ on:
         default: app.terraform.io
         required: false
         type: string
-      grafana_username:
-        description: The Grafana (Cloud) username to deploy with.
-        required: true
-        type: string
       image_name:
         description: The image repository and name to use.
         required: false
@@ -33,6 +29,9 @@ on:
         required: true
       gcp_service_account_key:
         description: The GCP service account we want to use provides this token.
+        required: true
+      grafana_username:
+        description: The Grafana (Cloud) username to deploy with.
         required: true
       grafana_password:
         description: The Grafana (Cloud) credentials to deploy with.
