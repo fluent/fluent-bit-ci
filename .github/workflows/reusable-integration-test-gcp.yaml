@@ -136,21 +136,21 @@ jobs:
         run: terraform output -no-color -raw gcp-bigquery-table-id
         working-directory: terraform/gcp/
 
-      - uses: google-github-actions/setup-gcloud@master
+      - uses: google-github-actions/auth@v0
         with:
-          service_account_key: ${{ secrets.gcp_service_account_key }}
+          credentials_json: ${{ secrets.gcp_service_account_key }}
           export_default_credentials: true
 
-      - uses: google-github-actions/get-gke-credentials@main
+      - uses: google-github-actions/setup-gcloud@v0
+
+      - uses: google-github-actions/get-gke-credentials@v0
         with:
           cluster_name: ${{ steps.get-k8s-cluster-name.outputs.stdout }}
           location: ${{ steps.get-k8s-cluster-location.outputs.stdout }}
-          credentials: ${{ secrets.gcp_service_account_key }}
-          export_default_credentials: true
 
       - uses: actions/setup-go@v2
         with:
-          go-version: '1.16' # The Go version to download (if necessary) and use.
+          go-version: '1.17' # The Go version to download (if necessary) and use.
 
       - uses: azure/setup-helm@v1
         id: install
