@@ -1,0 +1,27 @@
+---
+name: Reusable workflow to annotate Grafana cloud with details on this commit.
+on:
+  workflow_call:
+    inputs:
+      ref:
+        description: The SHA, branch or commit ID to add to the annotation.
+        required: true
+        type: string
+        default: unknown
+    secrets:
+      grafana_cloud_token:
+        description: Set this with a valid Grafana Cloud token to annotate with the details in Grafana cloud.
+        required: true
+
+jobs:
+  call-annotate-grafana-cloud:
+    name: Add commit details to Grafana cloud
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          repository: calyptia/fluent-bit-ci
+      - run: scripts/grafana-add-tag.sh
+        env:
+          GRAFANA_CLOUD_TOKEN: ${{ secrets.grafana_cloud_token }}
+          COMMIT_ID: ${{ inputs.ref }}

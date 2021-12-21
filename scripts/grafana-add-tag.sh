@@ -1,6 +1,5 @@
 #!/bin/bash
-
-set -ex
+set -eux
 START_DATE=$(date +%s%N | cut -b1-13)
 
 curl -X POST https://fluentbit.grafana.net/api/annotations \
