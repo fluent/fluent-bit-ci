@@ -10,9 +10,6 @@ on:
 jobs:
   run-integration-gcp:
     uses: calyptia/fluent-bit-ci/.github/workflows/reusable-integration-test-gcp.yaml@main
-    with:
-      image_name: fluentbitdev/fluent-bit
-      image_tag: x86_64-master
     secrets:
       grafana_username: ${{ secrets.GRAFANA_USERNAME }}
       terraform_api_token: ${{ secrets.TF_API_TOKEN }}

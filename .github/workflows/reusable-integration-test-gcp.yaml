@@ -11,16 +11,31 @@ on:
       image_name:
         description: The image repository and name to use.
         required: false
-        default: fluentbitdev/fluent-bit
+        default: ghcr.io/fluent/fluent-bit/master
         type: string
       image_tag:
         description: The image tag to use.
         required: false
-        default: x86_64-master
+        default: x86_64
         type: string
       gcp_project_id:
         description: The GCP project to use.
         default: fluent-bit-ci
+        required: false
+        type: string
+      gke_cluster_name:
+        description: The GKE cluster to use.
+        default: fluent-bit-ci
+        required: false
+        type: string
+      gke_cluster_autopilot:
+        description: Optionally enable GKE autopilot.
+        default: false
+        required: false
+        type: boolean
+      github_actions_concurrency_group:
+        description: The concurrency_group to run with.
+        default: integration-test
         required: false
         type: string
     secrets:
@@ -51,6 +66,7 @@ jobs:
   call-run-integration-gcp:
     name: k8s ${{ matrix.k8s-release }} run integration tests on GCP
     needs: call-run-integration-test-images-exist
+    concurrency: ${{ inputs.github_actions_concurrency_group }}
     strategy:
       fail-fast: false
       matrix:
@@ -73,11 +89,19 @@ jobs:
         run: |
           sed -i -e "s/\$K8S_RELEASE/${{ env.k8s_release }}/g" default.auto.tfvars
           sed -i -e "s/\$K8S_FORMATTED/${{ env.k8s_release_formatted }}/g" default.auto.tfvars
-          sed -i -e "s/\$K8S_FORMATTED/${{ env.k8s_release_formatted }}/g" config.tf
+          sed -i -e "s/\$K8S_CLUSTER_NAME/${{ inputs.gke_cluster_name }}/g" default.auto.tfvars
+          sed -i -e "s/\$GCP_PROJECT_ID/${{ inputs.gcp_project_id }}/g" default.auto.tfvars
         working-directory: terraform/gcp/
         env:
           k8s_release: ${{ matrix.k8s-release }}
           k8s_release_formatted: ${{ steps.formatted_release.outputs.replaced }}
+
+      - name: Set autopilot mode
+        if: inputs.gke_cluster_autopilot
+        run: |
+          sed -i -e "s/gke-enable-autopilot  = false/gke-enable-autopilot  = true/g" default.auto.tfvars
+        working-directory: terraform/gcp/
+        shell: bash
 
       - uses: hashicorp/setup-terraform@v1
         with:

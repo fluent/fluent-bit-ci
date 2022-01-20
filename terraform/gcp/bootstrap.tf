@@ -17,17 +17,26 @@ resource "google_compute_network" "vpc" {
   auto_create_subnetworks = true
 }
 
+resource "google_container_cluster" "fluent-bit-ci-autopilot-cluster" {
+  count = var.gke-enable-autopilot ? 1 : 0
+
+  enable_autopilot   = true
+
+  name               = "${var.k8s-cluster-name}-gke-${var.k8s-version-formatted}-autopilot"
+  location           = var.gcp-default-zone
+  network            = google_compute_network.vpc.name
+
+  depends_on         = [ data.google_project.project ]
+}
+
 resource "google_container_cluster" "fluent-bit-ci-k8s-cluster" {
+  count = var.gke-enable-autopilot ? 0 : 1
+
   name               = "${var.k8s-cluster-name}-gke-${var.k8s-version-formatted}"
   location           = var.gcp-default-zone
-  node_locations     = var.k8s-additional-zones
-  monitoring_service = "monitoring.googleapis.com/kubernetes"
   network            = google_compute_network.vpc.name
-  //
-  //  release_channel {
-  //    channel = "REGULAR"
-  //  }
 
+  node_locations     = var.k8s-additional-zones
   node_version       = data.google_container_engine_versions.versions.latest_node_version
   min_master_version = data.google_container_engine_versions.versions.latest_master_version
 
@@ -73,19 +82,8 @@ resource "google_bigquery_table" "testing-table" {
 EOF
 }
 
-//resource "random_id" "disk" {
-//  byte_length = 6
-//}
-//
-//resource "google_compute_disk" "testing-data" {
-//  name = "testing-data-${random_id.disk.hex}"
-//  type = "pd-ssd"
-//  zone = var.gcp-default-zone
-//  size = 450
-//}
-
 output "k8s-cluster-name" {
-  value = google_container_cluster.fluent-bit-ci-k8s-cluster.name
+  value = "${element(compact(concat(google_container_cluster.fluent-bit-ci-k8s-cluster.*.name, google_container_cluster.fluent-bit-ci-autopilot-cluster.*.name)),0)}"
 }
 
 output "gcp-bigquery-dataset-id" {
@@ -95,15 +93,10 @@ output "gcp-bigquery-dataset-id" {
 output "gcp-bigquery-table-id" {
   value = google_bigquery_table.testing-table.table_id
 }
-
-//output "gcp-disk-id" {
-//  value = google_compute_disk.testing-data.name
-//}
-
 output "gcp-project-id" {
   value = var.gcp-project-id
 }
 
 output "k8s-cluster-location" {
-  value = google_container_cluster.fluent-bit-ci-k8s-cluster.location
+  value = "${element(compact(concat(google_container_cluster.fluent-bit-ci-k8s-cluster.*.location, google_container_cluster.fluent-bit-ci-autopilot-cluster.*.location)),0)}"
 }

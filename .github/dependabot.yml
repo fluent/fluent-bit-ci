@@ -5,3 +5,11 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
+    commit-message:
+      prefix: "workflows: "
+  - package-ecosystem: "terraform"
+    directory: "terraform/"
+    schedule:
+      interval: "daily"
+    commit-message:
+      prefix: "terraform: "

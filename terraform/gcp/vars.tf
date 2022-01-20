@@ -52,3 +52,8 @@ variable "k8s-disk-size" {
   type    = string
   default = 250
 }
+
+variable "gke-enable-autopilot" {
+  type    = bool
+  default = false
+}

@@ -2,7 +2,9 @@ terraform {
   required_providers {
     google = {
       source  = "hashicorp/google"
-      version = "3.59.0"
+      # Step up once merged: https://github.com/GoogleCloudPlatform/magic-modules/pull/5540
+      # See: https://github.com/hashicorp/terraform-provider-google/issues/10782
+      version = "4.3.0"
     }
   }
   backend "remote" {
