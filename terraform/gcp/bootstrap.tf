@@ -20,21 +20,21 @@ resource "google_compute_network" "vpc" {
 resource "google_container_cluster" "fluent-bit-ci-autopilot-cluster" {
   count = var.gke-enable-autopilot ? 1 : 0
 
-  enable_autopilot   = true
+  enable_autopilot = true
 
-  name               = "${var.k8s-cluster-name}-gke-${var.k8s-version-formatted}-autopilot"
-  location           = var.gcp-default-zone
-  network            = google_compute_network.vpc.name
+  name     = "${var.k8s-cluster-name}-gke-${var.k8s-version-formatted}-autopilot"
+  location = var.gcp-default-zone
+  network  = google_compute_network.vpc.name
 
-  depends_on         = [ data.google_project.project ]
+  depends_on = [data.google_project.project]
 }
 
 resource "google_container_cluster" "fluent-bit-ci-k8s-cluster" {
   count = var.gke-enable-autopilot ? 0 : 1
 
-  name               = "${var.k8s-cluster-name}-gke-${var.k8s-version-formatted}"
-  location           = var.gcp-default-zone
-  network            = google_compute_network.vpc.name
+  name     = "${var.k8s-cluster-name}-gke-${var.k8s-version-formatted}"
+  location = var.gcp-default-zone
+  network  = google_compute_network.vpc.name
 
   node_locations     = var.k8s-additional-zones
   node_version       = data.google_container_engine_versions.versions.latest_node_version
@@ -83,7 +83,7 @@ EOF
 }
 
 output "k8s-cluster-name" {
-  value = "${element(compact(concat(google_container_cluster.fluent-bit-ci-k8s-cluster.*.name, google_container_cluster.fluent-bit-ci-autopilot-cluster.*.name)),0)}"
+  value = element(compact(concat(google_container_cluster.fluent-bit-ci-k8s-cluster.*.name, google_container_cluster.fluent-bit-ci-autopilot-cluster.*.name)), 0)
 }
 
 output "gcp-bigquery-dataset-id" {
@@ -98,5 +98,5 @@ output "gcp-project-id" {
 }
 
 output "k8s-cluster-location" {
-  value = "${element(compact(concat(google_container_cluster.fluent-bit-ci-k8s-cluster.*.location, google_container_cluster.fluent-bit-ci-autopilot-cluster.*.location)),0)}"
+  value = element(compact(concat(google_container_cluster.fluent-bit-ci-k8s-cluster.*.location, google_container_cluster.fluent-bit-ci-autopilot-cluster.*.location)), 0)
 }

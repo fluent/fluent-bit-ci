@@ -1,7 +1,7 @@
 terraform {
   required_providers {
     google = {
-      source  = "hashicorp/google"
+      source = "hashicorp/google"
       # Step up once merged: https://github.com/GoogleCloudPlatform/magic-modules/pull/5540
       # See: https://github.com/hashicorp/terraform-provider-google/issues/10782
       version = "4.3.0"
