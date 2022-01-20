@@ -1,0 +1,36 @@
+name: Run integration tests for PR
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - labeled
+      - opened
+      - edited
+      - reopened
+      - synchronize
+
+jobs:
+  # TODO: before merge make sure to change 'workflows_expose_settings_autopilot_support' --> 'main'
+
+  pr-integration-gcp:
+    name: PR - GKE integration test
+    if: contains(github.event.pull_request.labels.*.name, 'ok-to-test')
+    uses: calyptia/fluent-bit-ci/.github/workflows/reusable-integration-test-gcp.yaml@workflows_expose_settings_autopilot_support
+    secrets:
+      grafana_username: ${{ secrets.GRAFANA_USERNAME }}
+      terraform_api_token: ${{ secrets.TF_API_TOKEN }}
+      gcp_service_account_key: ${{ secrets.GCP_SA_KEY }}
+      grafana_password: ${{ secrets.GRAFANA_PASSWORD }}
+
+  pr-integration-gcp-autopilot:
+    name: PR - GKE Autopilot integration test
+    if: contains(github.event.pull_request.labels.*.name, 'ok-to-test')
+    needs: pr-integration-gcp # prevent us destroying the one we're using
+    uses: calyptia/fluent-bit-ci/.github/workflows/reusable-integration-test-gcp.yaml@workflows_expose_settings_autopilot_support
+    secrets:
+      grafana_username: ${{ secrets.GRAFANA_USERNAME }}
+      terraform_api_token: ${{ secrets.TF_API_TOKEN }}
+      gcp_service_account_key: ${{ secrets.GCP_SA_KEY }}
+      grafana_password: ${{ secrets.GRAFANA_PASSWORD }}
+      gke_cluster_autopilot: true
