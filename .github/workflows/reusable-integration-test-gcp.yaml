@@ -11,12 +11,12 @@ on:
       image_name:
         description: The image repository and name to use.
         required: false
-        default: fluentbitdev/fluent-bit
+        default: ghcr.io/fluent/fluent-bit/master
         type: string
       image_tag:
         description: The image tag to use.
         required: false
-        default: x86_64-master
+        default: x86_64
         type: string
       gcp_project_id:
         description: The GCP project to use.
@@ -40,7 +40,7 @@ on:
 jobs:
 
   call-run-integration-test-images-exist:
-    name: Test $IMAGE exists
+    name: Test image exists
     # Non-matrix, test images exist first
     runs-on: ubuntu-latest
     env:
@@ -168,3 +168,12 @@ jobs:
           IMAGE_TAG: ${{ inputs.image_tag }}
           GRAFANA_USERNAME: ${{ secrets.grafana_username }}
           GRAFANA_PASSWORD: ${{ secrets.grafana_password }}
+
+      - name: Dump pod logs on failure
+        if: failure()
+        continue-on-error: true
+        run: |
+          kubectl get pods --all-namespaces -o wide --show-labels || true
+          wget https://raw.githubusercontent.com/johanhaleby/kubetail/master/kubetail
+          /bin/bash ./kubetail --follow false --previous false --colored-output false --namespace default || true
+        shell: bash

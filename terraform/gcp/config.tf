@@ -2,7 +2,7 @@ terraform {
   required_providers {
     google = {
       source  = "hashicorp/google"
-      version = "3.59.0"
+      version = "4.10.0"
     }
   }
   backend "remote" {

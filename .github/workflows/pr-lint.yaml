@@ -53,7 +53,7 @@ jobs:
     steps:
       - name: checkout code
         uses: actions/checkout@v2
-      - name: terraform format check 
+      - name: terraform format check
         run: >
-          find ./ -name '*.tf' -exec dirname \{\} \; | sort | uniq | 
+          find ./ -name '*.tf' -exec dirname \{\} \; | sort | uniq |
           parallel terraform fmt -diff -check
