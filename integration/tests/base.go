@@ -86,7 +86,6 @@ func (suite *BaseTestSuite) RenderCfgFromTpl(tplName string, prefix string, exte
 		return "", err
 	}
 
-	//return renderedTemplate, nil
 	_, err = tempFile.Write([]byte(renderedTemplate))
 	if err != nil {
 		return "", err
@@ -145,6 +144,10 @@ func (suite *BaseTestSuite) SetupSuite() {
 
 	if suite.TerraformOptions == nil {
 		suite.TerraformOptions = make(map[string]string)
+	}
+
+	if _, exists := os.LookupEnv("GCP_SA_KEY"); !exists {
+		panic(fmt.Errorf("Missing GCP_SA_KEY environment variable"))
 	}
 
 	testSuiteSAKeyPath := "gcp_sa_key.json"
