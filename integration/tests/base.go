@@ -4,7 +4,10 @@
 package tests
 
 import (
+	"bytes"
+	"context"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -116,7 +119,42 @@ func (suite *BaseTestSuite) GetTerraformOpts(fluentBitConfig string) (*terraform
 	}), nil
 }
 
+// TODO: remove once https://github.com/gruntwork-io/terratest/pull/968 available
+func GetPodLogs(t testing.TestingT, options *KubectlOptions, podName string, podLogOpts *corev1.PodLogOptions) (string, error) {
+	clientSet, err := GetKubernetesClientFromOptionsE(t, options)
+	if err != nil {
+		return "", err
+	}
+
+	req := clientSet.CoreV1().Pods(options.Namespace).GetLogs(podName, podLogOpts)
+	podLogs, err := req.Stream(context.Background())
+	if err != nil {
+		return "", err
+	}
+
+	defer podLogs.Close()
+
+	buf := new(bytes.Buffer)
+	_, err = io.Copy(buf, podLogs)
+	if err != nil {
+		return "", err
+	}
+	str := buf.String()
+
+	return str, nil
+}
+
 func (suite *BaseTestSuite) TearDownSuite() {
+	// Get all pods and their logs in the test namespace
+	for pod := range k8s.ListPods(suite.T(), suite.K8sOptions, v1.ListOptions{}) {
+		err, output := GetPodLogsE(suite.T(), suite.K8sOptions, pod.Name)
+		if err != nil {
+			fmt.Println("Unable to get logs for pod due to error", pod.Name, err)
+		} else {
+			fmt.Println("Logs for pod", pod.Name, output)
+		}
+	}
+
 	defer k8s.DeleteNamespace(suite.T(), suite.K8sOptions, suite.Namespace)
 }
 
