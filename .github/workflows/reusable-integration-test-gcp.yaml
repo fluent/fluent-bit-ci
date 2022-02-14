@@ -40,7 +40,7 @@ on:
 jobs:
 
   call-run-integration-test-images-exist:
-    name: Test $IMAGE exists
+    name: Test image exists
     # Non-matrix, test images exist first
     runs-on: ubuntu-latest
     env:
