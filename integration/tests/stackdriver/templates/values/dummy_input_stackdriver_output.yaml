@@ -33,8 +33,6 @@ config:
         Tag {{ logid }}
         Dummy {"message": "testing"}
         Rate 10
-  filters: |
-    [FILTER]
   outputs: |
     [OUTPUT]
         Name stackdriver
