@@ -20,8 +20,12 @@ import (
 	"github.com/gruntwork-io/terratest/modules/k8s"
 	"github.com/gruntwork-io/terratest/modules/random"
 	"github.com/gruntwork-io/terratest/modules/terraform"
+	"github.com/gruntwork-io/terratest/modules/testing"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
+
+	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -120,8 +124,8 @@ func (suite *BaseTestSuite) GetTerraformOpts(fluentBitConfig string) (*terraform
 }
 
 // TODO: remove once https://github.com/gruntwork-io/terratest/pull/968 available
-func GetPodLogs(t testing.TestingT, options *KubectlOptions, podName string, podLogOpts *corev1.PodLogOptions) (string, error) {
-	clientSet, err := GetKubernetesClientFromOptionsE(t, options)
+func GetPodLogs(t testing.TestingT, options *k8s.KubectlOptions, podName string, podLogOpts *corev1.PodLogOptions) (string, error) {
+	clientSet, err := k8s.GetKubernetesClientFromOptionsE(t, options)
 	if err != nil {
 		return "", err
 	}
@@ -146,8 +150,8 @@ func GetPodLogs(t testing.TestingT, options *KubectlOptions, podName string, pod
 
 func (suite *BaseTestSuite) TearDownSuite() {
 	// Get all pods and their logs in the test namespace
-	for pod := range k8s.ListPods(suite.T(), suite.K8sOptions, v1.ListOptions{}) {
-		err, output := GetPodLogsE(suite.T(), suite.K8sOptions, pod.Name)
+	for _, pod := range k8s.ListPods(suite.T(), suite.K8sOptions, v1.ListOptions{}) {
+		output, err := GetPodLogs(suite.T(), suite.K8sOptions, pod.Name, &corev1.PodLogOptions{})
 		if err != nil {
 			fmt.Println("Unable to get logs for pod due to error", pod.Name, err)
 		} else {
