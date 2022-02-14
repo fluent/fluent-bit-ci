@@ -1,3 +1,4 @@
+//go:build integration
 // +build integration
 
 package tests
@@ -22,8 +23,8 @@ import (
 )
 
 const defaultk8sClientConfigPath = "/tmp/client.config"
-const defaultk8sImageRepository = "fluentbitdev/fluent-bit"
-const defaultK8sImageTag = "x86_64-master"
+const defaultk8sImageRepository = "ghcr.io/fluent/fluent-bit/master"
+const defaultK8sImageTag = "x86_64"
 const DefaultMaxRetries = 3
 const DefaultRetryTimeout = 1 * time.Minute
 
