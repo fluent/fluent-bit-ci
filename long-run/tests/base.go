@@ -3,6 +3,13 @@ package tests
 import (
 	"flag"
 	"fmt"
+	"io/ioutil"
+	"os"
+	"os/exec"
+	"path"
+	"strings"
+	"time"
+
 	"github.com/flosch/pongo2/v4"
 	http_helper "github.com/gruntwork-io/terratest/modules/http-helper"
 	"github.com/gruntwork-io/terratest/modules/k8s"
@@ -10,18 +17,12 @@ import (
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
-	"io/ioutil"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"os"
-	"os/exec"
-	"path"
-	"strings"
-	"time"
 )
 
 const defaultk8sClientConfigPath = "/tmp/client.config"
-const defaultk8sImageRepository = "fluentbitdev/fluent-bit"
-const defaultK8sImageTag = "x86_64-master"
+const defaultk8sImageRepository = "ghcr.io/fluent/fluent-bit/master"
+const defaultK8sImageTag = "x86_64"
 const DefaultMaxRetries = 3
 const DefaultRetryTimeout = 1 * time.Minute
 

@@ -1,9 +1,13 @@
+//go:build integration
 // +build integration
 
 package tests
 
 import (
+	"bytes"
+	"context"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -16,14 +20,18 @@ import (
 	"github.com/gruntwork-io/terratest/modules/k8s"
 	"github.com/gruntwork-io/terratest/modules/random"
 	"github.com/gruntwork-io/terratest/modules/terraform"
+	"github.com/gruntwork-io/terratest/modules/testing"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
+
+	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 const defaultk8sClientConfigPath = "/tmp/client.config"
-const defaultk8sImageRepository = "fluentbitdev/fluent-bit"
-const defaultK8sImageTag = "x86_64-master"
+const defaultk8sImageRepository = "ghcr.io/fluent/fluent-bit/master"
+const defaultK8sImageTag = "x86_64"
 const DefaultMaxRetries = 3
 const DefaultRetryTimeout = 1 * time.Minute
 
@@ -85,7 +93,6 @@ func (suite *BaseTestSuite) RenderCfgFromTpl(tplName string, prefix string, exte
 		return "", err
 	}
 
-	//return renderedTemplate, nil
 	_, err = tempFile.Write([]byte(renderedTemplate))
 	if err != nil {
 		return "", err
@@ -116,7 +123,42 @@ func (suite *BaseTestSuite) GetTerraformOpts(fluentBitConfig string) (*terraform
 	}), nil
 }
 
+// TODO: remove once https://github.com/gruntwork-io/terratest/pull/968 available
+func GetPodLogs(t testing.TestingT, options *k8s.KubectlOptions, podName string, podLogOpts *corev1.PodLogOptions) (string, error) {
+	clientSet, err := k8s.GetKubernetesClientFromOptionsE(t, options)
+	if err != nil {
+		return "", err
+	}
+
+	req := clientSet.CoreV1().Pods(options.Namespace).GetLogs(podName, podLogOpts)
+	podLogs, err := req.Stream(context.Background())
+	if err != nil {
+		return "", err
+	}
+
+	defer podLogs.Close()
+
+	buf := new(bytes.Buffer)
+	_, err = io.Copy(buf, podLogs)
+	if err != nil {
+		return "", err
+	}
+	str := buf.String()
+
+	return str, nil
+}
+
 func (suite *BaseTestSuite) TearDownSuite() {
+	// Get all pods and their logs in the test namespace
+	for _, pod := range k8s.ListPods(suite.T(), suite.K8sOptions, v1.ListOptions{}) {
+		output, err := GetPodLogs(suite.T(), suite.K8sOptions, pod.Name, &corev1.PodLogOptions{})
+		if err != nil {
+			fmt.Println("Unable to get logs for pod due to error", pod.Name, err)
+		} else {
+			fmt.Println("Logs for pod", pod.Name, output)
+		}
+	}
+
 	defer k8s.DeleteNamespace(suite.T(), suite.K8sOptions, suite.Namespace)
 }
 
@@ -144,6 +186,10 @@ func (suite *BaseTestSuite) SetupSuite() {
 
 	if suite.TerraformOptions == nil {
 		suite.TerraformOptions = make(map[string]string)
+	}
+
+	if _, exists := os.LookupEnv("GCP_SA_KEY"); !exists {
+		panic(fmt.Errorf("Missing GCP_SA_KEY environment variable"))
 	}
 
 	testSuiteSAKeyPath := "gcp_sa_key.json"

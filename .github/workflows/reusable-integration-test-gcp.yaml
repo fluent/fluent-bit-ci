@@ -168,12 +168,3 @@ jobs:
           IMAGE_TAG: ${{ inputs.image_tag }}
           GRAFANA_USERNAME: ${{ secrets.grafana_username }}
           GRAFANA_PASSWORD: ${{ secrets.grafana_password }}
-
-      - name: Dump pod logs on failure
-        if: failure()
-        continue-on-error: true
-        run: |
-          kubectl get pods --all-namespaces -o wide --show-labels || true
-          wget https://raw.githubusercontent.com/johanhaleby/kubetail/master/kubetail
-          /bin/bash ./kubetail --follow false --previous false --colored-output false --namespace default || true
-        shell: bash
