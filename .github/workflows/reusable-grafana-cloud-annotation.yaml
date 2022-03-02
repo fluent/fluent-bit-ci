@@ -18,7 +18,7 @@ jobs:
     name: Add commit details to Grafana cloud
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           repository: calyptia/fluent-bit-ci
       - run: scripts/grafana-add-tag.sh
