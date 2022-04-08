@@ -31,19 +31,19 @@ DETIK_CLIENT_NAMESPACE="${TEST_NAMESPACE}"
 
     helm upgrade --install --debug --namespace "$TEST_NAMESPACE" opensearch opensearch/opensearch -f ${BATS_TEST_DIRNAME}/resources/helm/opensearch-basic.yaml --set image.tag=${OPENSEARCH_IMAGE_TAG} --wait
 
-	run try "at most 15 times every 2s " \
-		"to find 1 pods named 'opensearch-cluster-master-0' " \
-		"with 'status' being 'running'"
+    run try "at most 15 times every 2s " \
+        "to find 1 pods named 'opensearch-cluster-master-0' " \
+        "with 'status' being 'running'"
 
-	assert_success
+    assert_success
 
     helm upgrade --install --debug --namespace "$TEST_NAMESPACE" fluent-bit fluent/fluent-bit -f ${BATS_TEST_DIRNAME}/resources/helm/fluentbit-basic.yaml --set image.tag=${FLUENTBIT_IMAGE_TAG} --wait
 
-	run try "at most 15 times every 2s " \
-		"to find 1 pods named 'fluent-bit' " \
-		"with 'status' being 'running'"
+    run try "at most 15 times every 2s " \
+        "to find 1 pods named 'fluent-bit' " \
+        "with 'status' being 'running'"
 
-	assert_success
+    assert_success
 
     attempt=0
     while true; do
