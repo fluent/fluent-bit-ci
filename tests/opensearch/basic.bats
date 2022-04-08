@@ -13,8 +13,16 @@ load "$BATS_FILE_ROOT/load.bash"
 
 setup() {
     echo "recreating namespace $TEST_NAMESPACE"
-    run kubectl delete namespace "$TEST_NAMESPACE"
+    if [[ "${SKIP_DELETE_NAMESPACE:-no}" != "yes" ]]; then
+        run kubectl delete namespace "$TEST_NAMESPACE"
+    fi
     run kubectl create namespace "$TEST_NAMESPACE"
+}
+
+teardown() {
+    if [[ "${SKIP_DELETE_NAMESPACE:-no}" != "yes" ]]; then
+        run kubectl delete namespace "$TEST_NAMESPACE"
+    fi
 }
 
 # These are required for bats-detik
