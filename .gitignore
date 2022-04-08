@@ -1,1 +1,2 @@
-.terraform*
+tools/bats/lib/*
+.idea/*
