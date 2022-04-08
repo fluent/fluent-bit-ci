@@ -25,25 +25,21 @@ DETIK_CLIENT_NAMESPACE="${TEST_NAMESPACE}"
 
 
 @test "test fluent-bit forwards logs to opensearch default index" {
-    helm repo add opensearch https://opensearch-project.github.io/helm-charts/
-    helm repo add fluent https://fluent.github.io/helm-charts
-    helm repo update
+    helm repo add opensearch https://opensearch-project.github.io/helm-charts/ ||  helm repo add opensearch https://opensearch-project.github.io/helm-charts
+    helm repo add fluent https://fluent.github.io/helm-charts/ || helm repo add fluent https://fluent.github.io/helm-charts
+    helm repo update --fail-on-repo-update-fail
 
     helm upgrade --install --debug --namespace "$TEST_NAMESPACE" opensearch opensearch/opensearch -f ${BATS_TEST_DIRNAME}/resources/helm/opensearch-basic.yaml --set image.tag=${OPENSEARCH_IMAGE_TAG} --wait
 
-    run try "at most 15 times every 2s " \
+    try "at most 15 times every 2s " \
         "to find 1 pods named 'opensearch-cluster-master-0' " \
         "with 'status' being 'running'"
 
-    assert_success
-
     helm upgrade --install --debug --namespace "$TEST_NAMESPACE" fluent-bit fluent/fluent-bit -f ${BATS_TEST_DIRNAME}/resources/helm/fluentbit-basic.yaml --set image.tag=${FLUENTBIT_IMAGE_TAG} --wait
 
-    run try "at most 15 times every 2s " \
+    try "at most 15 times every 2s " \
         "to find 1 pods named 'fluent-bit' " \
         "with 'status' being 'running'"
-
-    assert_success
 
     attempt=0
     while true; do

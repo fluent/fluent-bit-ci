@@ -1,4 +1,18 @@
 #!/usr/bin/env bash
+# Copyright 2021 Couchbase, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file  except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the  License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 set -eo pipefail
 
 # Verifies if all the given variables are set, and exits otherwise
@@ -86,38 +100,4 @@ function wait_for_url() {
     fi
     # shellcheck disable=SC2086
     wait_for_curl "$MAX_ATTEMPTS" "$URL" $extra_args
-}
-
-function wait_for_container_output() {
-    local MAX_ATTEMPTS=$1
-    local CONTAINER_NAME=$2
-    local EXPECTED_OUTPUT=$3
-
-    shift
-    local ATTEMPTS=0
-
-    # This function may be run outside of BATS, so ensure `fail` has a definition
-    if [[ $(type -t fail) != function ]]; then
-        function fail() {
-            local message=$1
-            echo "FAIL: $message"
-            exit 1
-        }
-    fi
-
-    if ! "$CONTAINER_RUNTIME" logs "$CONTAINER_NAME" ; then
-        fail "unable to get logs for container: $CONTAINER_NAME"
-    fi
-
-    until "$CONTAINER_RUNTIME" logs "$CONTAINER_NAME"|grep -q "$EXPECTED_OUTPUT" ; do
-        # Prevent an infinite loop - at 2 seconds per go this is 10 minutes
-        if [ $ATTEMPTS -gt "300" ]; then
-            fail "wait_for_container_output ultimate max exceeded: $*"
-        fi
-        if [ $ATTEMPTS -gt "$MAX_ATTEMPTS" ]; then
-            fail "wait_for_container_output unable to find output: $*"
-        fi
-        ATTEMPTS=$((ATTEMPTS+1))
-        sleep 5
-    done
 }
