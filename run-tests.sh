@@ -18,7 +18,7 @@ set -eo pipefail
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 export HELPERS_ROOT="${SCRIPT_DIR}"
-export TEST_ROOT="${SCRIPT_DIR}/tests/"
+export TEST_ROOT="${SCRIPT_DIR}/tests"
 export HELPERS_ROOT="${SCRIPT_DIR}/helpers/"
 export RESOURCES_ROOT="${SCRIPT_DIR}/resources/"
 
@@ -35,6 +35,9 @@ export TEST_NAMESPACE=${TEST_NAMESPACE:-test}
 export FLUENTBIT_IMAGE_TAG=${FLUENTBIT_IMAGE_TAG:-latest}
 export OPENSEARCH_IMAGE_TAG=${OPENSEARCH_IMAGE_TAG:-1.3.0}
 
+export HELM_VALUES_EXTRA_FILE=${HELM_VALUES_EXTRA_FILE:-"$TEST_ROOT/defaults/values.yaml.tpl"}
+export HELM_IMAGE_PULL_POLICY=${HELM_IMAGE_PULL_POLICY:-Always}
+
 # shellcheck disable=SC1091
 source "$HELPERS_ROOT/test-helpers.bash"
 
@@ -43,6 +46,11 @@ source "$HELPERS_ROOT/test-helpers.bash"
 function run_tests() {
     local requested=$1
     local run="--verbose-run"
+
+    if [ -e  "${HELM_VALUES_EXTRA_FILE}" ]; then
+      envsubst < "${HELM_VALUES_EXTRA_FILE}" > "${HELM_VALUES_EXTRA_FILE%.*}"
+      export HELM_VALUES_EXTRA_FILE="${HELM_VALUES_EXTRA_FILE%.*}"
+    fi
 
     if [[ "$requested" == "all" ]] || [ -z "$requested" ]; then
         # Empty => everything. Alternatively, explicitly ask for it.
