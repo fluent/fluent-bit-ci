@@ -8,15 +8,25 @@ jobs:
   run-tests:
     name: Run BATS 🦇 tests.
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        k8s-release: [ 'v1.23.5', 'v1.22.7', 'v1.21.10' ]
+    permissions:
+      contents: read
     steps:
-
-      - name: Check out code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
       - name: Setup BATS
         uses: mig4/setup-bats@v1
         with:
           bats-version: 1.6.0
+
+      - name: Create k8s Kind Cluster
+        uses: helm/kind-action@v1.2.0
+        with:
+          node_image: kindest/node:${{ matrix.k8s-release }}
+          cluster_name: kind
 
       - name: Create k8s Kind Cluster
         uses: helm/kind-action@v1.2.0
