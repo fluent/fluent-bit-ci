@@ -74,7 +74,7 @@ function run_tests() {
     echo "Starting tests."
     echo "========================"
     echo
-    echo "Fluentbit repository: ${FLUENTBIT_REPOSITORY} - tag: ${FLUENTBIT_IMAGE_TAG}"
+    echo "Fluentbit repository: ${FLUENTBIT_IMAGE_REPOSITORY} - tag: ${FLUENTBIT_IMAGE_TAG}"
     echo
     echo
 
