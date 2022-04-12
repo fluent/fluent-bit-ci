@@ -37,6 +37,11 @@ of running the test suites:
 ```bash
 SKIP_TEARDOWN=yes # don't remove the testing namespace
 TEST_NAMESPACE=test # k8s namespace to use
+# HELM_VALUES_EXTRA_FILE is a default file containing global helm
+# options that can be optionally applied on helm install/upgrade
+# by the test. This will fall back to $TEST_ROOT/defaults/values.yaml.tpl
+# if not passed.
+HELM_VALUES_EXTRA_FILE=./path/to/your/default/values.yaml
 ```
 
 For other options check [run-tests.sh](./run-tests.sh)
