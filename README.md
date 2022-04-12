@@ -15,6 +15,7 @@ in the system.
 
 * [Bats](https://bats-core.readthedocs.io/en/stable/installation.html)
 * [Kind](https://kind.sigs.k8s.io/docs/user/quick-start/#installing-with-a-package-manager)
+* [Helm](https://helm.sh/docs/intro/install/)
 
 Run the full suite.
 
