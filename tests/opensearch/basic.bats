@@ -13,9 +13,7 @@ load "$BATS_FILE_ROOT/load.bash"
 
 setup() {
     echo "recreating namespace $TEST_NAMESPACE"
-    if [[ "${SKIP_TEARDOWN:-no}" != "yes" ]]; then
-        run kubectl delete namespace "$TEST_NAMESPACE"
-    fi
+    run kubectl delete namespace "$TEST_NAMESPACE"
     run kubectl create namespace "$TEST_NAMESPACE"
 }
 
