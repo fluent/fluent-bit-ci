@@ -4,7 +4,6 @@ rbac:
   create: false
 image:
   repository: ghcr.io/fluent/fluent-bit
-  pullPolicy: IfNotPresent
 
 config:
   service: |
