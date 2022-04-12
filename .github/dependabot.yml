@@ -3,12 +3,6 @@ updates:
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "daily"
+      interval: "weekly"
     commit-message:
       prefix: "workflows: "
-  - package-ecosystem: "terraform"
-    directory: "terraform/"
-    schedule:
-      interval: "daily"
-    commit-message:
-      prefix: "terraform: "
