@@ -32,6 +32,7 @@ export BATS_ASSERT_ROOT=$BATS_ROOT/lib/bats-assert
 export BATS_DETIK_ROOT=$BATS_ROOT/lib/bats-detik
 export TEST_NAMESPACE=${TEST_NAMESPACE:-test}
 
+export FLUENTBIT_IMAGE_REPOSITORY=${FLUENTBIT_IMAGE_REPOSITORY:-ghcr.io/fluent/fluent-bit}
 export FLUENTBIT_IMAGE_TAG=${FLUENTBIT_IMAGE_TAG:-latest}
 export OPENSEARCH_IMAGE_TAG=${OPENSEARCH_IMAGE_TAG:-1.3.0}
 
@@ -42,7 +43,7 @@ export HELM_IMAGE_PULL_POLICY=${HELM_IMAGE_PULL_POLICY:-Always}
 source "$HELPERS_ROOT/test-helpers.bash"
 
 # Helper function to run a set of tests based on our specific configuration
-# This function will call `exit`, so any cleanup must be done inside of it.
+# This function will call `exit`, so any cleanup must be done inside it.
 function run_tests() {
     local requested=$1
     local run="--verbose-run"
@@ -73,7 +74,7 @@ function run_tests() {
     echo "Starting tests."
     echo "========================"
     echo
-    echo "Fluentbit image: ${FLUENTBIT_IMAGE_TAG}"
+    echo "Fluentbit repository: ${FLUENTBIT_REPOSITORY} - tag: ${FLUENTBIT_IMAGE_TAG}"
     echo
     echo
 

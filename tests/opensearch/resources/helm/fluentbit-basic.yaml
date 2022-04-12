@@ -2,9 +2,6 @@ kind: Deployment
 replicaCount: 1
 rbac:
   create: false
-image:
-  repository: ghcr.io/fluent/fluent-bit
-
 config:
   service: |
     [SERVICE]
