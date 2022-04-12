@@ -1,0 +1,5 @@
+protocol: http
+httpPort: 9200
+transportPort: 9300
+replicas: 1
+minimumMasterNodes: 1
