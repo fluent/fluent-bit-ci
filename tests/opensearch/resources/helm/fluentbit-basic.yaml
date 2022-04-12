@@ -2,7 +2,6 @@ kind: Deployment
 replicaCount: 1
 rbac:
   create: false
-
 config:
   service: |
     [SERVICE]
