@@ -22,7 +22,9 @@ config:
         Name opensearch
         Match *
         Host ${HOSTED_OPENSEARCH_HOST}
+
         Port ${HOSTED_OPENSEARCH_PORT}
+
         Index fluentbit
         tls On
         tls.verify Off
