@@ -17,6 +17,7 @@ variable "aws_secret_key" {
 variable "opensearch_master_user_name" {
   type        = string
   description = "Master username for OpenSearch"
+  default     = "admin"
 }
 
 variable "opensearch_master_user_password" {
