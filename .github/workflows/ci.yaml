@@ -72,7 +72,7 @@ jobs:
           ./run-tests.sh
         shell: bash
         env:
-          AWS_OPENSEARCH_HOST: ${{ steps.aws-opensearch-endpoint.outputs.stdout }}
-          AWS_OPENSEARCH_PORT: 443
-          AWS_OPENSEARCH_USER: admin
-          AWS_OPENSEARCH_PASSWORD: ${{ secrets.OPENSEARCH_ADMIN_PASSWORD }}
+          OPENSEARCH_HOST: ${{ steps.aws-opensearch-endpoint.outputs.stdout }}
+          OPENSEARCH_PORT: 443
+          OPENSEARCH_USER: admin
+          OPENSEARCH_PASSWORD: ${{ secrets.OPENSEARCH_ADMIN_PASSWORD }}
