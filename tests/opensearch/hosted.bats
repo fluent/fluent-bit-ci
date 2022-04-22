@@ -15,14 +15,22 @@ setup() {
     echo "recreating namespace $TEST_NAMESPACE"
     run kubectl delete namespace "$TEST_NAMESPACE"
     run kubectl create namespace "$TEST_NAMESPACE"
+    # HELM_VALUES_EXTRA_FILE is a default file containing global helm
+    # options that can be optionally applied on helm install/upgrade
+    # by the test. This will fall back to $TEST_ROOT/defaults/values.yaml.tpl
+    # if not passed.
+    if [ -e  "${HELM_VALUES_EXTRA_FILE}" ]; then
+      envsubst < "${HELM_VALUES_EXTRA_FILE}" > "${HELM_VALUES_EXTRA_FILE%.*}"
+      export HELM_VALUES_EXTRA_FILE="${HELM_VALUES_EXTRA_FILE%.*}"
+    fi
 }
 
 teardown() {
     if [[ "${SKIP_TEARDOWN:-no}" != "yes" ]]; then
         run kubectl delete namespace "$TEST_NAMESPACE"
         [ -e ${HELM_VALUES_EXTRA_FILE} ] && rm ${HELM_VALUES_EXTRA_FILE}
+        [ -e ${BATS_TEST_DIRNAME}/resources/helm/fluentbit-hosted.yaml ] && rm ${BATS_TEST_DIRNAME}/resources/helm/fluentbit-hosted.yaml
     fi
-    [ -e ${BATS_TEST_DIRNAME}/resources/helm/fluentbit-hosted.yaml ] && rm ${BATS_TEST_DIRNAME}/resources/helm/fluentbit-hosted.yaml
 }
 
 # These are required for bats-detik

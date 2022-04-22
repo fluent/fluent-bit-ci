@@ -5,7 +5,7 @@ on:
 
 jobs:
   tflint:
-    name: tflint PR commenter
+    name: PR - Tflint
     runs-on: ubuntu-latest
 
     steps:

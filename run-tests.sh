@@ -40,10 +40,10 @@ export OPENSEARCH_IMAGE_TAG=${OPENSEARCH_IMAGE_TAG:-1.3.0}
 export HELM_VALUES_EXTRA_FILE=${HELM_VALUES_EXTRA_FILE:-"$TEST_ROOT/defaults/values.yaml.tpl"}
 export HELM_IMAGE_PULL_POLICY=${HELM_IMAGE_PULL_POLICY:-Always}
 
-export HOSTED_OPENSEARCH_HOST=${HOSTED_OPENSEARCH_HOST:""}
-export HOSTED_OPENSEARCH_PORT=${HOSTED_OPENSEARCH_PORT:"443"}
-export HOSTED_OPENSEARCH_USERNAME=${HOSTED_OPENSEARCH_USERNAME:"admin"}
-export HOSTED_OPENSEARCH_PASSWORD=${HOSTED_OPENSEARCH_PASSWORD:""}
+export HOSTED_OPENSEARCH_HOST=${HOSTED_OPENSEARCH_HOST:-""}
+export HOSTED_OPENSEARCH_PORT=${HOSTED_OPENSEARCH_PORT:-"443"}
+export HOSTED_OPENSEARCH_USERNAME=${HOSTED_OPENSEARCH_USERNAME:-"admin"}
+export HOSTED_OPENSEARCH_PASSWORD=${HOSTED_OPENSEARCH_PASSWORD:-""}
 
 # shellcheck disable=SC1091
 source "$HELPERS_ROOT/test-helpers.bash"
@@ -53,15 +53,6 @@ source "$HELPERS_ROOT/test-helpers.bash"
 function run_tests() {
     local requested=$1
     local run="--verbose-run"
-
-    # HELM_VALUES_EXTRA_FILE is a default file containing global helm
-    # options that can be optionally applied on helm install/upgrade
-    # by the test. This will fall back to $TEST_ROOT/defaults/values.yaml.tpl
-    # if not passed.
-    if [ -e  "${HELM_VALUES_EXTRA_FILE}" ]; then
-      envsubst < "${HELM_VALUES_EXTRA_FILE}" > "${HELM_VALUES_EXTRA_FILE%.*}"
-      export HELM_VALUES_EXTRA_FILE="${HELM_VALUES_EXTRA_FILE%.*}"
-    fi
 
     if [[ "$requested" == "all" ]] || [ -z "$requested" ]; then
         # Empty => everything. Alternatively, explicitly ask for it.

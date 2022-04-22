@@ -15,6 +15,14 @@ setup() {
     echo "recreating namespace $TEST_NAMESPACE"
     run kubectl delete namespace "$TEST_NAMESPACE"
     run kubectl create namespace "$TEST_NAMESPACE"
+    # HELM_VALUES_EXTRA_FILE is a default file containing global helm
+    # options that can be optionally applied on helm install/upgrade
+    # by the test. This will fall back to $TEST_ROOT/defaults/values.yaml.tpl
+    # if not passed.
+    if [ -e  "${HELM_VALUES_EXTRA_FILE}" ]; then
+      envsubst < "${HELM_VALUES_EXTRA_FILE}" > "${HELM_VALUES_EXTRA_FILE%.*}"
+      export HELM_VALUES_EXTRA_FILE="${HELM_VALUES_EXTRA_FILE%.*}"
+    fi
 }
 
 teardown() {

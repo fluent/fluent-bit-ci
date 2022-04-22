@@ -20,7 +20,7 @@ variable "opensearch_master_user_name" {
   default     = "admin"
 }
 
-variable "opensearch_master_user_password" {
+variable "opensearch_admin_password" {
   type        = string
   description = "Master password for OpenSearch"
 }

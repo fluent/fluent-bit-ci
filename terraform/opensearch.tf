@@ -35,7 +35,7 @@ resource "aws_elasticsearch_domain" "opensearch" {
 
     master_user_options {
       master_user_name     = var.opensearch_master_user_name
-      master_user_password = var.opensearch_master_user_password
+      master_user_password = var.opensearch_admin_password
     }
   }
 
