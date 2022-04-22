@@ -27,6 +27,7 @@ jobs:
           sed -i -e "s/\$OPENSEARCH_AWS_ACCESS_ID/${{ secrets.OPENSEARCH_AWS_ACCESS_ID }}/g" default.auto.tfvars
           sed -i -e "s/\$OPENSEARCH_AWS_SECRET_KEY/${{ secrets.OPENSEARCH_AWS_SECRET_KEY }}/g" default.auto.tfvars
         working-directory: terraform/
+        shell: bash
 
       - name: Terraform init
         run: terraform init
