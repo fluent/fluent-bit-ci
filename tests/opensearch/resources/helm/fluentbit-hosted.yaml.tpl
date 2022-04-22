@@ -28,4 +28,3 @@ config:
         tls.verify Off
         http_user ${HOSTED_OPENSEARCH_USERNAME}
         http_passwd ${HOSTED_OPENSEARCH_PASSWORD}
-
