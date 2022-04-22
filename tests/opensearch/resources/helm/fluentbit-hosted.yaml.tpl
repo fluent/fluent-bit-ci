@@ -24,7 +24,8 @@ config:
         Host ${HOSTED_OPENSEARCH_HOST}
         Port ${HOSTED_OPENSEARCH_PORT}
         Index fluentbit
-        http_user ${HOSTED_OPENSEARCH_USERNAME}
-        http_passwd ${HOSTED_OPENSEARCH_PASSWORD}
         tls On
         tls.verify Off
+        http_user ${HOSTED_OPENSEARCH_USERNAME}
+        http_passwd ${HOSTED_OPENSEARCH_PASSWORD}
+
