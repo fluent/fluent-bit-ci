@@ -1,9 +1,9 @@
 locals {
-  opensearch_domain_name = "calyptia-opensearch"
+  opensearch_domain_name = "calyptia"
 }
 
 resource "aws_cloudwatch_log_group" "log_group" {
-  name              = "/calyptia/opensearch"
+  name              = "/calyptia/opensearch/1.2"
   retention_in_days = 30
 }
 

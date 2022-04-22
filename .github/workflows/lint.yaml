@@ -24,24 +24,6 @@ jobs:
         if: ${{ github.event_name == 'workflow_dispatch' }}
         run: docker run --rm -v "$(pwd)/terraform:/data" -t ghcr.io/terraform-linters/tflint
 
-  # Runs 'tfsec': https://github.com/aquasecurity/tfsec-pr-commenter-action
-  tfsec:
-    name: PR - Tfsec
-    runs-on: ubuntu-latest
-    steps:
-      - name: Clone repo
-        uses: actions/checkout@master
-
-      - name: tfsec
-        if: ${{ github.event_name == 'pull_request' }}
-        uses: aquasecurity/tfsec-pr-commenter-action@v1.2.0
-        with:
-          github_token: ${{ github.token }}
-
-      - name: tfsec
-        if: ${{ github.event_name == 'workflow_dispatch' }}
-        run: docker run --rm -t -v "$(pwd):/src" aquasec/tfsec /src
-
   shellcheck-pr:
     runs-on: ubuntu-latest
     name: PR - Shellcheck
