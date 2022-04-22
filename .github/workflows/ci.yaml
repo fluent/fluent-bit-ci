@@ -17,6 +17,34 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - uses: hashicorp/setup-terraform@v1
+        with:
+          cli_config_credentials_hostname: 'app.terraform.io'
+          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+
+      - name: Replace terraform variables.
+        run: |
+          sed -i -e "s/\$OPENSEARCH_AWS_ACCESS_ID/${{ secrets.OPENSEARCH_AWS_ACCESS_ID }}/g" default.auto.tfvars
+          sed -i -e "s/\$OPENSEARCH_AWS_SECRET_KEY/${{ secrets.OPENSEARCH_AWS_SECRET_KEY }}/g" default.auto.tfvars
+        working-directory: terraform/
+
+      - name: Terraform init
+        run: terraform init
+        working-directory: terraform/
+
+      - name: Terraform validate
+        run: terraform validate -no-color
+        working-directory: terraform/
+
+      - name: Terraform apply
+        run: terraform apply -input=false -auto-approve
+        working-directory: terraform
+
+      - name: Get the AWS OpenSearch endpoint
+        id: aws-opensearch-endpoint
+        run: terraform output -no-color -raw aws-opensearch-endpoint
+        working-directory: terraform/
+
       - name: Setup BATS
         uses: mig4/setup-bats@v1
         with:
@@ -43,3 +71,8 @@ jobs:
         run:  |
           ./run-tests.sh
         shell: bash
+        env:
+          AWS_OPENSEARCH_HOST: ${{ steps.aws-opensearch-endpoint.outputs.stdout }}
+          AWS_OPENSEARCH_PORT: 443
+          AWS_OPENSEARCH_USER: admin
+          AWS_OPENSEARCH_PASSWORD: ${{ secrets.OPENSEARCH_ADMIN_PASSWORD }}
