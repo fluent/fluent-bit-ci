@@ -26,5 +26,6 @@ config:
         Index fluentbit
         tls On
         tls.verify Off
-        http_user ${HOSTED_OPENSEARCH_USERNAME}
+        http_user admin
         http_passwd ${HOSTED_OPENSEARCH_PASSWORD}
+
