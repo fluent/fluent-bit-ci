@@ -2,7 +2,7 @@
 
 load "$HELPERS_ROOT/test-helpers.bash"
 
-ensure_variables_set BATS_SUPPORT_ROOT BATS_ASSERT_ROOT BATS_DETIK_ROOT BATS_FILE_ROOT TEST_NAMESPACE FLUENTBIT_IMAGE_TAG AWS_OPENSEARCH_HOST AWS_OPENSEARCH_PORT AWS_OPENSEARCH_USERNAME AWS_OPENSEARCH_PASSWORD
+ensure_variables_set BATS_SUPPORT_ROOT BATS_ASSERT_ROOT BATS_DETIK_ROOT BATS_FILE_ROOT TEST_NAMESPACE FLUENTBIT_IMAGE_TAG HOSTED_OPENSEARCH_HOST HOSTED_OPENSEARCH_PORT HOSTED_OPENSEARCH_USERNAME HOSTED_OPENSEARCH_PASSWORD
 
 load "$BATS_DETIK_ROOT/utils.bash"
 load "$BATS_DETIK_ROOT/linter.bash"
@@ -43,8 +43,7 @@ DETIK_CLIENT_NAMESPACE="${TEST_NAMESPACE}"
 
     attempt=0
     while true; do
-        run curl -XGET --header 'Content-Type: application/json' --insecure -s -w "%{http_code}" https://${AWS_OPENSEARCH_USERNAME}:${AWS_OPENSEARCH_PASSWORD}@${AWS_OPENSEARCH_HOST}/fluentbit/_search/ -d '{ "query": { "range": { "timestamp": { "gte": "now-15s" }}}}' -o /dev/null
-
+        run curl -XGET --header 'Content-Type: application/json' --insecure -s -w "%{http_code}" https://${HOSTED_OPENSEARCH_USERNAME}:${HOSTED_OPENSEARCH_PASSWORD}@${HOSTED_OPENSEARCH_HOST}/fluentbit/_search/ -d '{ "query": { "range": { "timestamp": { "gte": "now-15s" }}}}' -o /dev/null
         if [[ "$output" != "200" ]]; then
             if [ "$attempt" -lt 5 ]; then
                 attempt=$(( attempt + 1 ))

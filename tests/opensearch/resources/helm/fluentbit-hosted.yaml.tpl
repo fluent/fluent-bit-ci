@@ -21,10 +21,10 @@ config:
     [OUTPUT]
         Name opensearch
         Match *
-        Host ${AWS_OPENSEARCH_HOST}
-        Port ${AWS_OPENSEARCH_PORT}
+        Host ${HOSTED_OPENSEARCH_HOST}
+        Port ${HOSTED_OPENSEARCH_PORT}
         Index fluentbit
-        http_user ${AWS_OPENSEARCH_USERNAME}
-        http_passwd ${AWS_OPENSEARCH_PASSWORD}
+        http_user ${HOSTED_OPENSEARCH_USERNAME}
+        http_passwd ${HOSTED_OPENSEARCH_PASSWORD}
         tls On
         tls.verify Off
