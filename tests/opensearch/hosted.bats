@@ -28,8 +28,8 @@ setup() {
 teardown() {
     if [[ "${SKIP_TEARDOWN:-no}" != "yes" ]]; then
         run kubectl delete namespace "$TEST_NAMESPACE"
-        [ -e ${HELM_VALUES_EXTRA_FILE} ] && rm -f ${HELM_VALUES_EXTRA_FILE}
-        [ -e ${BATS_TEST_DIRNAME}/resources/helm/fluentbit-hosted.yaml ] && rm -f ${BATS_TEST_DIRNAME}/resources/helm/fluentbit-hosted.yaml
+        rm -f ${HELM_VALUES_EXTRA_FILE}
+        rm -f ${BATS_TEST_DIRNAME}/resources/helm/fluentbit-hosted.yaml
     fi
 }
 
