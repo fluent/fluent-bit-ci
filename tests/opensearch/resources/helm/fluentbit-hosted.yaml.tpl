@@ -21,10 +21,11 @@ config:
     [OUTPUT]
         Name opensearch
         Match *
-        Host opensearch-cluster-master
-        Port 9200
+        Host ${HOSTED_OPENSEARCH_HOST}
+        Port 443
         Index fluentbit
-        http_user admin
-        http_passwd admin
         tls On
         tls.verify Off
+        http_user admin
+        http_passwd ${HOSTED_OPENSEARCH_PASSWORD}
+
