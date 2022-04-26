@@ -44,7 +44,7 @@ DETIK_CLIENT_NAMESPACE="${TEST_NAMESPACE}"
     helm repo add fluent https://fluent.github.io/helm-charts/ || helm repo add fluent https://fluent.github.io/helm-charts
     helm repo update --fail-on-repo-update-fail
 
-    helm upgrade --install --debug --namespace "$TEST_NAMESPACE" opensearch opensearch/opensearch \
+    helm upgrade --install --debug --create-namespace --namespace "$TEST_NAMESPACE" opensearch opensearch/opensearch \
         --values ${BATS_TEST_DIRNAME}/resources/helm/opensearch-basic.yaml \
         --set image.repository=${OPENSEARCH_IMAGE_REPOSITORY},image.tag=${OPENSEARCH_IMAGE_TAG} \
         --values "$HELM_VALUES_EXTRA_FILE" \
@@ -54,7 +54,7 @@ DETIK_CLIENT_NAMESPACE="${TEST_NAMESPACE}"
         "to find 1 pods named 'opensearch-cluster-master-0' " \
         "with 'status' being 'running'"
 
-    helm upgrade --install --debug --namespace "$TEST_NAMESPACE" fluent-bit fluent/fluent-bit \
+    helm upgrade --install --debug --create-namespace --namespace "$TEST_NAMESPACE" fluent-bit fluent/fluent-bit \
         --values ${BATS_TEST_DIRNAME}/resources/helm/fluentbit-basic.yaml \
         --set image.repository=${FLUENTBIT_IMAGE_REPOSITORY},image.tag=${FLUENTBIT_IMAGE_TAG} \
         --values "$HELM_VALUES_EXTRA_FILE" \

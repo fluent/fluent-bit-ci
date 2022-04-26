@@ -43,7 +43,7 @@ DETIK_CLIENT_NAMESPACE="${TEST_NAMESPACE}"
 @test "test fluent-bit forwards logs to AWS OpenSearch hosted service default index" {
     envsubst < "${BATS_TEST_DIRNAME}/resources/helm/fluentbit-hosted.yaml.tpl" > "${BATS_TEST_DIRNAME}/resources/helm/fluentbit-hosted.yaml"
 
-    helm upgrade --install --debug --namespace "$TEST_NAMESPACE" fluent-bit fluent/fluent-bit \
+    helm upgrade --install --debug --create-namespace --namespace "$TEST_NAMESPACE" fluent-bit fluent/fluent-bit \
     --values $HELM_VALUES_EXTRA_FILE \
     -f ${BATS_TEST_DIRNAME}/resources/helm/fluentbit-hosted.yaml \
     --set image.repository=${FLUENTBIT_IMAGE_REPOSITORY} \
