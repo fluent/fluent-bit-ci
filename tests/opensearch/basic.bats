@@ -28,7 +28,7 @@ setup() {
 teardown() {
     if [[ "${SKIP_TEARDOWN:-no}" != "yes" ]]; then
         run kubectl delete namespace "$TEST_NAMESPACE"
-        [ -e ${HELM_VALUES_EXTRA_FILE} ] && rm ${HELM_VALUES_EXTRA_FILE}
+        [ -e ${HELM_VALUES_EXTRA_FILE} ] && rm -f ${HELM_VALUES_EXTRA_FILE}
     fi
 }
 

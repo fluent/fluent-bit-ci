@@ -28,8 +28,8 @@ setup() {
 teardown() {
     if [[ "${SKIP_TEARDOWN:-no}" != "yes" ]]; then
         run kubectl delete namespace "$TEST_NAMESPACE"
-        [ -e ${HELM_VALUES_EXTRA_FILE} ] && rm ${HELM_VALUES_EXTRA_FILE}
-        [ -e ${BATS_TEST_DIRNAME}/resources/helm/fluentbit-hosted.yaml ] && rm ${BATS_TEST_DIRNAME}/resources/helm/fluentbit-hosted.yaml
+        [ -e ${HELM_VALUES_EXTRA_FILE} ] && rm -f ${HELM_VALUES_EXTRA_FILE}
+        [ -e ${BATS_TEST_DIRNAME}/resources/helm/fluentbit-hosted.yaml ] && rm -f ${BATS_TEST_DIRNAME}/resources/helm/fluentbit-hosted.yaml
     fi
 }
 
@@ -42,8 +42,12 @@ DETIK_CLIENT_NAMESPACE="${TEST_NAMESPACE}"
 
 @test "test fluent-bit forwards logs to AWS OpenSearch hosted service default index" {
     envsubst < "${BATS_TEST_DIRNAME}/resources/helm/fluentbit-hosted.yaml.tpl" > "${BATS_TEST_DIRNAME}/resources/helm/fluentbit-hosted.yaml"
-    cat ${BATS_TEST_DIRNAME}/resources/helm/fluentbit-hosted.yaml
-    helm upgrade --install --debug --namespace "$TEST_NAMESPACE" fluent-bit fluent/fluent-bit --values $HELM_VALUES_EXTRA_FILE -f ${BATS_TEST_DIRNAME}/resources/helm/fluentbit-hosted.yaml --set image.repository=${FLUENTBIT_IMAGE_REPOSITORY} --set image.tag=${FLUENTBIT_IMAGE_TAG} --wait
+
+    helm upgrade --install --debug --namespace "$TEST_NAMESPACE" fluent-bit fluent/fluent-bit \
+    --values $HELM_VALUES_EXTRA_FILE \
+    -f ${BATS_TEST_DIRNAME}/resources/helm/fluentbit-hosted.yaml \
+    --set image.repository=${FLUENTBIT_IMAGE_REPOSITORY} \
+    --set image.tag=${FLUENTBIT_IMAGE_TAG} --wait
 
     try "at most 15 times every 2s " \
         "to find 1 pods named 'fluent-bit' " \
