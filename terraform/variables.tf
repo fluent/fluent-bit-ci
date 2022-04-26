@@ -7,22 +7,26 @@ variable "aws_region" {
 variable "aws_access_id" {
   type        = string
   description = "AWS access ID"
+  sensitive = true
 }
 
 variable "aws_secret_key" {
   type        = string
   description = "AWS secret key"
+  sensitive = true
 }
 
 variable "opensearch_master_user_name" {
   type        = string
   description = "Master username for OpenSearch"
   default     = "admin"
+  sensitive = true
 }
 
 variable "opensearch_admin_password" {
   type        = string
   description = "Master password for OpenSearch"
+  sensitive = true
 }
 
 variable "opensearch_instance_type" {
