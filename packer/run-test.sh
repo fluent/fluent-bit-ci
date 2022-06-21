@@ -43,7 +43,3 @@ pushd "$TEMP_ROOT_DIR"
 
     /bin/bash "$TEST_TEMPLATE_ROOT"/test/run.sh
 popd
-
-if [[ -z "${SKIP_TEARDOWN:-}" ]]; then
-    rm -rf "$TEMP_ROOT_DIR"
-fi
