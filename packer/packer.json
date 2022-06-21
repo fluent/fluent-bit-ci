@@ -42,6 +42,10 @@
   "post-processors": [
     {
       "type": "vagrant"
+    },
+    {
+      "type": "compress",
+      "output": "fb-perf-test-vagrant.tar.gz"
     }
   ]
 }
