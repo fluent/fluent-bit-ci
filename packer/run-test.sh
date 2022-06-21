@@ -8,18 +8,21 @@ TEST_TEMPLATE_ROOT=${TEST_TEMPLATE_ROOT:-$SCRIPT_DIR/templates}
 # Match CI input names and defaults
 BASELINE=${BASELINE:-fluent/fluent-bit:latest}
 REF=${REF:?}
+CUSTOM_CONFIG_DIR=${CUSTOM_CONFIG_DIR:-}
 CUSTOM_CONFIG_REF=${CUSTOM_CONFIG_REF:-}
 CUSTOM_ENVIRONMENT=${CUSTOM_ENVIRONMENT:-}
 NAME=${NAME:?}
 DURATION=${DURATION:-5}
 
 TEMP_ROOT_DIR=$(mktemp -d)
-pushd $TEMP_ROOT_DIR
+pushd "$TEMP_ROOT_DIR"
     mkdir -p custom-config
 
-    export CUSTOM_CONFIG_DIR=$TEMP_ROOT_DIR/custom-config
+    export TEST_TEMPLATE_ROOT=$TEST_TEMPLATE_ROOT
+    export DEFAULT_RUN_SCRIPT=$TEST_TEMPLATE_ROOT/test/common.sh
+    export CUSTOM_CONFIG_DIR=$TEMP_ROOT_DIR/custom-config/$CUSTOM_CONFIG_DIR
     export RUN_TIMEOUT_MINUTES=$DURATION
-    export OUTPUT_DIR=${OUTPUT_DIR:-TEMP_ROOT_DIR/output}
+    export OUTPUT_DIR=${OUTPUT_DIR:-$TEMP_ROOT_DIR/output}
     export FB_BASELINE_IMAGE=$BASELINE
     export FB_DELTA_REF=$REF
 
@@ -38,7 +41,7 @@ pushd $TEMP_ROOT_DIR
         cat custom-config/.env
     fi
 
-    /bin/bash $TEST_TEMPLATE_ROOT/test/run.sh
+    /bin/bash "$TEST_TEMPLATE_ROOT"/test/run.sh
 popd
 
 if [[ -z "${SKIP_TEARDOWN:-}" ]]; then

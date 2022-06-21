@@ -1,6 +1,7 @@
 #!/bin/bash
 set -eu
 
+# Wrapper script to switch between single and multiline logs
 LOG_DIR=${LOG_DIR:-/logs}
 LOG_PREFIX=${LOG_PREFIX:-multi}
 LOG_COUNT=${LOG_COUNT:-100}

@@ -13,16 +13,6 @@ on:
         required: true
         type: string
         default: https://github.com/fluent/fluent-bit.git#master
-      custom-config-ref:
-        description: The full Git reference to any test template overrides to run with.
-        required: false
-        type: string
-        default: ""
-      custom-environment:
-        description: A comma-separated string representing any custom variables to pass.
-        required: false
-        type: string
-        default: ""
       vm-name:
         description: The unique VM name to use, it will destroy any existing instances.
         required: true
@@ -33,6 +23,21 @@ on:
         required: false
         type: string
         default: '5'
+      custom-config-ref:
+        description: The full Git reference to any test template overrides to run with.
+        required: false
+        type: string
+        default: ""
+      custom-config-dir:
+        description: An optional subdirectory to use as the location for the test files.
+        required: false
+        type: string
+        default: ""
+      custom-environment:
+        description: A comma-separated string representing any custom variables to pass.
+        required: false
+        type: string
+        default: ""
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.inputs.vm-name }}

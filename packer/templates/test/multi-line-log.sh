@@ -1,7 +1,7 @@
 #!/bin/bash
 set -eu
 
-
+# Noddy script to generate repeating multiline logs of the same content.
 OUTPUT_LOGFILE=${OUTPUT_LOGFILE:-/logs/test.log}
 rm -fv "$OUTPUT_LOGFILE"
 
