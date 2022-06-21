@@ -106,7 +106,7 @@ FB_URL=${FB_URL:-http://localhost:2020}
 DOCKER_COMPOSE_CMD=${DOCKER_COMPOSE_CMD:-docker-compose --project-directory "$COMPOSE_DIR"}
 
 QUERY_RANGE=${QUERY_RANGE:-5m}
-END=$((SECONDS+(60*RUN_TIMEOUT_MINUTES)))
+END=$(( SECONDS+(60*RUN_TIMEOUT_MINUTES) ))
 
 # Our list of metrics to dump out explicitly
 declare -a QUERY_METRICS=("fluentbit_input_records_total"
