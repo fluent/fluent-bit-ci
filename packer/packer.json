@@ -1,0 +1,42 @@
+{
+  "builders": [
+    {
+      "type": "googlecompute",
+      "project_id": "fluent-bit-ci",
+      "source_image_family": "ubuntu-2004-lts",
+      "zone": "us-east1-c",
+
+      "image_name": "fb-perf-test-ubuntu-2004",
+      "image_description": "An image to use for perf testing",
+      "image_family": "perf-test",
+      "image_labels": {
+        "os": "ubuntu-2004-lts",
+        "type": "fb-perf-test"
+      },
+
+      "instance_name": "fb-perf-test-{{uuid}}",
+
+      "machine_type": "e2-standard-8",
+      "disk_size": "250",
+
+      "ssh_username": "packer",
+      "use_os_login": true
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "file",
+      "source": "templates/",
+      "destination": "/opt/fluent-bit-ci/templates/"
+    },
+    {
+      "type": "shell",
+      "script": "provision.sh"
+    }
+  ],
+  "post-processors": [
+    {
+      "type": "vagrant"
+    }
+  ]
+}
