@@ -30,7 +30,9 @@ function start() {
 
 function monitor() {
     # Check every 10 seconds that our service is still up
+    # shellcheck disable=SC2086
     while [ $SECONDS -lt $END ]; do
+    # shellcheck disable=SC2143
         if [ -z "$($DOCKER_COMPOSE_CMD ps -q "$SERVICE_TO_MONITOR")" ] || [ -z "$(docker ps -q --no-trunc | grep "$($DOCKER_COMPOSE_CMD ps -q "$SERVICE_TO_MONITOR")")" ]; then
             echo "ERROR: container has failed after $SECONDS seconds"
             $DOCKER_COMPOSE_CMD logs "$SERVICE_TO_MONITOR" &> "$OUTPUT_DIR/failed.log"
