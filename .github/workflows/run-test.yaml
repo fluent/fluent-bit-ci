@@ -83,27 +83,8 @@ jobs:
           done
           echo
           echo "Successfully connected to $VM_NAME"
-          gcloud compute ssh "$VM_NAME" -q --command="sudo usermod -aG docker $USER && rm -rf ~/custom-config/ && mkdir -p ~/custom-config"
+          gcloud compute ssh "$VM_NAME" -q --command="sudo usermod -aG docker $USER"
         shell: bash
-
-      - name: Clone custom config
-        if: github.event.inputs.custom-config-ref != ''
-        run: |
-          gcloud compute ssh "$VM_NAME" -q --command="git clone ${{ github.event.inputs.custom-config-ref }} custom-config"
-        shell: bash
-
-      - name: Send custom environment
-        if: github.event.inputs.custom-environment != ''
-        run: |
-          for i in ${ALL_VARS//,/ }
-          do
-              echo "$i" >> custom-env.file
-          done
-          cat custom-env.file
-          gcloud compute scp --force-key-file-overwrite custom-env.file "$VM_NAME":~/custom-config/.env
-        shell: bash
-        env:
-          ALL_VARS: ${{ github.event.inputs.custom-environment }}
 
   # Allows us just to re-run here
   run-tests-on-vm-instance:
@@ -114,12 +95,11 @@ jobs:
       - name: Run tests on VM
         run: |
           gcloud compute ssh "$VM_NAME" -q --command="\
-            export CUSTOM_CONFIG_DIR=~/custom-config; \
             export RUN_TIMEOUT_MINUTES=${{ github.event.inputs.duration }}; \
             export OUTPUT_DIR=~/output; \
             export FB_BASELINE_IMAGE=${{ github.event.inputs.baseline }}; \
             export FB_DELTA_REF=${{ github.event.inputs.ref }}; \
-            /opt/fluent-bit-ci/templates/test/run.sh"
+            /opt/fluent-bit-ci/run-test.sh"
         shell: bash
 
       - name: Collect info

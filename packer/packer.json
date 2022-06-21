@@ -30,6 +30,11 @@
       "destination": "/opt/fluent-bit-ci/templates/"
     },
     {
+      "type": "file",
+      "source": "run-test.sh",
+      "destination": "/opt/fluent-bit-ci/run-test.sh"
+    },
+    {
       "type": "shell",
       "script": "provision.sh"
     }
