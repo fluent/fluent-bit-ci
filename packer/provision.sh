@@ -9,11 +9,14 @@ apt-get upgrade -y
 # Set up Docker repo
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
 add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable"
-apt-get update
-apt-cache policy docker-ce
+
+# Install httpie
+curl -SsL https://packages.httpie.io/deb/KEY.gpg | apt-key add -
+curl -SsL -o /etc/apt/sources.list.d/httpie.list https://packages.httpie.io/deb/httpie.list
 
 # Add any tools we need
-apt-get install -y docker-ce git jq
+apt update
+apt-get install -y docker-ce git jq httpie
 systemctl status docker
 
 # Install docker-compose
