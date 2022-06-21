@@ -18,7 +18,7 @@ on:
         required: false
         type: string
         default: ""
-      custom-env:
+      custom-environment:
         description: A comma-separated string representing any custom variables to pass.
         required: false
         type: string
