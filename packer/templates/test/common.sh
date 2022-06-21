@@ -38,6 +38,9 @@ function stop() {
 }
 
 function monitor() {
+    local END=$(( SECONDS+(60*RUN_TIMEOUT_MINUTES) ))
+    local SERVICE_TO_MONITOR=${SERVICE_TO_MONITOR:-fb-delta}
+
     pushd "$COMPOSE_DIR"
         # Check every 10 seconds that our service is still up
         # shellcheck disable=SC2086
@@ -55,6 +58,17 @@ function monitor() {
 }
 
 function dump() {
+    local PROM_URL=${PROM_URL:-http://localhost:9090}
+    local FB_URL=${FB_URL:-http://localhost:2020}
+    local QUERY_RANGE=${QUERY_RANGE:-5m}
+
+    # Our list of metrics to dump out explicitly
+    declare -a QUERY_METRICS=("fluentbit_input_records_total"
+                            "fluentbit_output_proc_records_total"
+                            "fluentbit_output_dropped_records_total"
+                            "fluentbit_output_errors_total"
+    )
+
     pushd "$COMPOSE_DIR"
         # Dump logs and metrics
         $DOCKER_COMPOSE_CMD logs &> "$OUTPUT_DIR/run.log"
@@ -64,8 +78,8 @@ function dump() {
             curl --fail --silent "$FB_URL"/api/v1/uptime | jq > "$OUTPUT_DIR/fb-uptime.json"
             curl --fail --silent "$FB_URL"/api/v1/metrics | jq > "$OUTPUT_DIR/fb-metrics.json"
             curl --fail --silent "$FB_URL"/api/v1/storage | jq > "$OUTPUT_DIR/fb-storage.json"
-            curl --fail --silent "$FB_URL"/api/v1/metrics/prometheus | jq > "$OUTPUT_DIR/fb-prometheus.json"
-            curl --fail --silent "$FB_URL"/api/v1/health | jq > "$OUTPUT_DIR/fb-health.json"
+            curl --fail --silent "$FB_URL"/api/v1/metrics/prometheus > "$OUTPUT_DIR/fb-prometheus.json"
+            curl --fail --silent "$FB_URL"/api/v1/health > "$OUTPUT_DIR/fb-health.json"
         else
             echo "ERROR: no endpoint for Fluent Bit information"
         fi

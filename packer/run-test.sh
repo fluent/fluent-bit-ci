@@ -19,7 +19,6 @@ pushd "$TEMP_ROOT_DIR"
     mkdir -p custom-config
 
     export TEST_TEMPLATE_ROOT=$TEST_TEMPLATE_ROOT
-    export DEFAULT_RUN_SCRIPT=$TEST_TEMPLATE_ROOT/test/common.sh
     export CUSTOM_CONFIG_DIR=$TEMP_ROOT_DIR/custom-config/$CUSTOM_CONFIG_DIR
     export RUN_TIMEOUT_MINUTES=$DURATION
     export OUTPUT_DIR=${OUTPUT_DIR:-$TEMP_ROOT_DIR/output}
@@ -29,7 +28,8 @@ pushd "$TEMP_ROOT_DIR"
     # Clone any custom configuration
     if [[ -n "$CUSTOM_CONFIG_REF" ]]; then
         echo "Attempting to use: $CUSTOM_CONFIG_REF"
-        git clone "$CUSTOM_CONFIG_REF" custom-config
+        # we do want word splitting here in case they want to specify branch options for the reference, e.g. CUSTOM_CONFIG_REF="-b test-branch httpshttps://github.com/fluent/fluent-bit.git"
+        git clone $CUSTOM_CONFIG_REF custom-config
     fi
 
     # Set up any custom environment details
