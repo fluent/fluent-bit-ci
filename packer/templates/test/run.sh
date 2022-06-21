@@ -79,7 +79,7 @@ function stop() {
     fi
 }
 
-# Add any customisation to variables here
+# Add any customisation to variables or functions here
 if [[ -f "$CUSTOM_CONFIG_DIR/.env" ]]; then
     # shellcheck disable=SC1091
     source "$CUSTOM_CONFIG_DIR/.env"

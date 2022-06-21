@@ -18,6 +18,11 @@ on:
         required: false
         type: string
         default: ""
+      custom-env:
+        description: A comma-separated string representing any custom variables to pass.
+        required: false
+        type: string
+        default: ""
       vm-name:
         description: The unique VM name to use, it will destroy any existing instances.
         required: true
@@ -78,14 +83,27 @@ jobs:
           done
           echo
           echo "Successfully connected to $VM_NAME"
-          gcloud compute ssh "$VM_NAME" -q --command="sudo usermod -aG docker $USER"
+          gcloud compute ssh "$VM_NAME" -q --command="sudo usermod -aG docker $USER && rm -rf ~/custom-config/ && mkdir -p ~/custom-config"
         shell: bash
 
       - name: Clone custom config
-        if: custom-config-ref != ''
+        if: github.events.inputs.custom-config-ref != ''
         run: |
-          gcloud compute ssh "$VM_NAME" -q --command="rm -rf custom-config/ && mkdir -p custom-config && git clone ${{ github.events.inputs.custom-config-ref }} custom-config"
+          gcloud compute ssh "$VM_NAME" -q --command="git clone ${{ github.events.inputs.custom-config-ref }} custom-config"
         shell: bash
+
+      - name: Send custom environment
+        if: github.events.inputs.custom-environment != ''
+        run: |
+          for i in ${ALL_VARS//,/ }
+          do
+              echo "$i" >> custom-env.file
+          done
+          cat custom-env.file
+          gcloud compute scp --force-key-file-overwrite custom-env.file "$VM_NAME":~/custom-config/.env
+        shell: bash
+        env:
+          ALL_VARS: ${{ github.events.inputs.custom-environment }}
 
   # Allows us just to re-run here
   run-tests-on-vm-instance:
@@ -95,15 +113,17 @@ jobs:
     steps:
       - name: Run tests on VM
         run: |
-          gcloud compute ssh "$VM_NAME" -q --command="export CUSTOM_CONFIG_DIR=~/custom-config; \
+          gcloud compute ssh "$VM_NAME" -q --command="\
+            export CUSTOM_CONFIG_DIR=~/custom-config; \
             export RUN_TIMEOUT_MINUTES=${{ github.event.inputs.duration }}; \
+            export OUTPUT_DIR=~/output; \
             /opt/fluent-bit-ci/templates/test/run.sh"
         shell: bash
 
       - name: Collect info
         if: always()
         run: |
-          gcloud compute scp --force-key-file-overwrite --recurse "$VM_NAME":/opt/fluent-bit-ci/templates/test/output output
+          gcloud compute scp --force-key-file-overwrite --recurse "$VM_NAME":~/output output
         shell: bash
 
       - name: Upload any results
@@ -112,6 +132,19 @@ jobs:
         with:
           name: output
           path: output/
+
+      - name: Collect config
+        if: always()
+        run: |
+          gcloud compute scp --force-key-file-overwrite --recurse "$VM_NAME":~/custom-config custom-config
+        shell: bash
+
+      - name: Upload any config
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: config
+          path: custom-config/
 
       - name: Get debug information if possible on failure
         continue-on-error: true
