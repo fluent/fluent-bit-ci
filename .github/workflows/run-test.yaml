@@ -87,13 +87,13 @@ jobs:
         shell: bash
 
       - name: Clone custom config
-        if: github.events.inputs.custom-config-ref != ''
+        if: github.event.inputs.custom-config-ref != ''
         run: |
-          gcloud compute ssh "$VM_NAME" -q --command="git clone ${{ github.events.inputs.custom-config-ref }} custom-config"
+          gcloud compute ssh "$VM_NAME" -q --command="git clone ${{ github.event.inputs.custom-config-ref }} custom-config"
         shell: bash
 
       - name: Send custom environment
-        if: github.events.inputs.custom-environment != ''
+        if: github.event.inputs.custom-environment != ''
         run: |
           for i in ${ALL_VARS//,/ }
           do
@@ -103,7 +103,7 @@ jobs:
           gcloud compute scp --force-key-file-overwrite custom-env.file "$VM_NAME":~/custom-config/.env
         shell: bash
         env:
-          ALL_VARS: ${{ github.events.inputs.custom-environment }}
+          ALL_VARS: ${{ github.event.inputs.custom-environment }}
 
   # Allows us just to re-run here
   run-tests-on-vm-instance:
