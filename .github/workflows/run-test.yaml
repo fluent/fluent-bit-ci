@@ -117,6 +117,8 @@ jobs:
             export CUSTOM_CONFIG_DIR=~/custom-config; \
             export RUN_TIMEOUT_MINUTES=${{ github.event.inputs.duration }}; \
             export OUTPUT_DIR=~/output; \
+            export FB_BASELINE_IMAGE=${{ github.event.inputs.baseline }}; \
+            export FB_DELTA_REF=${{ github.event.inputs.ref }}; \
             /opt/fluent-bit-ci/templates/test/run.sh"
         shell: bash
 
