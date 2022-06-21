@@ -22,7 +22,7 @@ on:
         description: The time in minutes to run the test for.
         required: false
         type: string
-        default: '5'
+        default: '15'
       custom-config-ref:
         description: The full Git reference to any test template overrides to run with.
         required: false
@@ -100,10 +100,14 @@ jobs:
       - name: Run tests on VM
         run: |
           gcloud compute ssh "$VM_NAME" -q --command="\
-            export RUN_TIMEOUT_MINUTES=${{ github.event.inputs.duration }}; \
-            export OUTPUT_DIR=~/output; \
-            export FB_BASELINE_IMAGE=${{ github.event.inputs.baseline }}; \
-            export FB_DELTA_REF=${{ github.event.inputs.ref }}; \
+            export BASELINE="${{ github.event.inputs.baseline }}"; \
+            export REF="${{ github.event.inputs.ref }}"; \
+            export CUSTOM_CONFIG_DIR="${{ github.event.inputs.custom-config-dir }}"; \
+            export CUSTOM_CONFIG_REF="${{ github.event.inputs.custom-config-ref }}"; \
+            export CUSTOM_ENVIRONMENT="${{ github.event.inputs.custom-environment }}"; \
+            export NAME="${{ github.event.inputs.vm-name }}"; \
+            export DURATION="${{ github.event.inputs.duration }}"; \
+            export OUTPUT_DIR="~/output"; \
             /opt/fluent-bit-ci/run-test.sh"
         shell: bash
 
