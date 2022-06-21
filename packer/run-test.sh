@@ -29,6 +29,7 @@ pushd "$TEMP_ROOT_DIR"
     if [[ -n "$CUSTOM_CONFIG_REF" ]]; then
         echo "Attempting to use: $CUSTOM_CONFIG_REF"
         # we do want word splitting here in case they want to specify branch options for the reference, e.g. CUSTOM_CONFIG_REF="-b test-branch httpshttps://github.com/fluent/fluent-bit.git"
+        # shellcheck disable=SC2086
         git clone $CUSTOM_CONFIG_REF custom-config
     fi
 

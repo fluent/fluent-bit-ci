@@ -1,4 +1,5 @@
 #!/bin/bash
+# shellcheck disable=SC2164
 
 # FYI: docker-compose has issues with relative directories so we change into the appropriate directory for each command
 # https://github.com/docker/compose/issues/6310

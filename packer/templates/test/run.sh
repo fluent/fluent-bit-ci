@@ -12,6 +12,7 @@ export TEST_TEMPLATE_ROOT=${TEST_TEMPLATE_ROOT:-$SCRIPT_DIR/..}
 export OUTPUT_DIR=${OUTPUT_DIR:-$SCRIPT_DIR/output}
 
 # Import the common functions
+# shellcheck disable=SC1091
 source "$SCRIPT_DIR/common.sh"
 
 # Load any defaults
