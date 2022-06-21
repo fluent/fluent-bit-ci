@@ -32,9 +32,6 @@ usermod -aG sudo perf-test
 usermod -aG docker perf-test
 
 chmod -R a+r /opt/fluent-bit-ci/
-
-# Now we provision our monitoring stack
-/opt/fluent-bit-ci/templates/monitoring/deploy.sh
 SCRIPT
 
 echo "Adding $USER to docker group"

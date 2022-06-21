@@ -15,6 +15,9 @@ fi
 
 # Common functions so can be used by overridden run scripts easily or we can override them in .env
 function start() {
+    # Start our monitoring stack
+    $DOCKER_COMPOSE_MONITORING_CMD up -d --force-recreate --renew-anon-volumes
+
     # cleanup anything existing
     $DOCKER_COMPOSE_CMD down --remove-orphans --volumes
     rm -rf "$OUTPUT_DIR"
@@ -26,6 +29,13 @@ function start() {
     fi
     $DOCKER_COMPOSE_CMD pull
     $DOCKER_COMPOSE_CMD up --force-recreate -d
+}
+
+function stop() {
+    if [[ -z "${SKIP_TEARDOWN:-}" ]]; then
+        $DOCKER_COMPOSE_CMD down --remove-orphans --volumes
+        $DOCKER_COMPOSE_MONITORING_CMD down --remove-orphans --volumes
+    fi
 }
 
 function monitor() {
@@ -75,12 +85,6 @@ function dump() {
     done
 }
 
-function stop() {
-    if [[ -z "${SKIP_TEARDOWN:-}" ]]; then
-        $DOCKER_COMPOSE_CMD down --remove-orphans --volumes
-    fi
-}
-
 # Add any customisation to variables or functions here
 if [[ -f "$CUSTOM_CONFIG_DIR/.env" ]]; then
     # shellcheck disable=SC1091
@@ -101,11 +105,18 @@ if [[ -f "$CUSTOM_CONFIG_DIR/docker-compose.yml" ]]; then
     COMPOSE_DIR="$CUSTOM_CONFIG_DIR"
 fi
 
+# To modify the monitoring stack provide here
+PROM_CFG_DIR="${PROM_CFG_DIR:-/opt/fluent-bit-ci/templates/monitoring}"
+if [[ -d "${CUSTOM_CONFIG_DIR}/monitoring" ]]
+    PROM_CFG_DIR="${CUSTOM_CONFIG_DIR}/monitoring"
+fi
+
 SERVICE_TO_MONITOR=${SERVICE_TO_MONITOR:-fb-delta}
 OUTPUT_DIR=${OUTPUT_DIR:-$SCRIPT_DIR/output}
 PROM_URL=${PROM_URL:-http://localhost:9090}
 FB_URL=${FB_URL:-http://localhost:2020}
 DOCKER_COMPOSE_CMD=${DOCKER_COMPOSE_CMD:-docker-compose --project-directory "$COMPOSE_DIR"}
+DOCKER_COMPOSE_MONITORING_CMD=${DOCKER_COMPOSE_CMD:-docker-compose --project-directory "$PROM_CFG_DIR"}
 
 QUERY_RANGE=${QUERY_RANGE:-5m}
 END=$(( SECONDS+(60*RUN_TIMEOUT_MINUTES) ))
@@ -118,6 +129,7 @@ declare -a QUERY_METRICS=("fluentbit_input_records_total"
 )
 
 echo "Starting test run"
+startMonitoring
 start
 monitor
 dump
