@@ -91,7 +91,7 @@ pushd "$TEST_DIRECTORY" || exit 1
             exit 1
         fi
     else
-        echo "Skipping service monitorin as SERVICE_TO_MONITOR is empty/not set."
+        echo "Skipping service monitoring as SERVICE_TO_MONITOR is empty/not set."
     fi
 
     # Set up monitoring if no "prometheus" service defined already
@@ -125,6 +125,7 @@ PROM_EOF
             while IFS= read -r SERVICE; do
             cat >> "$TEST_DIRECTORY"/prometheus.yml << PROM_EOF
   - job_name: '$SERVICE'
+    metrics_path: /api/v1/metrics/prometheus
     static_configs:
          - targets: ['$SERVICE:2020']
 
