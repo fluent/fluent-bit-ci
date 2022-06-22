@@ -25,14 +25,20 @@
   ],
   "provisioners": [
     {
-      "type": "file",
-      "source": "templates/",
-      "destination": "/opt/fluent-bit-ci/templates/"
+      "type": "shell-local",
+      "command": "tar --exclude-vcs --exclude='./.github' --exclude='./terraform' cvf toupload/files.tar -C ../ ."
     },
     {
-      "type": "file",
-      "source": "run-test.sh",
-      "destination": "/opt/fluent-bit-ci/run-test.sh"
+      "destination": "/tmp/",
+      "source": "./toupload",
+      "type": "file"
+    },
+    {
+      "inline": [
+        "cd /tmp && tar xf toupload/files.tar",
+        "rm -f toupload/files.tar"
+      ],
+      "type": "shell"
     },
     {
       "type": "shell",

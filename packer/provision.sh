@@ -34,6 +34,7 @@ adduser perf-test
 usermod -aG sudo perf-test
 usermod -aG docker perf-test
 
+mkdir -p /opt/fluent-bit-ci/
 chmod -R a+r /opt/fluent-bit-ci/
 SCRIPT
 
