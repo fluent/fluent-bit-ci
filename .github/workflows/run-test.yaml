@@ -3,41 +3,33 @@ name: Run these tests on a VM
 on:
   workflow_dispatch:
     inputs:
-      baseline:
-        description: The baseline version of Fluent Bit to compare against.
-        required: false
-        type: string
-        default: fluent/fluent-bit:latest
-      ref:
-        description: The branch name to use for comparison against, this will be built as a container to compare with.
-        required: true
-        type: string
-        default: https://github.com/fluent/fluent-bit.git#master
       vm-name:
         description: The unique VM name to use, it will destroy any existing instances.
+        default: perf-test
         required: true
         type: string
-        default: perf-test-master
+      git-repo:
+        description: The Git repository with the test case in.
+        required: true
+        type: string
+        default: https://github.com/fluent/fluent-bit.git
+      git-branch:
+        description: The branch in git-repo with the test case in.
+        required: false
+        type: string
+      test-directory:
+        description: The relative directory in the Git repository with the test case in.
+        required: false
+        type: string
       duration:
         description: The time in minutes to run the test for.
+        default: '10'
         required: false
         type: string
-        default: '15'
-      custom-config-ref:
-        description: The full Git reference to any test template overrides to run with.
+      service:
+        description: Optional service to monitor in the compose file, it will stop the run early if it fails.
         required: false
         type: string
-        default: ""
-      custom-config-dir:
-        description: An optional subdirectory to use as the location for the test files.
-        required: false
-        type: string
-        default: ""
-      custom-environment:
-        description: A comma-separated string representing any custom variables to pass.
-        required: false
-        type: string
-        default: ""
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.inputs.vm-name }}
@@ -100,21 +92,19 @@ jobs:
       - name: Run tests on VM
         run: |
           gcloud compute ssh "$VM_NAME" -q --command="\
-            export BASELINE="${{ github.event.inputs.baseline }}"; \
-            export REF="${{ github.event.inputs.ref }}"; \
-            export CUSTOM_CONFIG_DIR="${{ github.event.inputs.custom-config-dir }}"; \
-            export CUSTOM_CONFIG_REF="${{ github.event.inputs.custom-config-ref }}"; \
-            export CUSTOM_ENVIRONMENT="${{ github.event.inputs.custom-environment }}"; \
-            export NAME="${{ github.event.inputs.vm-name }}"; \
-            export DURATION="${{ github.event.inputs.duration }}"; \
-            export OUTPUT_DIR="~/output"; \
+            export GIT_URL="${{ github.event.inputs.git-repo }}"; \
+            export GIT_REF="${{ github.event.inputs.git-ref }}"; \
+            export TEST_DIRECTORY="${{ github.event.inputs.test-dir }}"; \
+            export RUN_TIMEOUT_MINUTES="${{ github.event.inputs.duration }}"; \
+            export SERVICE_TO_MONITOR="${{ github.event.inputs.service }}"; \
+            export OUTPUT_DIR="/tmp/output"; \
             /opt/fluent-bit-ci/run-test.sh"
         shell: bash
 
       - name: Collect info
         if: always()
         run: |
-          gcloud compute scp --force-key-file-overwrite --recurse "$VM_NAME":~/output output
+          gcloud compute scp --force-key-file-overwrite --recurse "$VM_NAME":/tmp/output output
         shell: bash
 
       - name: Upload any results
@@ -123,19 +113,6 @@ jobs:
         with:
           name: output
           path: output/
-
-      - name: Collect config
-        if: always()
-        run: |
-          gcloud compute scp --force-key-file-overwrite --recurse "$VM_NAME":~/custom-config custom-config
-        shell: bash
-
-      - name: Upload any config
-        if: always()
-        uses: actions/upload-artifact@v3
-        with:
-          name: config
-          path: custom-config/
 
       - name: Get debug information if possible on failure
         continue-on-error: true

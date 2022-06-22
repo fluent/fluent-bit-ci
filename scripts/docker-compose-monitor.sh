@@ -90,6 +90,8 @@ pushd "$TEST_DIRECTORY" || exit 1
             $DOCKER_COMPOSE_CMD config --services
             exit 1
         fi
+    else
+        echo "Skipping service monitorin as SERVICE_TO_MONITOR is empty/not set."
     fi
 
     # Set up monitoring if no "prometheus" service defined already
