@@ -15,12 +15,14 @@ on:
         default: https://github.com/fluent/fluent-bit.git
       git-branch:
         description: The branch in git-repo with the test case in.
-        required: false
+        required: true
         type: string
+        default: master
       test-directory:
         description: The relative directory in the Git repository with the test case in.
-        required: false
+        required: true
         type: string
+        default: examples/perf_test
       duration:
         description: The time in minutes to run the test for.
         default: '10'
@@ -30,6 +32,7 @@ on:
         description: Optional service to monitor in the compose file, it will stop the run early if it fails.
         required: false
         type: string
+        default: fb-delta
 jobs:
   run-test:
     uses: ./.github/workflows/call-run-test.yaml
