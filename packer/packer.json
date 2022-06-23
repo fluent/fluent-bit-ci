@@ -20,7 +20,7 @@
       "disk_size": "250",
 
       "ssh_username": "packer",
-      "use_os_login": true
+      "use_os_login": false
     }
   ],
   "provisioners": [
