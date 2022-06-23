@@ -32,6 +32,8 @@ mv -vf ./promplot  /usr/local/bin/promplot
 mkdir -p /opt/fluent-bit-ci/
 git clone --depth 1 https://github.com/fluent/fluent-bit-ci.git /opt/fluent-bit-ci/
 chmod -R a+r /opt/fluent-bit-ci/
+
+df -h
 SCRIPT
 
 echo "Adding $USER to docker group"

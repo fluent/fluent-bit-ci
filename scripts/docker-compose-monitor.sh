@@ -30,9 +30,26 @@ OUTPUT_DIR=${OUTPUT_DIR:-$PWD/output}
 
 # Our list of metrics to dump out explicitly
 declare -a QUERY_METRICS=("fluentbit_input_records_total"
-                          "fluentbit_output_proc_records_total"
+                          "fluentbit_input_bytes_total"
+                          "fluentbit_filter_add_records_total"
+                          "fluentbit_filter_drop_records_total"
                           "fluentbit_output_dropped_records_total"
                           "fluentbit_output_errors_total"
+                          "fluentbit_output_proc_bytes_total"
+                          "fluentbit_output_proc_records_total"
+                          "fluentbit_output_retried_records_total"
+                          "fluentbit_output_retries_failed_total"
+                          "fluentbit_output_retries_total"
+                          "container_cpu_system_seconds_total"
+                          "container_cpu_usage_seconds_total"
+                          "container_cpu_user_seconds_total"
+                          "container_fs_writes_bytes_total"
+                          "container_fs_write_seconds_total"
+                          "container_fs_writes_total"
+                          "container_memory_usage_bytes"
+                          "container_memory_rss"
+                          "container_network_transmit_bytes_total"
+                          "container_network_receive_packets_total"
 )
 
 # The URL to hit for Prometheus from the host.
