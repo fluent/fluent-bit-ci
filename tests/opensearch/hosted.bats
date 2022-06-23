@@ -11,7 +11,7 @@ load "$BATS_SUPPORT_ROOT/load.bash"
 load "$BATS_ASSERT_ROOT/load.bash"
 load "$BATS_FILE_ROOT/load.bash"
 
-setup() {
+setup_file() {
     echo "recreating namespace $TEST_NAMESPACE"
     run kubectl delete namespace "$TEST_NAMESPACE"
     run kubectl create namespace "$TEST_NAMESPACE"
@@ -25,7 +25,7 @@ setup() {
     fi
 }
 
-teardown() {
+teardown_file() {
     if [[ "${SKIP_TEARDOWN:-no}" != "yes" ]]; then
         run kubectl delete namespace "$TEST_NAMESPACE"
         rm -f ${HELM_VALUES_EXTRA_FILE}
@@ -57,7 +57,7 @@ DETIK_CLIENT_NAMESPACE="${TEST_NAMESPACE}"
     while true; do
         run curl -XGET --header 'Content-Type: application/json' --insecure -s -w "%{http_code}" https://${HOSTED_OPENSEARCH_USERNAME}:${HOSTED_OPENSEARCH_PASSWORD}@${HOSTED_OPENSEARCH_HOST}/fluentbit/_search/ -d '{ "query": { "range": { "timestamp": { "gte": "now-15s" }}}}' -o /dev/null
         if [[ "$output" != "200" ]]; then
-            if [ "$attempt" -lt 5 ]; then
+            if [ "$attempt" -lt 10 ]; then
                 attempt=$(( attempt + 1 ))
                 sleep 5
             else

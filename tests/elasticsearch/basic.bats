@@ -11,7 +11,7 @@ load "$BATS_SUPPORT_ROOT/load.bash"
 load "$BATS_ASSERT_ROOT/load.bash"
 load "$BATS_FILE_ROOT/load.bash"
 
-setup() {
+setup_file() {
     echo "recreating namespace $TEST_NAMESPACE"
     run kubectl delete namespace "$TEST_NAMESPACE"
     run kubectl create namespace "$TEST_NAMESPACE"
@@ -25,7 +25,7 @@ setup() {
     fi
 }
 
-teardown() {
+teardown_file() {
     if [[ "${SKIP_TEARDOWN:-no}" != "yes" ]]; then
         run kubectl delete namespace "$TEST_NAMESPACE"
         rm -f ${HELM_VALUES_EXTRA_FILE}
