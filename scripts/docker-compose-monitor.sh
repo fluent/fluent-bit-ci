@@ -245,7 +245,8 @@ COMPOSE_EOF
             echo "Destroying stack"
             $DOCKER_COMPOSE_CMD down --remove-orphans --volumes
             rm -f monitoring.yml
-            if [[ -n "$GIT_REPO_DIR" ]]; then
+            if [[ -n "${GIT_REPO_DIR:-}" ]]; then
+                echo "Removing temporary directory: $GIT_REPO_DIR"
                 rm -rf "${GIT_REPO_DIR:?}/"
             fi
         fi
