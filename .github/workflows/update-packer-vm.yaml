@@ -12,8 +12,12 @@ on:
     paths:
       - packer/
 
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
 jobs:
-  create-vm-instance:
+  create-vm-image:
     runs-on: ubuntu-latest
     permissions:
       contents: read
