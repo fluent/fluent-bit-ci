@@ -1,7 +1,7 @@
 ---
 name: Run these tests on a VM
 on:
-  workflow_run:
+  workflow_call:
     inputs:
       vm-name:
         description: The unique VM name to use, it will destroy any existing instances.
