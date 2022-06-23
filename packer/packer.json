@@ -17,29 +17,13 @@
       "instance_name": "fb-perf-test-{{uuid}}",
 
       "machine_type": "e2-standard-8",
-      "disk_size": "250",
+      "disk_size": "500",
 
       "ssh_username": "packer",
-      "use_os_login": true
+      "use_os_login": false
     }
   ],
   "provisioners": [
-    {
-      "type": "shell-local",
-      "command": "tar --exclude-vcs --exclude='./.github' --exclude='./terraform' cvf toupload/files.tar -C ../ ."
-    },
-    {
-      "destination": "/tmp/",
-      "source": "./toupload",
-      "type": "file"
-    },
-    {
-      "inline": [
-        "cd /tmp && tar xf toupload/files.tar",
-        "rm -f toupload/files.tar"
-      ],
-      "type": "shell"
-    },
     {
       "type": "shell",
       "script": "provision.sh"

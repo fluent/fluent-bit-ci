@@ -12,8 +12,12 @@ on:
     paths:
       - packer/
 
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
 jobs:
-  create-vm-instance:
+  create-vm-image:
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -29,7 +33,7 @@ jobs:
       - id: 'auth'
         uses: 'google-github-actions/auth@v0'
         with:
-          credentials_json: ${{ secrets.GCP_SA }}
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
 
       - name: 'Set up Cloud SDK'
         uses: 'google-github-actions/setup-gcloud@v0'
@@ -56,3 +60,13 @@ jobs:
         with:
           name: vagrant-boxes
           path: ./*vagrant.tar.gz
+
+  test-image:
+    needs:
+      - create-vm-image
+    uses: ./.github/workflows/call-run-test.yaml
+    with:
+      vm-name: packer-test
+      duration: 1
+    secrets:
+      service-account: ${{ secrets.GCP_SA_KEY }}

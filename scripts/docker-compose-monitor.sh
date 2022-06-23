@@ -25,14 +25,32 @@ GIT_REF=${GIT_REF:-}
 RUN_TIMEOUT_MINUTES=${RUN_TIMEOUT_MINUTES:-10}
 # Change for other targets
 DOCKER_COMPOSE_CMD=${DOCKER_COMPOSE_CMD:-docker-compose}
+CONTAINER_RUNTIME_CMD=${CONTAINER_RUNTIME_CMD:-docker}
 # Location for any generated output
 OUTPUT_DIR=${OUTPUT_DIR:-$PWD/output}
 
 # Our list of metrics to dump out explicitly
 declare -a QUERY_METRICS=("fluentbit_input_records_total"
-                          "fluentbit_output_proc_records_total"
+                          "fluentbit_input_bytes_total"
+                          "fluentbit_filter_add_records_total"
+                          "fluentbit_filter_drop_records_total"
                           "fluentbit_output_dropped_records_total"
                           "fluentbit_output_errors_total"
+                          "fluentbit_output_proc_bytes_total"
+                          "fluentbit_output_proc_records_total"
+                          "fluentbit_output_retried_records_total"
+                          "fluentbit_output_retries_failed_total"
+                          "fluentbit_output_retries_total"
+                          "container_cpu_system_seconds_total"
+                          "container_cpu_usage_seconds_total"
+                          "container_cpu_user_seconds_total"
+                          "container_fs_writes_bytes_total"
+                          "container_fs_write_seconds_total"
+                          "container_fs_writes_total"
+                          "container_memory_usage_bytes"
+                          "container_memory_rss"
+                          "container_network_transmit_bytes_total"
+                          "container_network_receive_packets_total"
 )
 
 # The URL to hit for Prometheus from the host.
@@ -205,7 +223,8 @@ COMPOSE_EOF
         echo
         echo "Monitoring ended"
 
-        # Dump logs and metrics
+        # Dump logs and metrics - do not fail now
+        set +e
         echo "Dumping started"
         $DOCKER_COMPOSE_CMD logs &> "$OUTPUT_DIR/run.log"
 
@@ -225,7 +244,7 @@ COMPOSE_EOF
             $DOCKER_COMPOSE_CMD exec -T "$PROM_SERVICE_NAME" /bin/sh -c "tar -czvf /tmp/prom-data.tgz -C /prometheus/snapshots/ ."
             PROM_CONTAINER_ID=$($DOCKER_COMPOSE_CMD ps -q prometheus)
             if [[ -n "$PROM_CONTAINER_ID" ]]; then
-                docker cp "$PROM_CONTAINER_ID":/tmp/prom-data.tgz "$OUTPUT_DIR"/
+                $CONTAINER_RUNTIME_CMD cp "$PROM_CONTAINER_ID":/tmp/prom-data.tgz "$OUTPUT_DIR"/
                 echo "Copied snapshot to $OUTPUT_DIR/prom-data.tgz"
             fi
         else
