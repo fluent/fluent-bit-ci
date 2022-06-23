@@ -49,7 +49,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          repo: fluent/fluent-bit-ci
+          repository: fluent/fluent-bit-ci
 
       - id: 'auth'
         uses: 'google-github-actions/auth@v0'
@@ -101,7 +101,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          repo: fluent/fluent-bit-ci
+          repository: fluent/fluent-bit-ci
 
       - id: 'auth'
         uses: 'google-github-actions/auth@v0'
