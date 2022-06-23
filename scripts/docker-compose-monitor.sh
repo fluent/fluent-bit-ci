@@ -98,13 +98,13 @@ pushd "$TEST_DIRECTORY" || exit 1
     if $DOCKER_COMPOSE_CMD config --services | grep -q "$PROM_SERVICE_NAME"; then
         echo "$PROM_SERVICE_NAME service already defined so no extra monitoring required"
     else
-        if [[ -f "$TEST_DIRECTORY/prometheus.yml" ]]; then
+        if [[ -f "prometheus.yml" ]]; then
             echo "Using existing Prometheus configuration file: $TEST_DIRECTORY/prometheus.yml"
         else
             # Get all services and attempt to monitor each at :2020
             echo "Generating Prometheus configuration for services:"
             $DOCKER_COMPOSE_CMD config --services
-            cat > "$TEST_DIRECTORY"/prometheus.yml << PROM_EOF
+            cat > prometheus.yml << PROM_EOF
 global:
   scrape_interval:     5s # By default, scrape targets every 15 seconds.
   # scrape_timeout is set to the global default (10s).
@@ -123,7 +123,7 @@ scrape_configs:
 PROM_EOF
             # Add extra services
             while IFS= read -r SERVICE; do
-            cat >> "$TEST_DIRECTORY"/prometheus.yml << PROM_EOF
+            cat >> prometheus.yml << PROM_EOF
   - job_name: '$SERVICE'
     metrics_path: /api/v1/metrics/prometheus
     static_configs:
@@ -131,12 +131,12 @@ PROM_EOF
 
 PROM_EOF
             done <<< "$($DOCKER_COMPOSE_CMD config --services)"
-            cat "$TEST_DIRECTORY"/prometheus.yml
+            cat prometheus.yml
         fi
 
         # Now append to our compose stack
         DOCKER_COMPOSE_CMD="$DOCKER_COMPOSE_CMD -f docker-compose.yml -f monitoring.yml"
-        cat > "$TEST_DIRECTORY"/monitoring.yml << COMPOSE_EOF
+        cat > monitoring.yml << COMPOSE_EOF
 version: "3"
 
 services:
@@ -174,7 +174,7 @@ volumes:
   prometheus-data:
 
 COMPOSE_EOF
-    cat "$TEST_DIRECTORY"/monitoring.yml
+    cat monitoring.yml
     fi
 
     # build and run the stack
