@@ -33,6 +33,10 @@ mkdir -p /opt/fluent-bit-ci/
 git clone --depth 1 https://github.com/fluent/fluent-bit-ci.git /opt/fluent-bit-ci/
 chmod -R a+r /opt/fluent-bit-ci/
 
+# Add ops-agent for monitoring
+curl -sSO https://dl.google.com/cloudagents/add-google-cloud-ops-agent-repo.sh
+bash add-google-cloud-ops-agent-repo.sh --also-install
+
 df -h
 SCRIPT
 
