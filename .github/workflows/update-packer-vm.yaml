@@ -1,0 +1,72 @@
+---
+name: Update packer images
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - packer/
+  pull_request:
+    paths:
+      - packer/
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  create-vm-image:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v3
+
+      - run: |
+          sudo apt-get update
+          sudo apt-get install -y packer vagrant virtualbox
+        shell: bash
+
+      - id: 'auth'
+        uses: 'google-github-actions/auth@v0'
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: 'Set up Cloud SDK'
+        uses: 'google-github-actions/setup-gcloud@v0'
+
+      - name: 'Use gcloud CLI'
+        run: gcloud info
+        shell: bash
+
+      - name: Validate packer
+        run: packer validate ./packer.json
+        shell: bash
+        working-directory: packer
+
+      - name: Build instance
+        if: github.event_name != 'pull_request'
+        run: |
+          packer build -force -color=false ./packer.json
+        shell: bash
+        working-directory: packer
+
+      - name: Upload box
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-artifact@v3
+        with:
+          name: vagrant-boxes
+          path: ./*vagrant.tar.gz
+
+  test-image:
+    needs:
+      - create-vm-image
+    uses: ./.github/workflows/call-run-test.yaml
+    with:
+      vm-name: packer-test
+      duration: 1
+    secrets:
+      service-account: ${{ secrets.GCP_SA_KEY }}

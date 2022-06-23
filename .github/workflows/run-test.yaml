@@ -1,0 +1,47 @@
+---
+name: Run these tests on a VM
+on:
+  workflow_dispatch:
+    inputs:
+      vm-name:
+        description: The unique VM name to use, it will destroy any existing instances.
+        default: perf-test
+        required: true
+        type: string
+      git-repo:
+        description: The Git repository with the test case in.
+        required: true
+        type: string
+        default: https://github.com/fluent/fluent-bit.git
+      git-branch:
+        description: The branch in git-repo with the test case in.
+        required: true
+        type: string
+        default: master
+      test-directory:
+        description: The relative directory in the Git repository with the test case in.
+        required: true
+        type: string
+        default: examples/perf_test
+      duration:
+        description: The time in minutes to run the test for.
+        default: '10'
+        required: false
+        type: string
+      service:
+        description: Optional service to monitor in the compose file, it will stop the run early if it fails.
+        required: false
+        type: string
+        default: fb-delta
+jobs:
+  run-test:
+    uses: ./.github/workflows/call-run-test.yaml
+    with:
+      vm-name: ${{ github.event.inputs.vm-name }}
+      git-repo: ${{ github.event.inputs.git-repo }}
+      git-branch: ${{ github.event.inputs.git-branch }}
+      test-directory: ${{ github.event.inputs.test-directory }}
+      duration: ${{ github.event.inputs.duration }}
+      service: ${{ github.event.inputs.service }}
+    secrets:
+      service-account: ${{ secrets.GCP_SA_KEY }}

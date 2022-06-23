@@ -64,3 +64,7 @@ tests/opensearch
     └── k8s
         └── service.yaml
 ```
+
+## Performance tests and automated monitoring
+
+See the [PERFORMANCE-TESTS](./PERFORMANCE-TESTS.md) documentation for full details.

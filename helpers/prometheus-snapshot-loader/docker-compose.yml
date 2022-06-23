@@ -1,0 +1,34 @@
+version: "3"
+
+services:
+  prometheus:
+    image: prom/prometheus:v2.33.3
+    volumes:
+      - ./prometheus.yml/:/etc/prometheus/prometheus.yml:ro
+      - $SNAPSHOT_DIR:/snapshot:rw
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/snapshot'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+      - '--web.enable-admin-api'
+      - '--web.enable-lifecycle'
+    ports:
+      - 9090:9090
+
+  grafana:
+    image: grafana/grafana
+    user: "472"
+    depends_on:
+      - prometheus
+    ports:
+      - 3000:3000
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana/provisioning/:/etc/grafana/provisioning/
+    env_file:
+      - ./grafana/config.monitoring
+
+volumes:
+  grafana-data:
+  prometheus-data:
