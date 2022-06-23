@@ -1,0 +1,138 @@
+---
+name: Run these tests on a VM
+on:
+  workflow_run:
+    inputs:
+      vm-name:
+        description: The unique VM name to use, it will destroy any existing instances.
+        default: perf-test
+        required: true
+        type: string
+      git-repo:
+        description: The Git repository with the test case in.
+        required: false
+        type: string
+        default: https://github.com/fluent/fluent-bit.git
+      git-branch:
+        description: The branch in git-repo with the test case in.
+        required: false
+        type: string
+      test-directory:
+        description: The relative directory in the Git repository with the test case in.
+        required: false
+        type: string
+      duration:
+        description: The time in minutes to run the test for.
+        default: '30'
+        required: false
+        type: string
+      service:
+        description: Optional service to monitor in the compose file, it will stop the run early if it fails.
+        required: false
+        type: string
+    secrets:
+      service-account:
+        description: The GCP service account credentials to use.
+        required: true
+
+concurrency:
+  group: ${{ github.workflow }}-${{ inputs.vm-name }}
+  cancel-in-progress: false
+
+env:
+  VM_NAME: ${{ inputs.vm-name }}
+jobs:
+  setup-vm-instance:
+    runs-on: ubuntu-latest
+    steps:
+      - id: 'auth'
+        uses: 'google-github-actions/auth@v0'
+        with:
+          credentials_json: ${{ secrets.service-account }}
+
+      - name: 'Set up Cloud SDK'
+        uses: 'google-github-actions/setup-gcloud@v0'
+
+      - name: 'Use gcloud CLI'
+        run: gcloud info
+
+      - name: Set up defaults
+        run: |
+          gcloud config set compute/zone us-east1-c
+        shell: bash
+
+      - name: Destroy any previous VM
+        continue-on-error: true
+        run: |
+          gcloud compute instances delete "$VM_NAME" -q || true
+        shell: bash
+
+      - name: Deploy VM
+        run: |
+          gcloud compute instances create "$VM_NAME" --image="fb-perf-test-ubuntu-2004"
+            --metadata=SELF_DESTRUCT_INTERVAL_MINUTES=720
+          sleep 30
+        shell: bash
+
+      - name: Wait for SSH access
+        timeout-minutes: 2
+        run: |
+          echo "Waiting for SSH access to $VM_NAME..."
+          until gcloud compute ssh "$VM_NAME" -q --command="true" 2> /dev/null; do
+            echo -n '.'
+            sleep 1
+          done
+          echo
+          echo "Successfully connected to $VM_NAME"
+          gcloud compute ssh "$VM_NAME" -q --command="sudo usermod -aG docker $USER"
+        shell: bash
+
+  # Allows us just to re-run here
+  run-tests-on-vm-instance:
+    runs-on: ubuntu-latest
+    needs:
+      - setup-vm-instance
+    steps:
+      - name: Run tests on VM
+        run: |
+          gcloud compute ssh "$VM_NAME" -q --command="\
+            export GIT_URL="${{ inputs.git-repo }}"; \
+            export GIT_REF="${{ inputs.git-branch }}"; \
+            export TEST_DIRECTORY="${{ inputs.test-directory }}"; \
+            export RUN_TIMEOUT_MINUTES="${{ inputs.duration }}"; \
+            export SERVICE_TO_MONITOR="${{ inputs.service }}"; \
+            export OUTPUT_DIR="/tmp/output"; \
+            /opt/fluent-bit-ci/scripts/docker-compose-monitor.sh"
+        shell: bash
+
+      - name: Collect info
+        if: always()
+        run: |
+          gcloud compute scp --force-key-file-overwrite --recurse "$VM_NAME":/tmp/output output
+        shell: bash
+
+      - name: Upload any results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: output
+          path: output/
+
+      - name: Get debug information if possible on failure
+        continue-on-error: true
+        if: failure()
+        timeout-minutes: 5
+        run: |
+          gcloud compute ssh "$VM_NAME" -q --command="sudo grep startup-script /var/log/messages" || true
+          gcloud compute ssh "$VM_NAME" -q --command="sudo grep startup-script /var/log/syslog" || true
+          gcloud compute ssh "$VM_NAME" -q --command="rpm -qa" || true
+          gcloud compute ssh "$VM_NAME" -q --command="dpkg -l" || true
+          gcloud compute ssh "$VM_NAME" -q --command="systemctl status" || true
+          gcloud compute ssh "$VM_NAME" -q --command="ls -lR" || true
+        shell: bash
+
+      - name: Destroy VM
+        # Does not run on failure for debug within the self-destruct interval or until next run
+        run: |
+          gcloud compute instances delete "$VM_NAME" -q
+        shell: bash
