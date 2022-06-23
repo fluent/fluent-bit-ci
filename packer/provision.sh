@@ -30,13 +30,13 @@ chmod a+x ./promplot
 mv -vf ./promplot  /usr/local/bin/promplot
 
 # Add extra user
-adduser perf-test
-usermod -aG sudo perf-test
-usermod -aG docker perf-test
+adduser --quiet --disabled-login --no-create-home perf-test
+usermod -aG sudo,docker perf-test
 
 mkdir -p /opt/fluent-bit-ci/
+git clone --depth 1 https://github.com/fluent/fluent-bit-ci.git /opt/fluent-bit-ci/
 chmod -R a+r /opt/fluent-bit-ci/
 SCRIPT
 
 echo "Adding $USER to docker group"
-sudo usermod -aG docker "$USER"
+sudo usermod -aG sudo,docker "$USER"

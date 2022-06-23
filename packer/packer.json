@@ -25,31 +25,6 @@
   ],
   "provisioners": [
     {
-      "source": "../helpers/",
-      "destination": "/opt/fluent-bit-ci/helpers/",
-      "type": "file"
-    },
-    {
-      "source": "../scripts/",
-      "destination": "/opt/fluent-bit-ci/scripts/",
-      "type": "file"
-    },
-    {
-      "source": "../tests/",
-      "destination": "/opt/fluent-bit-ci/tests/",
-      "type": "file"
-    },
-    {
-      "source": "../tools/",
-      "destination": "/opt/fluent-bit-ci/tools/",
-      "type": "file"
-    },
-    {
-      "source": "../run-tests.sh",
-      "destination": "/opt/fluent-bit-ci/",
-      "type": "file"
-    },
-    {
       "type": "shell",
       "script": "provision.sh"
     }
