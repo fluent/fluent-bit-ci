@@ -2,7 +2,7 @@
 
 load "$HELPERS_ROOT/test-helpers.bash"
 
-ensure_variables_set BATS_SUPPORT_ROOT BATS_ASSERT_ROOT BATS_DETIK_ROOT BATS_FILE_ROOT TEST_NAMESPACE FLUENTBIT_IMAGE_TAG HOSTED_OPENSEARCH_HOST HOSTED_OPENSEARCH_PORT HOSTED_OPENSEARCH_USERNAME HOSTED_OPENSEARCH_PASSWORD
+ensure_variables_set BATS_SUPPORT_ROOT BATS_ASSERT_ROOT BATS_DETIK_ROOT BATS_FILE_ROOT TEST_NAMESPACE FLUENTBIT_IMAGE_REPOSITORY FLUENTBIT_IMAGE_TAG ELASTICSEARCH_IMAGE_REPOSITORY ELASTICSEARCH_IMAGE_TAG
 
 load "$BATS_DETIK_ROOT/utils.bash"
 load "$BATS_DETIK_ROOT/linter.bash"
@@ -29,7 +29,6 @@ teardown_file() {
     if [[ "${SKIP_TEARDOWN:-no}" != "yes" ]]; then
         run kubectl delete namespace "$TEST_NAMESPACE"
         rm -f ${HELM_VALUES_EXTRA_FILE}
-        rm -f ${BATS_TEST_DIRNAME}/resources/helm/fluentbit-hosted.yaml
     fi
 }
 
@@ -40,14 +39,26 @@ DETIK_CLIENT_NAME="kubectl -n $TEST_NAMESPACE"
 DETIK_CLIENT_NAMESPACE="${TEST_NAMESPACE}"
 
 
-@test "test fluent-bit forwards logs to AWS OpenSearch hosted service default index" {
-    envsubst < "${BATS_TEST_DIRNAME}/resources/helm/fluentbit-hosted.yaml.tpl" > "${BATS_TEST_DIRNAME}/resources/helm/fluentbit-hosted.yaml"
+@test "test fluent-bit forwards logs to elasticsearch default index" {
+    helm repo add elastic https://helm.elastic.co/ ||  helm repo add elastic https://helm.elastic.co
+    helm repo add fluent https://fluent.github.io/helm-charts/ || helm repo add fluent https://fluent.github.io/helm-charts
+    helm repo update --fail-on-repo-update-fail
+
+    helm upgrade --install --debug --create-namespace --namespace "$TEST_NAMESPACE" elasticsearch elastic/elasticsearch \
+        --values ${BATS_TEST_DIRNAME}/resources/helm/elasticsearch-basic.yaml \
+        --set image=${ELASTICSEARCH_IMAGE_REPOSITORY} --set imageTag=${ELASTICSEARCH_IMAGE_TAG} \
+        --values "$HELM_VALUES_EXTRA_FILE" \
+        --wait
+
+    try "at most 15 times every 2s " \
+        "to find 1 pods named 'elasticsearch-master-0' " \
+        "with 'status' being 'running'"
 
     helm upgrade --install --debug --create-namespace --namespace "$TEST_NAMESPACE" fluent-bit fluent/fluent-bit \
-    --values $HELM_VALUES_EXTRA_FILE \
-    -f ${BATS_TEST_DIRNAME}/resources/helm/fluentbit-hosted.yaml \
-    --set image.repository=${FLUENTBIT_IMAGE_REPOSITORY} \
-    --set image.tag=${FLUENTBIT_IMAGE_TAG} --wait
+        --values ${BATS_TEST_DIRNAME}/resources/helm/fluentbit-basic.yaml \
+        --set image.repository=${FLUENTBIT_IMAGE_REPOSITORY},image.tag=${FLUENTBIT_IMAGE_TAG} \
+        --values "$HELM_VALUES_EXTRA_FILE" \
+        --wait
 
     try "at most 15 times every 2s " \
         "to find 1 pods named 'fluent-bit' " \
@@ -55,7 +66,7 @@ DETIK_CLIENT_NAMESPACE="${TEST_NAMESPACE}"
 
     attempt=0
     while true; do
-        run curl -XGET --header 'Content-Type: application/json' --insecure -s -w "%{http_code}" https://${HOSTED_OPENSEARCH_USERNAME}:${HOSTED_OPENSEARCH_PASSWORD}@${HOSTED_OPENSEARCH_HOST}/fluentbit/_search/ -d '{ "query": { "range": { "timestamp": { "gte": "now-15s" }}}}' -o /dev/null
+    	run kubectl exec -q -n "$TEST_NAMESPACE" elasticsearch-master-0 -- curl --insecure -s -w "%{http_code}" http://localhost:9200/fluentbit/_search/ -o /dev/null
         if [[ "$output" != "200" ]]; then
             if [ "$attempt" -lt 25 ]; then
                 attempt=$(( attempt + 1 ))
