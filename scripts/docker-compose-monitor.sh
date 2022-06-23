@@ -125,7 +125,7 @@ pushd "$TEST_DIRECTORY" || exit 1
             $DOCKER_COMPOSE_CMD config --services
             cat > prometheus.yml << PROM_EOF
 global:
-  scrape_interval:     5s # By default, scrape targets every 15 seconds.
+  # scrape_interval is set to the default, scrape targets every 15 seconds.
   # scrape_timeout is set to the global default (10s).
   external_labels:
       monitor: 'test'

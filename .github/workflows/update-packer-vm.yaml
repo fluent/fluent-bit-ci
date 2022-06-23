@@ -6,11 +6,13 @@ on:
     branches:
       - main
       - master
-    paths:
-      - packer/
+    paths-ignore:
+      - ./.github/**
+      - ./terraform/**
   pull_request:
-    paths:
-      - packer/
+    paths-ignore:
+      - ./.github/**
+      - ./terraform/**
 
 concurrency:
   group: ${{ github.workflow }}

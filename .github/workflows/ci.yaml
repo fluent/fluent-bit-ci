@@ -3,7 +3,14 @@ on:
   push:
     branches:
       - main
+    paths-ignore:
+      - ./.github/**
+      - ./packer/**
   pull_request:
+    paths-ignore:
+      - ./.github/**
+      - ./packer/**
+
 jobs:
   run-tests:
     name: Run BATS 🦇 tests.
