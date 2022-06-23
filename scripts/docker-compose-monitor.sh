@@ -115,6 +115,7 @@ pushd "$TEST_DIRECTORY" || exit 1
     # Set up monitoring if no "prometheus" service defined already
     if $DOCKER_COMPOSE_CMD config --services | grep -q "$PROM_SERVICE_NAME"; then
         echo "$PROM_SERVICE_NAME service already defined so no extra monitoring required"
+        DOCKER_COMPOSE_FULL_CMD=$DOCKER_COMPOSE_CMD
     else
         if [[ -f "prometheus.yml" ]]; then
             echo "Using existing Prometheus configuration file: $TEST_DIRECTORY/prometheus.yml"
@@ -153,7 +154,7 @@ PROM_EOF
         fi
 
         # Now append to our compose stack
-        DOCKER_COMPOSE_CMD="$DOCKER_COMPOSE_CMD -f docker-compose.yml -f monitoring.yml"
+        DOCKER_COMPOSE_FULL_CMD="$DOCKER_COMPOSE_CMD -f docker-compose.yml -f monitoring.yml"
         cat > monitoring.yml << COMPOSE_EOF
 version: "3"
 
@@ -197,10 +198,10 @@ COMPOSE_EOF
 
     # build and run the stack
     if [[ -z "${SKIP_REBUILD:-}" ]]; then
-        $DOCKER_COMPOSE_CMD build
+        $DOCKER_COMPOSE_FULL_CMD build
     fi
-    $DOCKER_COMPOSE_CMD pull
-    $DOCKER_COMPOSE_CMD up --force-recreate -d
+    $DOCKER_COMPOSE_FULL_CMD pull
+    $DOCKER_COMPOSE_FULL_CMD up --force-recreate -d
 
     if [[ $RUN_TIMEOUT_MINUTES -gt 0 ]]; then
         echo "Monitoring started "
@@ -210,9 +211,9 @@ COMPOSE_EOF
         while [ $SECONDS -lt $END ]; do
             if [[ -n "$SERVICE_TO_MONITOR" ]]; then
                 # shellcheck disable=SC2143
-                if [ -z "$($DOCKER_COMPOSE_CMD ps -q "$SERVICE_TO_MONITOR")" ] || [ -z "$(docker ps -q --no-trunc | grep "$($DOCKER_COMPOSE_CMD ps -q "$SERVICE_TO_MONITOR")")" ]; then
+                if [ -z "$($DOCKER_COMPOSE_FULL_CMD ps -q "$SERVICE_TO_MONITOR")" ] || [ -z "$(docker ps -q --no-trunc | grep "$($DOCKER_COMPOSE_FULL_CMD ps -q "$SERVICE_TO_MONITOR")")" ]; then
                     echo "ERROR: container has failed after $SECONDS seconds"
-                    $DOCKER_COMPOSE_CMD logs "$SERVICE_TO_MONITOR" &> "$OUTPUT_DIR/failed.log"
+                    $DOCKER_COMPOSE_FULL_CMD logs "$SERVICE_TO_MONITOR" &> "$OUTPUT_DIR/failed.log"
                     # Exit loop and dump everything else
                     break
                 fi
@@ -226,7 +227,7 @@ COMPOSE_EOF
         # Dump logs and metrics - do not fail now
         set +e
         echo "Dumping started"
-        $DOCKER_COMPOSE_CMD logs &> "$OUTPUT_DIR/run.log"
+        $DOCKER_COMPOSE_FULL_CMD logs &> "$OUTPUT_DIR/run.log"
 
         # If we have an exposed endpoint try to retrieve info
         if curl --output /dev/null --silent --head --fail "$FB_URL"; then
@@ -240,9 +241,12 @@ COMPOSE_EOF
             echo "WARNING: no endpoint for Fluent Bit information"
         fi
 
+        # Now we stop all containers except the monitoring ones to reduce loading
+        $DOCKER_COMPOSE_CMD -f ./docker-compose.yml stop
+
         if curl -XPOST "${PROM_URL}/api/v1/admin/tsdb/snapshot"; then
-            $DOCKER_COMPOSE_CMD exec -T "$PROM_SERVICE_NAME" /bin/sh -c "tar -czvf /tmp/prom-data.tgz -C /prometheus/snapshots/ ."
-            PROM_CONTAINER_ID=$($DOCKER_COMPOSE_CMD ps -q prometheus)
+            $DOCKER_COMPOSE_FULL_CMD exec -T "$PROM_SERVICE_NAME" /bin/sh -c "tar -czvf /tmp/prom-data.tgz -C /prometheus/snapshots/ ."
+            PROM_CONTAINER_ID=$($DOCKER_COMPOSE_FULL_CMD ps -q prometheus)
             if [[ -n "$PROM_CONTAINER_ID" ]]; then
                 $CONTAINER_RUNTIME_CMD cp "$PROM_CONTAINER_ID":/tmp/prom-data.tgz "$OUTPUT_DIR"/
                 echo "Copied snapshot to $OUTPUT_DIR/prom-data.tgz"
@@ -262,7 +266,7 @@ COMPOSE_EOF
 
         if [[ -z "${SKIP_TEARDOWN:-}" ]]; then
             echo "Destroying stack"
-            $DOCKER_COMPOSE_CMD down --remove-orphans --volumes
+            $DOCKER_COMPOSE_FULL_CMD down --remove-orphans --volumes
             rm -f monitoring.yml
             if [[ -n "${GIT_REPO_DIR:-}" ]]; then
                 echo "Removing temporary directory: $GIT_REPO_DIR"
