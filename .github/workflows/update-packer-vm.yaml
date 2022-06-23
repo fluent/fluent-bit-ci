@@ -62,6 +62,8 @@ jobs:
           path: ./*vagrant.tar.gz
 
   test-image:
+    needs:
+      - create-vm-image
     uses: ./.github/workflows/call-run-test.yaml
     with:
       vm-name: packer-test
