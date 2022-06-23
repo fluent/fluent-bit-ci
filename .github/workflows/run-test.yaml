@@ -44,4 +44,4 @@ jobs:
       duration: ${{ github.event.inputs.duration }}
       service: ${{ github.event.inputs.service }}
     secrets:
-      service-account: ${{ secrets.GCP_SA }}
+      service-account: ${{ secrets.GCP_SA_KEY }}
