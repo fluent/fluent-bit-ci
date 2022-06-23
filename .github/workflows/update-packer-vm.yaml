@@ -60,3 +60,11 @@ jobs:
         with:
           name: vagrant-boxes
           path: ./*vagrant.tar.gz
+
+  test-image:
+    uses: ./.github/workflows/call-run-test.yaml
+    with:
+      vm-name: packer-test
+      duration: 1
+    secrets:
+      service-account: ${{ secrets.GCP_SA_KEY }}

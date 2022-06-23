@@ -19,6 +19,7 @@ on:
         type: string
       test-directory:
         description: The relative directory in the Git repository with the test case in.
+        default: examples/perf_test
         required: false
         type: string
       duration:
@@ -28,6 +29,7 @@ on:
         type: string
       service:
         description: Optional service to monitor in the compose file, it will stop the run early if it fails.
+        default: fb-delta
         required: false
         type: string
     secrets:
