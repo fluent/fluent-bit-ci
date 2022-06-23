@@ -39,14 +39,17 @@ Configuration is all via environment variables:
 |PROM_SERVICE_NAME|The name of the service providing Prometheus monitoring, used to copy the snapshot from the container.|prometheus|
 |PROM_URL|The Prometheus URL to invoke snapshots and queries from.|http://localhost:9090|
 
-PROM_URL=${PROM_URL:-http://localhost:9090}
-# The name of the service providing prometheus to trigger a snapshot on
-PROM_SERVICE_NAME=${PROM_SERVICE_NAME:-prometheus}
+### Examples
 
-# The name of the specific Fluent Bit service we want to monitor whilst running, if this stops then we end early.
-SERVICE_TO_MONITOR=${SERVICE_TO_MONITOR:-}
-# The URL to hit for the Fluent Bit service from the host.
-FB_URL=${FB_URL:-http://localhost:2020}
+Running with an example from the Fluent Bit repository and a custom branch:
+
+```bash
+export GIT_URL=https://github.com/fluent/fluent-bit
+export GIT_REF=tap-trace-output
+export TEST_DIRECTORY=examples/tracing
+export SERVICE_TO_MONITOR=fluent-bit
+curl -L https://raw.githubusercontent.com/fluent/fluent-bit-ci/perf_test_workflow/scripts/docker-compose-monitor.sh | bash
+```
 
 ## Prometheus snapshot loader
 
