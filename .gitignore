@@ -1,2 +1,6 @@
 tools/bats/lib/*
 .idea/*
+**/output
+*.tar.gz
+*.pem
+*.box
