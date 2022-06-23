@@ -68,7 +68,7 @@ DETIK_CLIENT_NAMESPACE="${TEST_NAMESPACE}"
     while true; do
     	run kubectl exec -q -n "$TEST_NAMESPACE" elasticsearch-master-0 -- curl --insecure -s -w "%{http_code}" http://localhost:9200/fluentbit/_search/ -o /dev/null
         if [[ "$output" != "200" ]]; then
-            if [ "$attempt" -lt 5 ]; then
+            if [ "$attempt" -lt 25 ]; then
                 attempt=$(( attempt + 1 ))
                 sleep 5
             else
