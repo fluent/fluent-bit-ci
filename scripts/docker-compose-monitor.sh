@@ -25,6 +25,7 @@ GIT_REF=${GIT_REF:-}
 RUN_TIMEOUT_MINUTES=${RUN_TIMEOUT_MINUTES:-10}
 # Change for other targets
 DOCKER_COMPOSE_CMD=${DOCKER_COMPOSE_CMD:-docker-compose}
+CONTAINER_RUNTIME_CMD=${CONTAINER_RUNTIME_CMD:-docker}
 # Location for any generated output
 OUTPUT_DIR=${OUTPUT_DIR:-$PWD/output}
 
@@ -222,7 +223,8 @@ COMPOSE_EOF
         echo
         echo "Monitoring ended"
 
-        # Dump logs and metrics
+        # Dump logs and metrics - do not fail now
+        set +e
         echo "Dumping started"
         $DOCKER_COMPOSE_CMD logs &> "$OUTPUT_DIR/run.log"
 
@@ -242,7 +244,7 @@ COMPOSE_EOF
             $DOCKER_COMPOSE_CMD exec -T "$PROM_SERVICE_NAME" /bin/sh -c "tar -czvf /tmp/prom-data.tgz -C /prometheus/snapshots/ ."
             PROM_CONTAINER_ID=$($DOCKER_COMPOSE_CMD ps -q prometheus)
             if [[ -n "$PROM_CONTAINER_ID" ]]; then
-                docker cp "$PROM_CONTAINER_ID":/tmp/prom-data.tgz "$OUTPUT_DIR"/
+                $CONTAINER_RUNTIME_CMD cp "$PROM_CONTAINER_ID":/tmp/prom-data.tgz "$OUTPUT_DIR"/
                 echo "Copied snapshot to $OUTPUT_DIR/prom-data.tgz"
             fi
         else
