@@ -29,10 +29,6 @@ curl --fail --silent -L https://github.com/qvl/promplot/releases/download/v0.17.
 chmod a+x ./promplot
 mv -vf ./promplot  /usr/local/bin/promplot
 
-# Add extra user
-adduser --quiet --disabled-login --no-create-home perf-test
-usermod -aG sudo,docker perf-test
-
 mkdir -p /opt/fluent-bit-ci/
 git clone --depth 1 https://github.com/fluent/fluent-bit-ci.git /opt/fluent-bit-ci/
 chmod -R a+r /opt/fluent-bit-ci/
