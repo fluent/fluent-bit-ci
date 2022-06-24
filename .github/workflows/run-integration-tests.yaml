@@ -23,7 +23,7 @@ on:
 jobs:
   run-tests:
     name: Run integration tests
-    uses: fluent/fluent-bit-ci/.github/workflows/call-run-integration-test.yaml@main
+    uses: ./.github/workflows/call-run-integration-test.yaml
     with:
       image_name: ${{ github.event.inputs.image_name }}
       image_tag: ${{ github.event.inputs.image_tag }}
