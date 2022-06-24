@@ -1,4 +1,4 @@
-name: "CI"
+name: Run integration tests for PR
 on:
   push:
     branches:
@@ -20,11 +20,12 @@ on:
 jobs:
   run-tests:
     name: Run integration tests
-    uses: fluent/fluent-bit-ci/.github/workflows/call-run-integration-test.yaml@main
+    uses: ./.github/workflows/call-run-integration-test.yaml
+    if: contains(github.event.pull_request.labels.*.name, 'ok-to-test')
     with:
       image_name: ghcr.io/fluent/fluent-bit/master
       image_tag: x86_64
-      ref: ${{ github.ref }}
+      ref: ${{ github.event.pull_request.head.sha }}
     secrets:
       opensearch_aws_access_id: ${{ secrets.OPENSEARCH_AWS_ACCESS_ID }}
       opensearch_aws_secret_key: ${{ secrets.OPENSEARCH_AWS_SECRET_KEY }}
