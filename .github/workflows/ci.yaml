@@ -17,7 +17,7 @@ on:
 jobs:
   run-tests:
     name: Run integration tests
-    uses: fluent/fluent-bit-ci/.github/workflows/call-run-integration-test.yaml@target
+    uses: fluent/fluent-bit-ci/.github/workflows/call-run-integration-test.yaml@main
     with:
       image_name: ghcr.io/fluent/fluent-bit/master
       image_tag: x86_64
