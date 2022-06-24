@@ -1,0 +1,35 @@
+name: Run integration tests
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      image_name:
+        description: The image repository and name to use.
+        required: false
+        default: ghcr.io/fluent/fluent-bit/master
+        type: string
+      image_tag:
+        description: The image tag to use.
+        required: false
+        default: x86_64
+        type: string
+      ref:
+        description: The commit, tag or branch of this repository to checkout
+        type: string
+        required: false
+        default: main
+jobs:
+  run-tests:
+    name: Run integration tests
+    uses: ./.github/workflows/call-run-integration-test.yaml
+    with:
+      image_name: ${{ github.event.inputs.image_name }}
+      image_tag: ${{ github.event.inputs.image_tag }}
+      ref: ${{ github.event.inputs.ref }}
+    secrets:
+      opensearch_aws_access_id: ${{ secrets.OPENSEARCH_AWS_ACCESS_ID }}
+      opensearch_aws_secret_key: ${{ secrets.OPENSEARCH_AWS_SECRET_KEY }}
+      opensearch_admin_password: ${{ secrets.OPENSEARCH_ADMIN_PASSWORD }}
+      terraform_api_token: ${{ secrets.TF_API_TOKEN }}
