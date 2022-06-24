@@ -35,7 +35,7 @@ on:
         default: fb-delta
 jobs:
   run-test:
-    uses: ./.github/workflows/call-run-test.yaml
+    uses: ./.github/workflows/call-run-performance-test.yaml
     with:
       vm-name: ${{ github.event.inputs.vm-name }}
       git-repo: ${{ github.event.inputs.git-repo }}
