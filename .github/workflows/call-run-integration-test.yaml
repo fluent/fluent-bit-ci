@@ -61,30 +61,30 @@ jobs:
           sed -i -e "s|\$OPENSEARCH_AWS_ACCESS_ID|${{ secrets.opensearch_aws_access_id }}|g" default.auto.tfvars
           sed -i -e "s|\$OPENSEARCH_AWS_SECRET_KEY|${{ secrets.opensearch_aws_secret_key }}|g" default.auto.tfvars
           sed -i -e "s|\$OPENSEARCH_ADMIN_PASSWORD|${{ secrets.opensearch_admin_password }}|g" default.auto.tfvars
-        working-directory: ci/terraform/
+        working-directory: terraform/
         shell: bash
 
       - name: Terraform init
         run: terraform init
-        working-directory: ci/terraform/
+        working-directory: terraform/
 
       - name: Terraform validate
         run: terraform validate -no-color
-        working-directory: ci/terraform/
+        working-directory: terraform/
 
       - name: Terraform plan
         run: terraform plan
-        working-directory: ci/terraform/
+        working-directory: terraform/
 
       - name: Terraform apply
         if: ${{ github.event_name != 'pull_request' }}
         run: terraform apply -input=false -auto-approve
-        working-directory: ci/terraform/
+        working-directory: terraform/
 
       - name: Get the AWS OpenSearch endpoint
         id: aws-opensearch-endpoint
         run: terraform output -no-color -raw aws-opensearch-endpoint
-        working-directory: ci/terraform/
+        working-directory: terraform/
 
       - name: Setup BATS
         uses: mig4/setup-bats@v1
@@ -110,7 +110,6 @@ jobs:
           kind load docker-image ${{ inputs.image_name }}:${{ inputs.image_tag }}
           ./run-tests.sh
         shell: bash
-        working-directory: ci/
         env:
           FLUENTBIT_IMAGE_REPOSITORY: ${{ inputs.image_name }}
           FLUENTBIT_IMAGE_TAG: ${{ inputs.image_tag }}
