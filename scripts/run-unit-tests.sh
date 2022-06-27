@@ -30,7 +30,12 @@ done
 
 SKIP="$SKIP -DFLB_WITHOUT_flb-it-fstore=1"
 # If no v6, disable that test
-[[ ! $(ip a) =~ ::1 ]] && SKIP="$SKIP -DFLB_WITHOUT_flb-it-network=1"
+if command -v ip &> /dev/null;
+then
+    [[ ! $(ip a) =~ ::1 ]] && SKIP="$SKIP -DFLB_WITHOUT_flb-it-network=1"
+else
+    [[ ! $(ifconfig) =~ ::1 ]] && SKIP="$SKIP -DFLB_WITHOUT_flb-it-network=1"
+fi
 
 GLOBAL_OPTS="-DFLB_BACKTRACE=Off -DFLB_SHARED_LIB=Off -DFLB_DEBUG=On -DFLB_ALL=On -DFLB_EXAMPLES=Off"
 set -e
