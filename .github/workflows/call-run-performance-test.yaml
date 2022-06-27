@@ -6,7 +6,7 @@ on:
       vm-name:
         description: The unique VM name to use, it will destroy any existing instances.
         default: perf-test
-        required: true
+        required: false
         type: string
       git-repo:
         description: The Git repository with the test case in.
