@@ -30,7 +30,7 @@ done
 
 SKIP="$SKIP -DFLB_WITHOUT_flb-it-fstore=1"
 # If no v6, disable that test
-if [ command -v ip &> /dev/null ]
+if command -v ip &> /dev/null;
 then
     [[ ! $(ip a) =~ ::1 ]] && SKIP="$SKIP -DFLB_WITHOUT_flb-it-network=1"
 else
