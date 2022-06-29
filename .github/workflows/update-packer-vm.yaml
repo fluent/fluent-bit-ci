@@ -66,7 +66,7 @@ jobs:
   test-image:
     needs:
       - create-vm-image
-    uses: ./.github/workflows/call-run-test.yaml
+    uses: ./.github/workflows/call-run-performance-test.yaml
     with:
       vm-name: packer-test
       duration: 1
