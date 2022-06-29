@@ -155,8 +155,11 @@ PROM_EOF
 
         # Now append to our compose stack
         DOCKER_COMPOSE_FULL_CMD="$DOCKER_COMPOSE_CMD -f docker-compose.yml -f monitoring.yml"
+
+        # We pick up the version in the original file to prevent any 'version mismatch' errors
+        COMPOSE_VERSION=$(grep version docker-compose.yml)
         cat > monitoring.yml << COMPOSE_EOF
-version: "3.4"
+$COMPOSE_VERSION
 
 services:
   $PROM_SERVICE_NAME:
