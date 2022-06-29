@@ -25,9 +25,9 @@ jobs:
     name: Run integration tests
     uses: ./.github/workflows/call-run-integration-test.yaml
     with:
-      image_name: ${{ github.event.inputs.image_name }}
-      image_tag: ${{ github.event.inputs.image_tag }}
-      ref: ${{ github.event.inputs.ref }}
+      image_name: ${{ github.event.inputs.image_name || 'ghcr.io/fluent/fluent-bit/master' }}
+      image_tag: ${{ github.event.inputs.image_tag || 'x86_64' }}
+      ref: ${{ github.event.inputs.ref || 'main' }}
     secrets:
       opensearch_aws_access_id: ${{ secrets.OPENSEARCH_AWS_ACCESS_ID }}
       opensearch_aws_secret_key: ${{ secrets.OPENSEARCH_AWS_SECRET_KEY }}
