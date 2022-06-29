@@ -58,7 +58,7 @@ jobs:
 
   test-image:
     needs:
-      - create-vm-image
+      - create-gcp-image
     uses: ./.github/workflows/call-run-performance-test.yaml
     with:
       vm-name: packer-test
