@@ -19,7 +19,7 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  create-vm-image:
+  create-gcp-image:
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -29,7 +29,7 @@ jobs:
 
       - run: |
           sudo apt-get update
-          sudo apt-get install -y packer vagrant virtualbox
+          sudo apt-get install -y packer
         shell: bash
 
       - id: 'auth'
@@ -45,23 +45,16 @@ jobs:
         shell: bash
 
       - name: Validate packer
-        run: packer validate ./packer.json
+        run: packer validate ./gcp-packer.json
         shell: bash
         working-directory: packer
 
       - name: Build instance
         if: github.event_name != 'pull_request'
         run: |
-          packer build -force -color=false ./packer.json
+          packer build -force -color=false ./gcp-packer.json
         shell: bash
         working-directory: packer
-
-      - name: Upload box
-        if: github.event_name != 'pull_request'
-        uses: actions/upload-artifact@v3
-        with:
-          name: vagrant-boxes
-          path: ./*vagrant.tar.gz
 
   test-image:
     needs:
