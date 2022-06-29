@@ -156,7 +156,7 @@ PROM_EOF
         # Now append to our compose stack
         DOCKER_COMPOSE_FULL_CMD="$DOCKER_COMPOSE_CMD -f docker-compose.yml -f monitoring.yml"
         cat > monitoring.yml << COMPOSE_EOF
-version: "3"
+version: "3.4"
 
 services:
   $PROM_SERVICE_NAME:
