@@ -43,6 +43,7 @@ concurrency:
 
 env:
   VM_NAME: ${{ inputs.vm-name }}
+  MACHINE_TYPE: e2-standard-8
 jobs:
   setup-vm-instance:
     runs-on: ubuntu-latest
@@ -76,6 +77,7 @@ jobs:
       - name: Deploy VM
         run: |
           gcloud compute instances create "$VM_NAME" --image="fb-perf-test-ubuntu-2004" \
+            --machine-type="$MACHINE_TYPE" \
             --metadata=SELF_DESTRUCT_INTERVAL_MINUTES=720
           sleep 30
         shell: bash
