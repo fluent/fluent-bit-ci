@@ -16,7 +16,7 @@
 
       "instance_name": "fb-perf-test-{{uuid}}",
 
-      "machine_type": "c2-standard-16",
+      "machine_type": "e2-standard-8",
       "disk_size": "500",
 
       "ssh_username": "packer",
