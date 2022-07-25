@@ -83,4 +83,5 @@ variable "gcp_project_id" {
 
 variable "gcp_sa_key" {
   type = string
+  sensitive = true
 }
