@@ -164,6 +164,7 @@ jobs:
         k8s-release: [ 'v1.23.5', 'v1.22.7', 'v1.21.10' ]
     runs-on: ubuntu-latest
     permissions:
+      contents: read
       packages: read
     steps:
       - name: Test image exists and cache locally
@@ -195,6 +196,54 @@ jobs:
       - name: Run tests
         run:  |
           kind load docker-image ${{ inputs.image_name }}:${{ inputs.image_tag }}
+          ./run-tests.sh
+        shell: bash
+        env:
+          FLUENTBIT_IMAGE_REPOSITORY: ${{ inputs.image_name }}
+          FLUENTBIT_IMAGE_TAG: ${{ inputs.image_tag }}
+          HOSTED_OPENSEARCH_HOST: ${{ needs.call-run-terraform-setup.outputs.aws-opensearch-endpoint }}
+          HOSTED_OPENSEARCH_PORT: 443
+          HOSTED_OPENSEARCH_USERNAME: admin
+          HOSTED_OPENSEARCH_PASSWORD: ${{ secrets.opensearch_admin_password }}
+
+  call-run-integration-cloud:
+    name: Run integration tests on cloud providers
+    needs:
+      - call-run-terraform-setup
+      - call-run-integration-kind
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        kubeconfig:
+         - ${{ needs.call-run-terraform-setup.outputs.aks-kubeconfig }}
+         - ${{ needs.call-run-terraform-setup.outputs.gke-kubeconfig }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ inputs.ref }}
+
+      - name: Setup BATS
+        uses: mig4/setup-bats@v1
+        with:
+          bats-version: 1.7.0
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v3.0
+        with:
+          version: v3.8.1
+
+      - name: Set up Kubectl
+        uses: azure/setup-kubectl@v3.0
+
+      - name: Run tests
+        run:  |
+          export KUBECONFIG=./kubeconfig
+          cat < EOF > './kubeconfig'
+          ${{ matrix.kubeconfig }}
+          EOF
           ./run-tests.sh
         shell: bash
         env:
