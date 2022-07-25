@@ -11,6 +11,7 @@ resource "azurerm_kubernetes_cluster" "fluent-bit-ci" {
   location            = azurerm_resource_group.fluent-bit-ci.location
   resource_group_name = azurerm_resource_group.fluent-bit-ci.name
   dns_prefix          = "fluent-bit-ci-k8s"
+  # AKS defaults to latest K8S version
 
   default_node_pool {
     name       = "default"
@@ -21,6 +22,11 @@ resource "azurerm_kubernetes_cluster" "fluent-bit-ci" {
   identity {
     type = "SystemAssigned"
   }
+}
+
+output "aks_kube_config" {
+  value     = azurerm_kubernetes_cluster.fluent-bit-ci.kube_config_raw
+  sensitive = true
 }
 
 ## GKE
@@ -55,4 +61,19 @@ resource "google_container_cluster" "fluent-bit-ci-autopilot" {
   ip_allocation_policy {}
 
   depends_on = [data.google_project.project]
+}
+
+# Get Kubeconfig output
+module "gke_auth" {
+  source = "terraform-google-modules/kubernetes-engine/google/modules/auth"
+
+  project_id   = data.google_project.project
+  cluster_name = google_container_cluster.fluent-bit-ci-autopilot.name
+  location     = google_container_cluster.fluent-bit-ci-autopilot.location
+}
+
+output "gke_kubeconfig" {
+  description = "The Kubeconfig file to use to access the GKE cluster."
+  value       = module.gke_auth.kubeconfig_raw
+  sensitive   = true
 }

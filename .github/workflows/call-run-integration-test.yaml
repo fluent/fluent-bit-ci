@@ -53,9 +53,10 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       packages: read
-      id-token: write
     outputs:
       aws-opensearch-endpoint: ${{ steps.aws-opensearch-endpoint.outputs.stdout }}
+      gke-kubeconfig: ${{ steps.gke-kubeconfig.outputs.stdout }}
+      aks-kubeconfig: ${{ steps.aks-kubeconfig.outputs.stdout }}
     env:
       # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/guides/service_principal_client_secret
       ARM_CLIENT_ID: ${{ secrets.azure-client-id }}
@@ -140,6 +141,16 @@ jobs:
       - name: Get the AWS OpenSearch endpoint
         id: aws-opensearch-endpoint
         run: terraform output -no-color -raw aws-opensearch-endpoint
+        working-directory: terraform/
+
+      - name: Get the GKE Kubeconfig
+        id: gke-kubeconfig
+        run: terraform output -no-color -raw gke_kubeconfig
+        working-directory: terraform/
+
+      - name: Get the AKS Kubeconfig
+        id: aks-kubeconfig
+        run: terraform output -no-color -raw aks_kubeconfig
         working-directory: terraform/
 
   call-run-integration-kind:
