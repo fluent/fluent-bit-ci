@@ -88,10 +88,18 @@ jobs:
         shell: bash
 
       - name: Terraform init
+        id: init
         run: terraform init
         working-directory: terraform/
 
+      - name: Terraform fmt
+        id: fmt
+        run: |
+          find . -name "*.tf" -exec terraform fmt -check {} \;
+        working-directory: terraform
+
       - name: Terraform validate
+        id: validate
         run: terraform validate -no-color
         working-directory: terraform/
 
