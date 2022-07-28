@@ -34,7 +34,7 @@ provider "azurerm" {
 }
 
 provider "google" {
-  project     = var.gcp_project + id
+  project     = var.gcp_project_id
   region      = var.gcp_region
   credentials = var.gcp_sa_key
 }

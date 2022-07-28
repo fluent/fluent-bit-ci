@@ -14,13 +14,19 @@ resource "azurerm_kubernetes_cluster" "fluent-bit-ci" {
   # AKS defaults to latest K8S version
 
   default_node_pool {
-    name       = "default"
-    node_count = 3
-    vm_size    = "Standard_DS2_v2"
+    name            = "default"
+    node_count      = 2
+    vm_size         = "Standard_DS2_v2"
+    os_disk_size_gb = 150
   }
 
-  identity {
-    type = "SystemAssigned"
+  service_principal {
+    client_id     = var.azure_client_id
+    client_secret = var.azure_client_secret
+  }
+
+  role_based_access_control {
+    enabled = true
   }
 }
 

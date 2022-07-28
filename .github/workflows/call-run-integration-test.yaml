@@ -79,6 +79,11 @@ jobs:
           sed -i -e "s|\$OPENSEARCH_AWS_SECRET_KEY|${{ secrets.opensearch_aws_secret_key }}|g" default.auto.tfvars
           sed -i -e "s|\$OPENSEARCH_ADMIN_PASSWORD|${{ secrets.opensearch_admin_password }}|g" default.auto.tfvars
 
+          sed -i -e "s|\$AZURE_CLIENT_ID|${{ secrets.azure-client-id }}|g" default.auto.tfvars
+          sed -i -e "s|\$AZURE_CLIENT_SECRET|${{ secrets.azure-client-secret }}|g" default.auto.tfvars
+          sed -i -e "s|\$AZURE_SUBSCRIPTION_ID|${{ secrets.azure-subscription-id }}|g" default.auto.tfvars
+          sed -i -e "s|\$AZURE_TENANT_ID|${{ secrets.azure-tenant-id }}|g" default.auto.tfvars
+
           cat <<EOT >> default.auto.tfvars
           gcp_sa_key    =  <<-EOF
           ${{ secrets.gcp-service-account-key }}
