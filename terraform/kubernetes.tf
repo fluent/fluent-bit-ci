@@ -68,18 +68,12 @@ resource "google_container_cluster" "fluent-bit-ci-autopilot" {
 
   depends_on = [data.google_project.project]
 }
-
-# Get Kubeconfig output
-module "gke_auth" {
-  source = "terraform-google-modules/kubernetes-engine/google/modules/auth"
-
-  project_id   = data.google_project.project
-  cluster_name = google_container_cluster.fluent-bit-ci-autopilot.name
-  location     = google_container_cluster.fluent-bit-ci-autopilot.location
+output "gke_region" {
+  value       = var.gcp_region
+  description = "GCloud Region"
 }
 
-output "gke_kubeconfig" {
-  description = "The Kubeconfig file to use to access the GKE cluster."
-  value       = module.gke_auth.kubeconfig_raw
-  sensitive   = true
+output "gke_kubernetes_cluster_name" {
+  value       = google_container_cluster.fluent-bit-ci-autopilot.name
+  description = "GKE Cluster Name"
 }

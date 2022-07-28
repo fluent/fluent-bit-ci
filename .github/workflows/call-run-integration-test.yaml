@@ -73,6 +73,14 @@ jobs:
           cli_config_credentials_hostname: 'app.terraform.io'
           cli_config_credentials_token: ${{ secrets.terraform_api_token }}
 
+      - id: 'auth'
+        uses: 'google-github-actions/auth@v0'
+        with:
+          credentials_json: ${{ secrets.gcp-service-account-key }}
+
+      - name: 'Set up Cloud SDK'
+        uses: 'google-github-actions/setup-gcloud@v0'
+
       - name: Replace terraform variables.
         run: |
           sed -i -e "s|\$OPENSEARCH_AWS_ACCESS_ID|${{ secrets.opensearch_aws_access_id }}|g" default.auto.tfvars
@@ -158,12 +166,14 @@ jobs:
 
       - name: Get the GKE Kubeconfig
         id: gke-kubeconfig
-        run: terraform output -no-color -raw gke_kubeconfig
+        run: |
+          gcloud container clusters get-credentials $(terraform output -raw gke_kubernetes_cluster_name) --region $(terraform output -raw gke_region)
         working-directory: terraform/
 
       - name: Get the AKS Kubeconfig
         id: aks-kubeconfig
-        run: terraform output -no-color -raw aks_kubeconfig
+        run: |
+          terraform output -no-color -raw aks_kubeconfig
         working-directory: terraform/
 
   call-run-integration-kind:
@@ -223,16 +233,15 @@ jobs:
     name: Run integration tests on cloud providers
     needs:
       - call-run-terraform-setup
-      - call-run-integration-kind
     runs-on: ubuntu-latest
     permissions:
       contents: read
     strategy:
       fail-fast: false
       matrix:
-        kubeconfig:
-         - ${{ needs.call-run-terraform-setup.outputs.aks-kubeconfig }}
-         - ${{ needs.call-run-terraform-setup.outputs.gke-kubeconfig }}
+        cloud:
+          - aks
+          - gke
     steps:
       - uses: actions/checkout@v3
         with:
@@ -251,12 +260,20 @@ jobs:
       - name: Set up Kubectl
         uses: azure/setup-kubectl@v3.0
 
+      - name: Set up kubeconfig access
+        run: |
+          cat < AKS_EOF > './aks-kubeconfig'
+          ${{ needs.call-run-terraform-setup.outputs.aks-kubeconfig }}
+          AKS_EOF
+
+          cat < GKE_EOF > './gke-kubeconfig'
+          ${{ needs.call-run-terraform-setup.outputs.gke-kubeconfig }}
+          GKE_EOF
+        shell: bash
+
       - name: Run tests
         run:  |
-          export KUBECONFIG=./kubeconfig
-          cat < EOF > './kubeconfig'
-          ${{ matrix.kubeconfig }}
-          EOF
+          export KUBECONFIG=./${{ matrix.cloud }}-kubeconfig
           ./run-tests.sh
         shell: bash
         env:
