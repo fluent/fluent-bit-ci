@@ -59,6 +59,7 @@ jobs:
       aks-kubeconfig: ${{ steps.aks-kubeconfig.outputs.stdout }}
     env:
       # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/guides/service_principal_client_secret
+      # Note these have to be set in the Terraform Cloud workspace as well
       ARM_CLIENT_ID: ${{ secrets.azure-client-id }}
       ARM_CLIENT_SECRET: ${{ secrets.azure-client-secret }}
       ARM_SUBSCRIPTION_ID: ${{ secrets.azure-subscription-id }}

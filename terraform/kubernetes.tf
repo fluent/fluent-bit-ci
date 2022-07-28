@@ -54,6 +54,8 @@ resource "google_container_cluster" "fluent-bit-ci-autopilot" {
   network            = google_compute_network.vpc.name
 
   # Always use latest
+  min_master_version = data.google_container_engine_versions.versions.latest_node_version
+
   node_version = data.google_container_engine_versions.versions.latest_node_version
 
   # Enabling Autopilot for this cluster
