@@ -61,6 +61,7 @@ jobs:
       # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/guides/service_principal_client_secret
       ARM_CLIENT_ID: ${{ secrets.azure-client-id }}
       ARM_CLIENT_SECRET: ${{ secrets.azure-client-secret }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.azure-subscription-id }}
       ARM_TENANT_ID: ${{ secrets.azure-tenant-id }}
     steps:
       - uses: actions/checkout@v3
@@ -71,12 +72,6 @@ jobs:
         with:
           cli_config_credentials_hostname: 'app.terraform.io'
           cli_config_credentials_token: ${{ secrets.terraform_api_token }}
-
-      - run: |
-          sudo apt-get update
-          sudo apt-get install -y azure-cli
-          az login --service-principal --username '${{ secrets.azure-client-id }}' --password '${{ secrets.azure-client-secret }}' --tenant '${{ secrets.azure-tenant-id }}'
-        shell: bash
 
       - id: 'auth'
         uses: 'google-github-actions/auth@v0'
