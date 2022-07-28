@@ -24,10 +24,6 @@ resource "azurerm_kubernetes_cluster" "fluent-bit-ci" {
     client_id     = var.azure_client_id
     client_secret = var.azure_client_secret
   }
-
-  role_based_access_control {
-    enabled = true
-  }
 }
 
 output "aks_kube_config" {
