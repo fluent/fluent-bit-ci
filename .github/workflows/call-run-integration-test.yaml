@@ -56,11 +56,9 @@ jobs:
     outputs:
       aks-cluster-name: ${{ steps.aks-cluster-name.outputs.stdout }}
       aks-cluster-resource-group: ${{ steps.aks-cluster-resource-group.outputs.stdout }}
-      aks-kubeconfig: ${{ steps.kubeconfig.outputs.aks-kubeconfig }}
       aws-opensearch-endpoint: ${{ steps.aws-opensearch-endpoint.outputs.stdout }}
       gke-cluster-name: ${{ steps.gke-cluster-name.outputs.stdout }}
       gke-cluster-region: ${{ steps.gke-cluster-region.outputs.stdout }}
-      gke-kubeconfig: ${{ steps.kubeconfig.outputs.gke-kubeconfig }}
     env:
       # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/guides/service_principal_client_secret
       # Note these have to be set in the Terraform Cloud workspace as well
@@ -190,32 +188,6 @@ jobs:
         working-directory: terraform
         shell: bash
 
-      - name: Get the GKE Kubeconfig
-        run: |
-          export KUBECONFIG=./gke-kubeconfig
-          gcloud container clusters get-credentials "$GKE_CLUSTER_NAME" --region "$GKE_REGION"
-        shell: bash
-        env:
-          GKE_CLUSTER_NAME: ${{ steps.gke-cluster-name.outputs.stdout }}
-          GKE_REGION: ${{ steps.gke-cluster-region.outputs.stdout }}
-
-      - name: Get the AKS Kubeconfig
-        run: |
-          az login --username="$ARM_CLIENT_ID" --password="$ARM_CLIENT_SECRET" --tenant="$ARM_TENANT_ID" --service-principal
-          export KUBECONFIG=./aks-kubeconfig
-          az aks get-credentials --name "$AKS_CLUSTER_NAME" --resource-group "$AKS_CLUSTER_RG" --admin
-        shell: bash
-        env:
-          AKS_CLUSTER_NAME: ${{ steps.aks-cluster-name.outputs.stdout }}
-          AKS_CLUSTER_RG: ${{ steps.aks-cluster-resource-group.outputs.stdout }}
-
-      - name: Export the Kubeconfigs
-        id: kubeconfig
-        run: |
-          echo ::set-output name=aks-kubeconfig::$(cat aks-kubeconfig)
-          echo ::set-output name=gke-kubeconfig::$(cat gke-kubeconfig)
-        shell: bash
-
   call-run-integration-kind:
     name: Run integration tests on KIND
     needs:
@@ -287,6 +259,14 @@ jobs:
         with:
           ref: ${{ inputs.ref }}
 
+      - if: matrix.cloud == 'gke'
+        uses: 'google-github-actions/auth@v0'
+        with:
+          credentials_json: ${{ secrets.gcp-service-account-key }}
+
+      - if: matrix.cloud == 'gke'
+        uses: 'google-github-actions/setup-gcloud@v0'
+
       - name: Setup BATS
         uses: mig4/setup-bats@v1
         with:
@@ -300,20 +280,32 @@ jobs:
       - name: Set up Kubectl
         uses: azure/setup-kubectl@v3.0
 
-      - name: Set up kubeconfig access
+      - name: Get the GKE Kubeconfig
+        if: matrix.cloud == 'gke'
         run: |
-          cat << AKS_EOF > './aks-kubeconfig'
-          ${{ needs.call-run-terraform-setup.outputs.aks-kubeconfig }}
-          AKS_EOF
-
-          cat << GKE_EOF > './gke-kubeconfig'
-          ${{ needs.call-run-terraform-setup.outputs.gke-kubeconfig }}
-          GKE_EOF
+          gcloud info
+          gcloud container clusters get-credentials "$GKE_CLUSTER_NAME" --region "$GKE_REGION"
         shell: bash
+        env:
+          GKE_CLUSTER_NAME: ${{ needs.call-run-terraform-setup.outputs.gke-cluster-name }}
+          GKE_REGION: ${{ needs.call-run-terraform-setup.outputs.gke-cluster-region }}
+
+      - name: Get the AKS Kubeconfig
+        if: matrix.cloud == 'aks'
+        run: |
+          az login --username="$ARM_CLIENT_ID" --password="$ARM_CLIENT_SECRET" --tenant="$ARM_TENANT_ID" --service-principal
+          az aks get-credentials --name "$AKS_CLUSTER_NAME" --resource-group "$AKS_CLUSTER_RG" --admin
+        shell: bash
+        env:
+          AKS_CLUSTER_NAME: ${{ needs.call-run-terraform-setup.outputs.outputs.aks-cluster-name }}
+          AKS_CLUSTER_RG: ${{ needs.call-run-terraform-setup.outputs.outputs.aks-cluster-resource-group }}
+          ARM_CLIENT_ID: ${{ secrets.azure-client-id }}
+          ARM_CLIENT_SECRET: ${{ secrets.azure-client-secret }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.azure-subscription-id }}
+          ARM_TENANT_ID: ${{ secrets.azure-tenant-id }}
 
       - name: Run tests
         run:  |
-          export KUBECONFIG=./${{ matrix.cloud }}-kubeconfig
           kubectl cluster-info
           ./run-tests.sh
         shell: bash
