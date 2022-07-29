@@ -302,11 +302,11 @@ jobs:
 
       - name: Set up kubeconfig access
         run: |
-          cat < AKS_EOF > './aks-kubeconfig'
+          cat << AKS_EOF > './aks-kubeconfig'
           ${{ needs.call-run-terraform-setup.outputs.aks-kubeconfig }}
           AKS_EOF
 
-          cat < GKE_EOF > './gke-kubeconfig'
+          cat << GKE_EOF > './gke-kubeconfig'
           ${{ needs.call-run-terraform-setup.outputs.gke-kubeconfig }}
           GKE_EOF
         shell: bash
