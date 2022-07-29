@@ -15,7 +15,7 @@ resource "azurerm_kubernetes_cluster" "fluent-bit-ci" {
 
   default_node_pool {
     name            = "default"
-    node_count      = 2
+    node_count      = 5
     vm_size         = "Standard_DS2_v2"
     os_disk_size_gb = 150
   }
