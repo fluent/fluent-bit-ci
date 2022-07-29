@@ -230,6 +230,7 @@ jobs:
         uses: azure/setup-kubectl@v3.0
 
       - name: Run tests
+        timeout-minutes: 30
         run:  |
           kind load docker-image ${{ inputs.image_name }}:${{ inputs.image_tag }}
           ./run-tests.sh
