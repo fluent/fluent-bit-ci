@@ -54,9 +54,13 @@ jobs:
     permissions:
       packages: read
     outputs:
-      aws-opensearch-endpoint: ${{ steps.aws-opensearch-endpoint.outputs.stdout }}
-      gke-kubeconfig: ${{ steps.gke-kubeconfig.outputs.stdout }}
+      aks-cluster-name: ${{ steps.tf-config.outputs.aks-cluster-name }}
+      aks-cluster-resource-group: ${{ steps.tf-config.outputs.aks-cluster-resource-group }}
       aks-kubeconfig: ${{ steps.aks-kubeconfig.outputs.stdout }}
+      aws-opensearch-endpoint: ${{ steps.tf-config.outputs.aws-opensearch-endpoint }}
+      gke-cluster-name: ${{ steps.tf-config.outputs.gke-cluster-name }}
+      gke-cluster-region: ${{ steps.tf-config.outputs.gke-cluster-region }}
+      gke-kubeconfig: ${{ steps.gke-kubeconfig.outputs.stdout }}
     env:
       # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/guides/service_principal_client_secret
       # Note these have to be set in the Terraform Cloud workspace as well
@@ -160,14 +164,13 @@ jobs:
         env:
           TF_LOG: TRACE
 
-      - name: Get the AWS OpenSearch endpoint
-        id: aws-opensearch-endpoint
-        run: terraform output -no-color -raw aws-opensearch-endpoint
-        working-directory: terraform/
-
       - name: Get TF helper variables
         id: tf-config
         run: |
+          AWS_OS_ENDPOINT=$(terraform output -no-color -raw aws-opensearch-endpoint)
+          echo $AWS_OS_ENDPOINT
+          echo "::set-output name=aws-opensearch-endpoint::$AWS_OS_ENDPOINT"
+
           GKE_CLUSTER_NAME=$(terraform output -no-color -raw gke_kubernetes_cluster_name)
           echo $GKE_CLUSTER_NAME
           echo "::set-output name=gke-cluster-name::$GKE_CLUSTER_NAME"
@@ -184,6 +187,7 @@ jobs:
           echo $AKS_RG
           echo "::set-output name=aks-cluster-resource-group::$AKS_RG"
         shell: bash
+        working-directory: terraform/
 
       - name: Azure login
         run: |
@@ -192,9 +196,9 @@ jobs:
 
       - name: Get the GKE Kubeconfig
         run: |
-          export KUBECONFIG=../gke-kubeconfig
+          export KUBECONFIG=./gke-kubeconfig
           gcloud container clusters get-credentials "$GKE_CLUSTER_NAME" --region "$GKE_REGION"
-        working-directory: terraform/
+        shell: bash
         env:
           GKE_CLUSTER_NAME: ${{ steps.tf-config.outputs.gke-cluster-name }}
           GKE_REGION: ${{ steps.tf-config.outputs.gke-cluster-region }}
@@ -202,14 +206,14 @@ jobs:
       - name: export the GKE Kubeconfig
         id: gke-kubeconfig
         run: |
-          cat gke-kubeconfig
+          cat ./gke-kubeconfig
         shell: bash
 
       - name: Get the AKS Kubeconfig
         id: aks-kubeconfig
         run: |
           az aks get-credentials --name "$AKS_CLUSTER_NAME" --resource-group "$AKS_CLUSTER_RG" --admin --file -
-        working-directory: terraform/
+        shell: bash
         env:
           AKS_CLUSTER_NAME: ${{ steps.tf-config.outputs.aks-cluster-name }}
           AKS_CLUSTER_RG: ${{ steps.tf-config.outputs.aks-cluster-resource-group }}
