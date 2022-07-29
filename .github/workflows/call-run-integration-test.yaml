@@ -307,6 +307,7 @@ jobs:
           ARM_TENANT_ID: ${{ secrets.azure-tenant-id }}
 
       - name: Run tests
+        timeout-minutes: 30
         run:  |
           ./run-tests.sh
         shell: bash
