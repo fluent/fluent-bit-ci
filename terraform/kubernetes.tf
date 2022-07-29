@@ -27,12 +27,12 @@ resource "azurerm_kubernetes_cluster" "fluent-bit-ci" {
 }
 
 output "aks_cluster_name" {
-  value = azurerm_kubernetes_cluster.fluent-bit-ci.name
+  value       = azurerm_kubernetes_cluster.fluent-bit-ci.name
   description = "AKS cluster name"
 }
 
 output "aks_resource_group" {
-  value = azurerm_resource_group.fluent-bit-ci.name
+  value       = azurerm_resource_group.fluent-bit-ci.name
   description = "AKS cluster resource group"
 }
 
