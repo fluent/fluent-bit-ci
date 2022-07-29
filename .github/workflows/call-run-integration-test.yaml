@@ -312,6 +312,7 @@ jobs:
       - name: Run tests
         run:  |
           export KUBECONFIG=./${{ matrix.cloud }}-kubeconfig
+          kubectl cluster-info
           ./run-tests.sh
         shell: bash
         env:
