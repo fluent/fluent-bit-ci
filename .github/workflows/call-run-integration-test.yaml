@@ -220,6 +220,7 @@ jobs:
         with:
           node_image: kindest/node:${{ matrix.k8s-release }}
           cluster_name: kind
+          config: tests/kind.yaml
 
       - name: Set up Helm
         uses: azure/setup-helm@v3.1
