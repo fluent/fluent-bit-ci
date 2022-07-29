@@ -1,8 +1,11 @@
 # Performance testing
 
-This repository provides a VM image built in GCP automatically to run tests but it can also be built as a Vagrant box manually via Packer.
+A simple script is provided to support running a Docker Compose stack with automated Prometheus monitoring.
+This repository also provides a VM image built in GCP automatically to run tests using this script via Packer.
 
 ## Packer build
+
+This is a simple Ubuntu 20 box built with the various tools required: primarily docker, docker-compose and a few other utilities.
 
 ## Performance monitoring
 

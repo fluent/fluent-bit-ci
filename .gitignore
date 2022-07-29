@@ -4,3 +4,5 @@ tools/bats/lib/*
 *.tar.gz
 *.pem
 *.box
+terraform/.terraform/
+terraform/.terraform.lock.hcl
