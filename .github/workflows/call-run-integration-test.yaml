@@ -168,19 +168,19 @@ jobs:
       - name: Get TF helper variables
         id: tf-config
         run: |
-          GKE_CLUSTER_NAME=$(terraform output -raw gke_kubernetes_cluster_name)
+          GKE_CLUSTER_NAME=$(terraform output -no-color -raw gke_kubernetes_cluster_name)
           echo $GKE_CLUSTER_NAME
           echo "::set-output name=gke-cluster-name::$GKE_CLUSTER_NAME"
 
-          GKE_REGION=$(terraform output -raw gke_region)
+          GKE_REGION=$(terraform output -no-color -raw gke_region)
           echo $GKE_REGION
           echo "::set-output name=gke-cluster-region::$GKE_REGION"
 
-          AKS_CLUSTER_NAME=$(terraform output -raw aks_cluster_name)
+          AKS_CLUSTER_NAME=$(terraform output -no-color -raw aks_cluster_name)
           echo $AKS_CLUSTER_NAME
           echo "::set-output name=aks-cluster-name::$AKS_CLUSTER_NAME"
 
-          AKS_RG=$(terraform output -raw aks_resource_group)
+          AKS_RG=$(terraform output -no-color -raw aks_resource_group)
           echo $AKS_RG
           echo "::set-output name=aks-cluster-resource-group::$AKS_RG"
         shell: bash
