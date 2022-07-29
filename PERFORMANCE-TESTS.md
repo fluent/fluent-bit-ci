@@ -51,7 +51,7 @@ export GIT_URL=https://github.com/fluent/fluent-bit
 export GIT_REF=tap-trace-output
 export TEST_DIRECTORY=examples/tracing
 export SERVICE_TO_MONITOR=fluent-bit
-curl -L https://raw.githubusercontent.com/fluent/fluent-bit-ci/perf_test_workflow/scripts/docker-compose-monitor.sh | bash
+curl -L https://raw.githubusercontent.com/fluent/fluent-bit-ci/main/scripts/docker-compose-monitor.sh | bash
 ```
 
 ## Prometheus snapshot loader
