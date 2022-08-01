@@ -320,6 +320,7 @@ jobs:
           kubectl cluster-info
           kubectl get nodes --show-labels
           kubectl get pods --all-namespaces --show-labels
+          kubectl get ns
         shell: bash
 
       - name: Run tests
