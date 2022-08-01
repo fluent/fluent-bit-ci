@@ -48,6 +48,8 @@ kind load docker-image <image name>
 
 Note that an image in your local container runtime cache is not available to KIND unless you make it available like this.
 
+OpenSearch requires the following: https://opensearch.org/docs/2.1/opensearch/install/important-settings/
+
 ### Variables
 
 The following is the list of environment variables that controls the behavior
