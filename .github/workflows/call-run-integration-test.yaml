@@ -330,6 +330,8 @@ jobs:
           ./run-tests.sh
         shell: bash
         env:
+          # Namespace per test run to hopefully isolate a bit
+          TEST_NAMESPACE: test-${{ github.run_id }}
           FLUENTBIT_IMAGE_REPOSITORY: ${{ inputs.image_name }}
           FLUENTBIT_IMAGE_TAG: ${{ inputs.image_tag }}
           HOSTED_OPENSEARCH_HOST: ${{ needs.call-run-terraform-setup.outputs.aws-opensearch-endpoint }}
