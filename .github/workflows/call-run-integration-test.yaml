@@ -223,7 +223,7 @@ jobs:
           config: tests/kind.yaml
 
       - name: Set up Helm
-        uses: azure/setup-helm@v3.1
+        uses: azure/setup-helm@v3.3
         with:
           version: v3.8.1
 
@@ -277,7 +277,7 @@ jobs:
           bats-version: 1.7.0
 
       - name: Set up Helm
-        uses: azure/setup-helm@v3.0
+        uses: azure/setup-helm@v3.3
         with:
           version: v3.8.1
 
