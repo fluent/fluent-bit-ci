@@ -215,6 +215,12 @@ jobs:
         with:
           bats-version: 1.7.0
 
+      - name: Configure system for Opensearch
+        run: |
+          sudo sysctl -w vm.max_map_count=262144
+          sysctl -p
+        shell: bash
+
       - name: Create k8s Kind Cluster
         uses: helm/kind-action@v1.3.0
         with:
@@ -307,6 +313,13 @@ jobs:
           ARM_CLIENT_SECRET: ${{ secrets.azure-client-secret }}
           ARM_SUBSCRIPTION_ID: ${{ secrets.azure-subscription-id }}
           ARM_TENANT_ID: ${{ secrets.azure-tenant-id }}
+
+      - name: Check Kubeconfig set up
+        run: |
+          kubectl cluster-info
+          kubectl get nodes --show-labels
+          kubectl get pods --all-namespaces --show-labels
+        shell: bash
 
       - name: Run tests
         timeout-minutes: 30

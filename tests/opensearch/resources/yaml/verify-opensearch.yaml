@@ -1,0 +1,16 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: verify-opensearch
+  labels:
+    app.kubernetes.io/name: bats
+spec:
+  template:
+    spec:
+      containers:
+      # Run job on cluster to check 'vm.max_map_count > minimum'
+      - name: check-sysctl-max-map-count
+        image: busybox
+        command: ["sysctl", "-n", "vm.max_map_count"]
+      restartPolicy: Never
+  backoffLimit: 1

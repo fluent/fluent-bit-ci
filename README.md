@@ -29,6 +29,25 @@ Run a specific test.
 ./run-tests.sh tests/opensearch/basic.bats
 ```
 
+### Set up
+
+The tests require a Kubernetes cluster to run, typically you can create this locally with KIND:
+
+```shell
+kind create cluster --config tests/kind.yaml
+```
+
+This creates a local cluster called `kind` with your `kubeconfig` file all set up to use it.
+Make sure to use the [configuration file](./tests/kind.yaml) so we create multiple nodes otherwise you will get failures to schedule pods due to affinity rules.
+
+To load images into the cluster, for example if they cannot be pulled from a registry:
+
+```shell
+kind load docker-image <image name>
+```
+
+Note that an image in your local container runtime cache is not available to KIND unless you make it available like this.
+
 ### Variables
 
 The following is the list of environment variables that controls the behavior

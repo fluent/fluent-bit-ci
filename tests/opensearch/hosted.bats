@@ -33,6 +33,12 @@ teardown_file() {
     fi
 }
 
+function teardown() {
+    run kubectl get pods --all-namespaces
+    run kubectl describe pod -n "$TEST_NAMESPACE" -l app.kubernetes.io/name=opensearch
+    run kubectl logs -n "$TEST_NAMESPACE" -l app.kubernetes.io/name=opensearch
+}
+
 # These are required for bats-detik
 # shellcheck disable=SC2034
 DETIK_CLIENT_NAME="kubectl -n $TEST_NAMESPACE"
@@ -47,7 +53,8 @@ DETIK_CLIENT_NAMESPACE="${TEST_NAMESPACE}"
     --values $HELM_VALUES_EXTRA_FILE \
     -f ${BATS_TEST_DIRNAME}/resources/helm/fluentbit-hosted.yaml \
     --set image.repository=${FLUENTBIT_IMAGE_REPOSITORY} \
-    --set image.tag=${FLUENTBIT_IMAGE_TAG} --wait
+    --set image.tag=${FLUENTBIT_IMAGE_TAG} \
+    --wait
 
     try "at most 15 times every 2s " \
         "to find 1 pods named 'fluent-bit' " \

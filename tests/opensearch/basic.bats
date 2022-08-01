@@ -11,7 +11,7 @@ load "$BATS_SUPPORT_ROOT/load.bash"
 load "$BATS_ASSERT_ROOT/load.bash"
 load "$BATS_FILE_ROOT/load.bash"
 
-setup_file() {
+function setup_file() {
     echo "recreating namespace $TEST_NAMESPACE"
     run kubectl delete namespace "$TEST_NAMESPACE"
     run kubectl create namespace "$TEST_NAMESPACE"
@@ -25,11 +25,29 @@ setup_file() {
     fi
 }
 
-teardown_file() {
+function teardown_file() {
     if [[ "${SKIP_TEARDOWN:-no}" != "yes" ]]; then
         run kubectl delete namespace "$TEST_NAMESPACE"
         rm -f ${HELM_VALUES_EXTRA_FILE}
     fi
+}
+
+function teardown() {
+    run kubectl get pods --all-namespaces
+    run kubectl describe pod -n "$TEST_NAMESPACE" -l app.kubernetes.io/name=opensearch -l app.kubernetes.io/name=bats
+    run kubectl logs -n "$TEST_NAMESPACE" -l app.kubernetes.io/name=opensearch -l app.kubernetes.io/name=bats
+}
+
+@test "verify config" {
+    # Run job on cluster to check 'vm.max_map_count > minimum'
+    kubectl create -n "$TEST_NAMESPACE" -f "${BATS_TEST_DIRNAME}/resources/yaml/verify-opensearch.yaml"
+
+    run kubectl wait -n "$TEST_NAMESPACE" --for=condition=complete --timeout=30s job/verify-opensearch
+    assert_success
+
+    run kubectl logs -n "$TEST_NAMESPACE" jobs/verify-opensearch
+    assert_success
+    assert_output --partial '262144'
 }
 
 # These are required for bats-detik
@@ -37,7 +55,6 @@ teardown_file() {
 DETIK_CLIENT_NAME="kubectl -n $TEST_NAMESPACE"
 # shellcheck disable=SC2034
 DETIK_CLIENT_NAMESPACE="${TEST_NAMESPACE}"
-
 
 @test "test fluent-bit forwards logs to opensearch default index" {
     helm repo add opensearch https://opensearch-project.github.io/helm-charts/ ||  helm repo add opensearch https://opensearch-project.github.io/helm-charts
@@ -50,6 +67,7 @@ DETIK_CLIENT_NAMESPACE="${TEST_NAMESPACE}"
         --values "$HELM_VALUES_EXTRA_FILE" \
         --wait
 
+    # Note this only means it goes running, it may get killed if a probe fails after that
     try "at most 15 times every 2s " \
         "to find 1 pods named 'opensearch-cluster-master-0' " \
         "with 'status' being 'running'"
