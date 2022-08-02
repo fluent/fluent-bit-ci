@@ -6,3 +6,4 @@ tools/bats/lib/*
 *.box
 terraform/.terraform/
 terraform/.terraform.lock.hcl
+tests/defaults/values.yaml

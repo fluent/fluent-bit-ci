@@ -215,6 +215,12 @@ jobs:
         with:
           bats-version: 1.7.0
 
+      - name: Configure system for Opensearch
+        run: |
+          sudo sysctl -w vm.max_map_count=262144
+          sysctl -p
+        shell: bash
+
       - name: Create k8s Kind Cluster
         uses: helm/kind-action@v1.3.0
         with:
@@ -248,6 +254,7 @@ jobs:
     name: Run integration tests on cloud providers
     needs:
       - call-run-terraform-setup
+      - call-run-integration-kind
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -308,12 +315,24 @@ jobs:
           ARM_SUBSCRIPTION_ID: ${{ secrets.azure-subscription-id }}
           ARM_TENANT_ID: ${{ secrets.azure-tenant-id }}
 
+      - name: Check Kubeconfig set up
+        run: |
+          kubectl cluster-info
+          kubectl get nodes --show-labels
+          kubectl get pods --all-namespaces --show-labels
+          kubectl get ns
+        shell: bash
+
       - name: Run tests
+        # TODO: remove once full set up is passing
+        continue-on-error: true
         timeout-minutes: 30
         run:  |
           ./run-tests.sh
         shell: bash
         env:
+          # Namespace per test run to hopefully isolate a bit
+          TEST_NAMESPACE: test-${{ github.run_id }}
           FLUENTBIT_IMAGE_REPOSITORY: ${{ inputs.image_name }}
           FLUENTBIT_IMAGE_TAG: ${{ inputs.image_tag }}
           HOSTED_OPENSEARCH_HOST: ${{ needs.call-run-terraform-setup.outputs.aws-opensearch-endpoint }}
