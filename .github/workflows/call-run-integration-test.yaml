@@ -324,8 +324,6 @@ jobs:
         shell: bash
 
       - name: Run tests
-        # TODO: remove once full set up is passing
-        continue-on-error: true
         timeout-minutes: 30
         run:  |
           ./run-tests.sh
