@@ -66,12 +66,24 @@ resource "google_container_cluster" "fluent-bit-ci-autopilot" {
 
   depends_on = [data.google_project.project]
 }
+
+resource "google_container_cluster" "fluent-bit-ci" {
+  name = "fluent-bit-ci"
+  # For autopilot we must use regional clusters
+  location = var.gcp_region
+
+  initial_node_count = 6
+  network            = google_compute_network.vpc.name
+
+  depends_on = [data.google_project.project]
+}
+
 output "gke_region" {
   value       = var.gcp_region
   description = "GCloud Region"
 }
 
 output "gke_kubernetes_cluster_name" {
-  value       = google_container_cluster.fluent-bit-ci-autopilot.name
+  value       = google_container_cluster.fluent-bit-ci.name
   description = "GKE Cluster Name"
 }
