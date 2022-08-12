@@ -72,10 +72,48 @@ resource "google_container_cluster" "fluent-bit-ci" {
   # For autopilot we must use regional clusters
   location = var.gcp_region
 
-  initial_node_count = 6
   network            = google_compute_network.vpc.name
+  initial_node_count = 1
+  remove_default_node_pool = "true"
 
   depends_on = [data.google_project.project]
+}
+
+resource "google_container_node_pool" "fluent-bit-ci" {
+  name       = "fluent-bit-ci-node-pool"
+  cluster    = google_container_cluster.fluent-bit-ci.name
+  location   = google_container_cluster.fluent-bit-ci.location
+  node_count = 6
+
+  autoscaling {
+    # Minimum number of nodes in the NodePool. Must be >=0 and <= max_node_count.
+    min_node_count = 3
+
+    # Maximum number of nodes in the NodePool. Must be >= min_node_count.
+    max_node_count = 24
+  }
+
+  management {
+    auto_repair  = true
+    auto_upgrade = true
+  }
+
+  node_config {
+    # Taken from Elastic example:
+    # https://cloud.google.com/architecture/deploying-migrating-elastic-cloud-kubernetes-to-google-cloud#create_the_gke_cluster
+    machine_type = "n1-standard-4"
+    disk_size_gb = "256"
+    disk_type    = "pd-standard"
+
+    oauth_scopes = [
+      "https://www.googleapis.com/auth/sqlservice.admin",
+      "https://www.googleapis.com/auth/compute",
+      "https://www.googleapis.com/auth/devstorage.read_write",
+      "https://www.googleapis.com/auth/logging.write",
+      "https://www.googleapis.com/auth/monitoring",
+    ]
+  }
+
 }
 
 output "gke_region" {
