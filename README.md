@@ -29,6 +29,27 @@ Run a specific test.
 ./run-tests.sh tests/opensearch/basic.bats
 ```
 
+### Set up
+
+The tests require a Kubernetes cluster to run, typically you can create this locally with KIND:
+
+```shell
+kind create cluster --config tests/kind.yaml
+```
+
+This creates a local cluster called `kind` with your `kubeconfig` file all set up to use it.
+Make sure to use the [configuration file](./tests/kind.yaml) so we create multiple nodes otherwise you will get failures to schedule pods due to affinity rules.
+
+To load images into the cluster, for example if they cannot be pulled from a registry: https://kind.sigs.k8s.io/docs/user/quick-start/#loading-an-image-into-your-cluster
+
+```shell
+kind load docker-image <image name>
+```
+
+Note that an image in your local container runtime cache is not available to KIND unless you make it available like this.
+
+OpenSearch requires the following: https://opensearch.org/docs/2.1/opensearch/install/important-settings/
+
 ### Variables
 
 The following is the list of environment variables that controls the behavior
@@ -42,6 +63,22 @@ TEST_NAMESPACE=test # k8s namespace to use
 # by the test. This will fall back to $TEST_ROOT/defaults/values.yaml.tpl
 # if not passed.
 HELM_VALUES_EXTRA_FILE=./path/to/your/default/values.yaml
+# The BATS formatter to use: https://bats-core.readthedocs.io/en/stable/usage.html
+BATS_FORMATTER=tap
+# The Fluent Bit image to use
+FLUENTBIT_IMAGE_REPOSITORY=ghcr.io/fluent/fluent-bit
+FLUENTBIT_IMAGE_TAG=latest
+# Elasticsearch image to use:
+ELASTICSEARCH_IMAGE_REPOSITORY=elasticsearch
+ELASTICSEARCH_IMAGE_TAG=7.17.3
+# Opensearch image to use:
+OPENSEARCH_IMAGE_REPOSITORY=opensearchproject/opensearch
+OPENSEARCH_IMAGE_TAG=1.3.0
+# Configuration options for Opensearch:
+HOSTED_OPENSEARCH_HOST="localhost"
+HOSTED_OPENSEARCH_PORT="443"
+HOSTED_OPENSEARCH_USERNAME="admin"
+HOSTED_OPENSEARCH_PASSWORD="admin"
 ```
 
 For other options check [run-tests.sh](./run-tests.sh)

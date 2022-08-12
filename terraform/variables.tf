@@ -7,26 +7,26 @@ variable "aws_region" {
 variable "aws_access_id" {
   type        = string
   description = "AWS access ID"
-  sensitive = true
+  sensitive   = true
 }
 
 variable "aws_secret_key" {
   type        = string
   description = "AWS secret key"
-  sensitive = true
+  sensitive   = true
 }
 
 variable "opensearch_master_user_name" {
   type        = string
   description = "Master username for OpenSearch"
   default     = "admin"
-  sensitive = true
+  sensitive   = true
 }
 
 variable "opensearch_admin_password" {
   type        = string
   description = "Master password for OpenSearch"
-  sensitive = true
+  sensitive   = true
 }
 
 variable "opensearch_instance_type" {
@@ -63,4 +63,44 @@ variable "opensearch_version" {
   type        = string
   description = "OpenSearch version"
   default     = "OpenSearch_1.2"
+}
+
+variable "azure_location" {
+  type        = string
+  description = "The Azure Region in which all resources should be provisioned"
+  default     = "westus2"
+}
+
+variable "azure_client_id" {
+  type        = string
+  description = "Azure Kubernetes Service Cluster service principal"
+  sensitive   = true
+}
+
+variable "azure_client_secret" {
+  type        = string
+  description = "Azure Kubernetes Service Cluster password"
+  sensitive   = true
+}
+
+variable "gcp_region" {
+  type        = string
+  description = "The Google region to use for GKE cluster"
+  default     = "us-east1"
+}
+
+variable "gcp_zone" {
+  type        = string
+  description = "The Google region to use for GKE cluster"
+  default     = "us-central1-a"
+}
+
+variable "gcp_project_id" {
+  type    = string
+  default = "fluent-bit-ci"
+}
+
+variable "gcp_sa_key" {
+  type      = string
+  sensitive = true
 }

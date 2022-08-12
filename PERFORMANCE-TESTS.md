@@ -1,8 +1,11 @@
 # Performance testing
 
-This repository provides a VM image built in GCP automatically to run tests but it can also be built as a Vagrant box manually via Packer.
+A simple script is provided to support running a Docker Compose stack with automated Prometheus monitoring.
+This repository also provides a VM image built in GCP automatically to run tests using this script via Packer.
 
 ## Packer build
+
+This is a simple Ubuntu 20 box built with the various tools required: primarily docker, docker-compose and a few other utilities.
 
 ## Performance monitoring
 
@@ -48,7 +51,7 @@ export GIT_URL=https://github.com/fluent/fluent-bit
 export GIT_REF=tap-trace-output
 export TEST_DIRECTORY=examples/tracing
 export SERVICE_TO_MONITOR=fluent-bit
-curl -L https://raw.githubusercontent.com/fluent/fluent-bit-ci/perf_test_workflow/scripts/docker-compose-monitor.sh | bash
+curl -L https://raw.githubusercontent.com/fluent/fluent-bit-ci/main/scripts/docker-compose-monitor.sh | bash
 ```
 
 ## Prometheus snapshot loader
