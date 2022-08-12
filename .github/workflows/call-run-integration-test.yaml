@@ -58,6 +58,7 @@ jobs:
       aws-opensearch-endpoint: ${{ steps.aws-opensearch-endpoint.outputs.stdout }}
       gke-cluster-name: ${{ steps.gke-cluster-name.outputs.stdout }}
       gke-cluster-region: ${{ steps.gke-cluster-region.outputs.stdout }}
+      gke-cluster-zone: ${{ steps.gke-cluster-zone.outputs.stdout }}
     env:
       # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/guides/service_principal_client_secret
       # Note these have to be set in the Terraform Cloud workspace as well
@@ -178,6 +179,11 @@ jobs:
         working-directory: terraform
         shell: bash
 
+      - id: gke-cluster-zone
+        run: terraform output -no-color -raw gke_zone
+        working-directory: terraform
+        shell: bash
+
       - id: aks-cluster-name
         run: terraform output -no-color -raw aks_cluster_name
         working-directory: terraform
@@ -295,11 +301,11 @@ jobs:
         if: matrix.cloud == 'gke'
         run: |
           gcloud info
-          gcloud container clusters get-credentials "$GKE_CLUSTER_NAME" --region "$GKE_REGION"
+          gcloud container clusters get-credentials "$GKE_CLUSTER_NAME" --zone "$GKE_ZONE"
         shell: bash
         env:
           GKE_CLUSTER_NAME: ${{ needs.call-run-terraform-setup.outputs.gke-cluster-name }}
-          GKE_REGION: ${{ needs.call-run-terraform-setup.outputs.gke-cluster-region }}
+          GKE_ZONE: ${{ needs.call-run-terraform-setup.outputs.gke-cluster-zone }}
 
       - name: Get the AKS Kubeconfig
         if: matrix.cloud == 'aks'
@@ -324,8 +330,6 @@ jobs:
         shell: bash
 
       - name: Run tests
-        # TODO: remove once full set up is passing
-        continue-on-error: true
         timeout-minutes: 30
         run:  |
           ./run-tests.sh

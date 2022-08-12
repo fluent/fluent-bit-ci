@@ -88,6 +88,13 @@ variable "gcp_region" {
   description = "The Google region to use for GKE cluster"
   default     = "us-east1"
 }
+
+variable "gcp_zone" {
+  type        = string
+  description = "The Google region to use for GKE cluster"
+  default     = "us-central1-a"
+}
+
 variable "gcp_project_id" {
   type    = string
   default = "fluent-bit-ci"
