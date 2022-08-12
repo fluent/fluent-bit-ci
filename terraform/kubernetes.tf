@@ -124,3 +124,8 @@ output "gke_kubernetes_cluster_name" {
   value       = google_container_cluster.fluent-bit-ci.name
   description = "GKE Cluster Name"
 }
+
+output "gcp_zone" {
+  value       = var.gcp_zone
+  description = "GKE zone"
+}
