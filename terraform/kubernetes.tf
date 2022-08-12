@@ -69,8 +69,7 @@ resource "google_container_cluster" "fluent-bit-ci-autopilot" {
 
 resource "google_container_cluster" "fluent-bit-ci" {
   name = "fluent-bit-ci"
-  # For autopilot we must use regional clusters
-  location = var.gcp_region
+  location = var.gcp_zone
 
   network            = google_compute_network.vpc.name
   initial_node_count = 1
