@@ -125,7 +125,7 @@ output "gke_kubernetes_cluster_name" {
   description = "GKE Cluster Name"
 }
 
-output "gcp_zone" {
+output "gke_zone" {
   value       = var.gcp_zone
   description = "GKE zone"
 }
