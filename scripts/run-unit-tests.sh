@@ -38,6 +38,13 @@ else
 fi
 
 GLOBAL_OPTS="-DFLB_BACKTRACE=Off -DFLB_SHARED_LIB=Off -DFLB_DEBUG=On -DFLB_ALL=On -DFLB_EXAMPLES=Off"
+
+# On macOS, OpenSSL's root directory should be specified with -DOPENSSL_ROOT_DIR.
+if [ "$(uname)" = "Darwin" ]
+then
+    GLOBAL_OPTS+=" -DOPENSSL_ROOT_DIR=$(brew --prefix openssl)"
+fi
+
 set -e
 mkdir -p "$SOURCE_DIR"/build
 pushd "$SOURCE_DIR"/build || exit 1
