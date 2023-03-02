@@ -287,7 +287,7 @@ jobs:
       - name: Setup BATS
         uses: mig4/setup-bats@v1
         with:
-          bats-version: 1.7.0
+          bats-version: 1.9.0
 
       - name: Set up Helm
         uses: azure/setup-helm@v3.5
@@ -300,6 +300,7 @@ jobs:
       - name: Get the GKE Kubeconfig
         if: matrix.cloud == 'gke'
         run: |
+          gcloud components install gke-gcloud-auth-plugin || sudo apt-get install google-cloud-sdk-gke-gcloud-auth-plugin
           gcloud info
           gcloud container clusters get-credentials "$GKE_CLUSTER_NAME" --zone "$GKE_ZONE"
         shell: bash
