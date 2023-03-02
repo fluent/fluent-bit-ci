@@ -48,6 +48,7 @@ DETIK_CLIENT_NAMESPACE="${TEST_NAMESPACE}"
         --values ${BATS_TEST_DIRNAME}/resources/helm/elasticsearch-compress.yaml \
         --set image=${ELASTICSEARCH_IMAGE_REPOSITORY} --set imageTag=${ELASTICSEARCH_IMAGE_TAG} \
         --values "$HELM_VALUES_EXTRA_FILE" \
+        --timeout "${HELM_DEFAULT_TIMEOUT:-10m0s}" \
         --wait
 
     try "at most 15 times every 2s " \
@@ -58,6 +59,7 @@ DETIK_CLIENT_NAMESPACE="${TEST_NAMESPACE}"
         --values ${BATS_TEST_DIRNAME}/resources/helm/fluentbit-compress.yaml \
         --set image.repository=${FLUENTBIT_IMAGE_REPOSITORY},image.tag=${FLUENTBIT_IMAGE_TAG} \
         --values "$HELM_VALUES_EXTRA_FILE" \
+        --timeout "${HELM_DEFAULT_TIMEOUT:-10m0s}" \
         --wait
 
     try "at most 15 times every 2s " \
