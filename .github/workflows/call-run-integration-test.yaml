@@ -331,9 +331,7 @@ jobs:
         shell: bash
 
       - name: Run tests
-        # https://github.com/fluent/fluent-bit-ci/issues/80
-        continue-on-error: ${{ matrix.cloud == 'gke' }}
-        timeout-minutes: 30
+        timeout-minutes: 60
         run:  |
           ./run-tests.sh
         shell: bash
