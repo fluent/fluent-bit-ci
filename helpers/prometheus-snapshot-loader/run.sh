@@ -8,7 +8,10 @@ PROMETHEUS_DATA=${PROMETHEUS_DATA:-$SCRIPT_DIR/prom-data.tgz}
 # Provide a pre-extracted snapshot
 SNAPSHOT_DIR=${SNAPSHOT_DIR:-}
 
-DOCKER_COMPOSE_CMD=${DOCKER_COMPOSE_CMD:-docker-compose}
+DOCKER_COMPOSE_CMD=${DOCKER_COMPOSE_CMD:-docker compose}
+if command -v docker-compose &> /dev/null; then
+    DOCKER_COMPOSE_CMD=docker-compose
+fi
 
 if [[ -f "$PROMETHEUS_DATA" ]]; then
     TEMP_DIR=$(mktemp -d)
