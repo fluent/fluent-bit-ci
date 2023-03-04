@@ -270,6 +270,8 @@ jobs:
         cloud:
           - aks
           - gke
+    env:
+      USE_GKE_GCLOUD_AUTH_PLUGIN: 'True'
     steps:
       - uses: actions/checkout@v3
         with:
