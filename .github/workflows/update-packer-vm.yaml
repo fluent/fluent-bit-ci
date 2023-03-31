@@ -33,12 +33,12 @@ jobs:
         shell: bash
 
       - id: 'auth'
-        uses: 'google-github-actions/auth@v0'
+        uses: 'google-github-actions/auth@v1'
         with:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
 
       - name: 'Set up Cloud SDK'
-        uses: 'google-github-actions/setup-gcloud@v0'
+        uses: 'google-github-actions/setup-gcloud@v1'
 
       - name: 'Use gcloud CLI'
         run: gcloud info

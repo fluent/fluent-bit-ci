@@ -65,6 +65,7 @@ DETIK_CLIENT_NAMESPACE="${TEST_NAMESPACE}"
         --values ${BATS_TEST_DIRNAME}/resources/helm/opensearch-basic.yaml \
         --set image.repository=${OPENSEARCH_IMAGE_REPOSITORY},image.tag=${OPENSEARCH_IMAGE_TAG} \
         --values "$HELM_VALUES_EXTRA_FILE" \
+        --timeout "${HELM_DEFAULT_TIMEOUT:-10m0s}" \
         --wait
 
     # Note this only means it goes running, it may get killed if a probe fails after that
@@ -76,6 +77,7 @@ DETIK_CLIENT_NAMESPACE="${TEST_NAMESPACE}"
         --values ${BATS_TEST_DIRNAME}/resources/helm/fluentbit-basic.yaml \
         --set image.repository=${FLUENTBIT_IMAGE_REPOSITORY},image.tag=${FLUENTBIT_IMAGE_TAG} \
         --values "$HELM_VALUES_EXTRA_FILE" \
+        --timeout "${HELM_FB_TIMEOUT:-5m0s}" \
         --wait
 
     try "at most 15 times every 2s " \

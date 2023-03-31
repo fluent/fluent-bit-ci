@@ -50,11 +50,12 @@ DETIK_CLIENT_NAMESPACE="${TEST_NAMESPACE}"
     envsubst < "${BATS_TEST_DIRNAME}/resources/helm/fluentbit-hosted.yaml.tpl" > "${BATS_TEST_DIRNAME}/resources/helm/fluentbit-hosted.yaml"
 
     helm upgrade --install --debug --create-namespace --namespace "$TEST_NAMESPACE" fluent-bit fluent/fluent-bit \
-    --values $HELM_VALUES_EXTRA_FILE \
-    -f ${BATS_TEST_DIRNAME}/resources/helm/fluentbit-hosted.yaml \
-    --set image.repository=${FLUENTBIT_IMAGE_REPOSITORY} \
-    --set image.tag=${FLUENTBIT_IMAGE_TAG} \
-    --wait
+        --values $HELM_VALUES_EXTRA_FILE \
+        -f ${BATS_TEST_DIRNAME}/resources/helm/fluentbit-hosted.yaml \
+        --set image.repository=${FLUENTBIT_IMAGE_REPOSITORY} \
+        --set image.tag=${FLUENTBIT_IMAGE_TAG} \
+        --timeout "${HELM_DEFAULT_TIMEOUT:-10m0s}" \
+        --wait
 
     try "at most 15 times every 2s " \
         "to find 1 pods named 'fluent-bit' " \
