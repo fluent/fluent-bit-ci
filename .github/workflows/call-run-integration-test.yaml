@@ -312,6 +312,7 @@ jobs:
           curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key --keyring /usr/share/keyrings/cloud.google.gpg add -
           sudo apt update -y
           sudo apt-get install google-cloud-sdk-gke-gcloud-auth-plugin -y
+        shell: bash
 
       - name: Get the AKS Kubeconfig
         if: matrix.cloud == 'aks'
