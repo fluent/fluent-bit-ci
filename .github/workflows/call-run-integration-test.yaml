@@ -270,6 +270,8 @@ jobs:
         cloud:
           - aks
           - gke
+    env:
+      USE_GKE_GCLOUD_AUTH_PLUGIN: true
     steps:
       - uses: actions/checkout@v3
         with:
@@ -283,11 +285,13 @@ jobs:
 
       - if: matrix.cloud == 'gke'
         uses: 'google-github-actions/setup-gcloud@v1'
+        with:
+          install_components: 'gke-gcloud-auth-plugin'
 
       - name: Setup BATS
         uses: mig4/setup-bats@v1
         with:
-          bats-version: 1.7.0
+          bats-version: 1.9.0
 
       - name: Set up Helm
         uses: azure/setup-helm@v3.5
@@ -299,13 +303,10 @@ jobs:
 
       - name: Get the GKE Kubeconfig
         if: matrix.cloud == 'gke'
-        run: |
-          gcloud info
-          gcloud container clusters get-credentials "$GKE_CLUSTER_NAME" --zone "$GKE_ZONE"
-        shell: bash
-        env:
-          GKE_CLUSTER_NAME: ${{ needs.call-run-terraform-setup.outputs.gke-cluster-name }}
-          GKE_ZONE: ${{ needs.call-run-terraform-setup.outputs.gke-cluster-zone }}
+        uses: 'google-github-actions/get-gke-credentials@v1'
+        with:
+          cluster_name: ${{ needs.call-run-terraform-setup.outputs.gke-cluster-name }}
+          location: ${{ needs.call-run-terraform-setup.outputs.gke-cluster-zone }}
 
       - name: Get the AKS Kubeconfig
         if: matrix.cloud == 'aks'
@@ -330,9 +331,7 @@ jobs:
         shell: bash
 
       - name: Run tests
-        # https://github.com/fluent/fluent-bit-ci/issues/80
-        continue-on-error: ${{ matrix.cloud == 'gke' }}
-        timeout-minutes: 30
+        timeout-minutes: 60
         run:  |
           ./run-tests.sh
         shell: bash
