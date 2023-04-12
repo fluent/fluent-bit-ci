@@ -1,0 +1,2 @@
+FROM ghcr.io/fluent/fluent-bit:2.0.11
+ADD fluent-bit.conf /fluent-bit/etc/
