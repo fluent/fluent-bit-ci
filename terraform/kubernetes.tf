@@ -32,11 +32,11 @@ resource "google_container_cluster" "fluent-bit-ci-autopilot" {
 }
 
 resource "google_container_cluster" "fluent-bit-ci" {
-  name = "fluent-bit-ci"
+  name     = "fluent-bit-ci"
   location = var.gcp_zone
 
-  network            = google_compute_network.vpc.name
-  initial_node_count = 1
+  network                  = google_compute_network.vpc.name
+  initial_node_count       = 1
   remove_default_node_pool = "true"
 
   depends_on = [data.google_project.project]
