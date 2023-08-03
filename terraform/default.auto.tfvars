@@ -1,7 +1,3 @@
 aws_access_id             = "$OPENSEARCH_AWS_ACCESS_ID"
 aws_secret_key            = "$OPENSEARCH_AWS_SECRET_KEY"
 opensearch_admin_password = "$OPENSEARCH_ADMIN_PASSWORD"
-azure_client_id           = "$AZURE_CLIENT_ID"
-azure_client_secret       = "$AZURE_CLIENT_SECRET"
-# azure_subscription_id   = "$AZURE_SUBSCRIPTION_ID"
-# azure_tenant_id         = "$AZURE_TENANT_ID"
