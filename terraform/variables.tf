@@ -65,24 +65,6 @@ variable "opensearch_version" {
   default     = "OpenSearch_1.2"
 }
 
-variable "azure_location" {
-  type        = string
-  description = "The Azure Region in which all resources should be provisioned"
-  default     = "westus2"
-}
-
-variable "azure_client_id" {
-  type        = string
-  description = "Azure Kubernetes Service Cluster service principal"
-  sensitive   = true
-}
-
-variable "azure_client_secret" {
-  type        = string
-  description = "Azure Kubernetes Service Cluster password"
-  sensitive   = true
-}
-
 variable "gcp_region" {
   type        = string
   description = "The Google region to use for GKE cluster"

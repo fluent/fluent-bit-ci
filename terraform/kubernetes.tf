@@ -1,41 +1,5 @@
 # Provide Azure and GKE clusters to run tests on.
 
-## Azure
-resource "azurerm_resource_group" "fluent-bit-ci" {
-  name     = "fluent-bit-ci-k8s-resources"
-  location = var.azure_location
-}
-
-resource "azurerm_kubernetes_cluster" "fluent-bit-ci" {
-  name                = "fluent-bit-ci-k8s"
-  location            = azurerm_resource_group.fluent-bit-ci.location
-  resource_group_name = azurerm_resource_group.fluent-bit-ci.name
-  dns_prefix          = "fluent-bit-ci-k8s"
-  # AKS defaults to latest K8S version
-
-  default_node_pool {
-    name            = "default"
-    node_count      = 5
-    vm_size         = "Standard_DS2_v2"
-    os_disk_size_gb = 150
-  }
-
-  service_principal {
-    client_id     = var.azure_client_id
-    client_secret = var.azure_client_secret
-  }
-}
-
-output "aks_cluster_name" {
-  value       = azurerm_kubernetes_cluster.fluent-bit-ci.name
-  description = "AKS cluster name"
-}
-
-output "aks_resource_group" {
-  value       = azurerm_resource_group.fluent-bit-ci.name
-  description = "AKS cluster resource group"
-}
-
 ## GKE
 data "google_project" "project" {}
 data "google_client_config" "current" {}
