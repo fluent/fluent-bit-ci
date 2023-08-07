@@ -32,6 +32,12 @@ teardown_file() {
     fi
 }
 
+function teardown() {
+    run kubectl get pods --all-namespaces -o yaml
+    run kubectl describe pod -n "$TEST_NAMESPACE" -l app.kubernetes.io/name=fluent-bit
+    run kubectl logs -n "$TEST_NAMESPACE" -l app.kubernetes.io/name=fluent-bit
+}
+
 # These are required for bats-detik
 # shellcheck disable=SC2034
 DETIK_CLIENT_NAME="kubectl -n $TEST_NAMESPACE"
@@ -63,16 +69,12 @@ DETIK_CLIENT_NAMESPACE="${TEST_NAMESPACE}"
 
     COUNTER=0
 
-    sleep 30
-
-    try "at most 180 seconds every 10s " \
-    "to find all pods named 'fluent-bit' " \
-    "with 'status' being 'running all the time'"
+    sleep 60
 
 
     while [ $COUNTER -lt $TOTAL_TIME ]; do
         # Get the number of Fluent Bit DaemonSet pods that are not in the "Running" status
-        NOT_RUNNING_PODS=$(kubectl get pods -n $TEST_NAMESPACE -l app.kubernetes.io/name=fluent-bit --field-selector=status.phase!=Running --no-headers 2>/dev/null | wc -l)
+        NOT_RUNNING_PODS=$(kubectl get pods -n "$TEST_NAMESPACE" -l app.kubernetes.io/name=fluent-bit --field-selector=status.phase!=Running --no-headers 2>/dev/null | wc -l)
         
         if [ "$NOT_RUNNING_PODS" -ne 0 ]; then
             # Fail the test if any fb pods are not in the Running state
@@ -82,6 +84,6 @@ DETIK_CLIENT_NAMESPACE="${TEST_NAMESPACE}"
         COUNTER=$((COUNTER + INTERVAL))
         sleep $INTERVAL
     done
-    
+
     assert_success
 }
