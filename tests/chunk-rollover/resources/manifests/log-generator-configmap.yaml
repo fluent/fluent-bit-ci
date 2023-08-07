@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: generate-samplen-script
+data:
+  generate_samplen.sh: |
+    #!/bin/sh
+    ./bin/flog -t stdout -f json -w -b 1000 -n 10000

@@ -1,0 +1,90 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: payload-receiver-script
+data:
+  payload_receiver.py: |
+    #!/usr/bin/env python3
+    from http.server import BaseHTTPRequestHandler, HTTPServer
+    import logging
+    import random
+
+    request_index = 0
+
+    class S(BaseHTTPRequestHandler):
+      def _set_response(self, data_len=0, status_code=200):
+          self.send_response(status_code)
+          self.send_header('Content-type', 'text/html')
+
+          if data_len > 0:
+              self.send_header('Content-length', str(data_len))
+
+          self.end_headers()
+
+      def do_GET(self):
+          data = b"""# HELP k8s_network_load Network load
+            # TYPE k8s_network_load histogram
+            k8s_network_load_bucket{le="0.05"} 0 0
+            k8s_network_load_bucket{le="5.0"} 1 0
+            k8s_network_load_bucket{le="10.0"} 2 0
+            k8s_network_load_bucket{le="+Inf"} 3 0
+            k8s_network_load_sum 1013 0
+            k8s_network_load_count 3 0
+            k8s_network_load_bucket{le="0.05",my_label="my_val"} 0 0
+            k8s_network_load_bucket{le="5.0",my_label="my_val"} 1 0
+            k8s_network_load_bucket{le="10.0",my_label="my_val"} 2 0
+            k8s_network_load_bucket{le="+Inf",my_label="my_val"} 3 0
+            k8s_network_load_sum{my_label="my_val"} 1013 0
+            k8s_network_load_count{my_label="my_val"} 3 0
+            """
+          logging.info("GET request,\nPath: %s\nHeaders:\n%s\n", str(self.path), str(self.headers))
+          self._set_response(len(data))
+
+          self.wfile.write(data)
+
+      def do_POST(self):
+          global request_index
+
+          content_length = int(self.headers['Content-Length']) # <--- Gets the size of data
+          post_data = self.rfile.read(content_length) # <--- Gets the data itself
+
+          if self.headers.get('Content-Encoding') == 'snappy':
+              print('requests/%d.bin is an inflated snappy payload' % request_index)
+
+              post_data = snappy.uncompress(post_data)
+
+          try:
+              with open("requests/%d.bin" % (request_index), "wb+") as request_dump:       	 
+                  request_dump.write(post_data)
+          except Exception as ex:
+              pass
+
+          request_index += 1
+
+          status_code=random.choice([200, 400])
+          self._set_response(status_code=status_code)
+          self.wfile.write("POST request for {}".format(self.path).encode('utf-8'))
+          logging.info("%s returned", status_code)
+
+    def run(server_class=HTTPServer, handler_class=S, port=8080):
+      logging.basicConfig(level=logging.INFO)
+      server_address = ('', port)
+      httpd = server_class(server_address, handler_class)
+      logging.info('Starting httpd...\n')
+      try:
+          httpd.serve_forever()
+      except KeyboardInterrupt:
+          pass
+      httpd.server_close()
+      logging.info('Stopping httpd...\n')
+
+    if __name__ == '__main__':
+      from sys import argv
+
+      if len(argv) == 2:
+          run(port=int(argv[1]))
+      else:
+          run()
+
+
+

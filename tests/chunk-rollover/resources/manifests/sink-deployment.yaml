@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: payload-receiver
+  labels:
+    app: payload-receiver
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: payload-receiver
+  template:
+    metadata:
+      labels:
+        app: payload-receiver
+    spec:
+      containers:
+      - name: payload-receiver
+        image: python:3.8-slim # Base Python image
+        command:
+        - sh
+        - -c
+        - | 
+          apt-get update && \
+          apt-get install -y procps && \
+          while true; do
+            python /scripts/payload_receiver.py 8088 &
+            pid=$!
+            sleep 10
+            kill $pid
+          done
+        ports:
+        - containerPort: 8088
+        resources:
+          limits:
+            cpu: "250m"
+            memory: "500Mi"
+          requests:
+            cpu: "125m"
+            memory: "250Mi"
+        volumeMounts:
+        - name: script-volume
+          mountPath: /scripts
+      volumes:
+      - name: script-volume
+        configMap:
+          name: payload-receiver-script

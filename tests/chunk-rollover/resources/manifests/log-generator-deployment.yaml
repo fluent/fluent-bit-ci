@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: log-generator
+  labels:
+    app: log-generator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: log-generator
+  template:
+    metadata:
+      labels:
+        app: log-generator
+    spec:
+      containers:
+      - name: log-generator
+        image: golang:1.19 # Golang base image
+        resources:
+          limits:
+            cpu: "250m"
+            memory: "500Mi"
+          requests:
+            cpu: "125m"
+            memory: "250Mi"
+        command:
+        - sh
+        - -c
+        - |
+          go install github.com/mingrammer/flog@latest && \
+          while [ 1 ] ; do seq 200 | xargs -n1 /scripts/generate_samplen.sh ; sleep 1 ; done
+        volumeMounts:
+        - name: script-volume
+          mountPath: /scripts
+      volumes:
+      - name: script-volume
+        configMap:
+          name: generate-samplen-script
+          defaultMode: 0744 
