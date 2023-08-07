@@ -3,8 +3,8 @@ extraVolumeMounts:
   name: chunks-volume
 extraVolumes:
 - name: chunks-volume
-  persistentVolumeClaim:
-    claimName: fb-pvc
+  emptyDir:
+    sizeLimit: 3Mi
 
 config:
   service: |
