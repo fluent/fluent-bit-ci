@@ -62,6 +62,8 @@ DETIK_CLIENT_NAMESPACE="${TEST_NAMESPACE}"
     TOTAL_TIME=180
 
     COUNTER=0
+
+    sleep 30
     while [ $COUNTER -lt $TOTAL_TIME ]; do
         # Get the number of Fluent Bit DaemonSet pods that are not in the "Running" status
         NOT_RUNNING_PODS=$(kubectl get pods -n $TEST_NAMESPACE -l app.kubernetes.io/name=fluent-bit --field-selector=status.phase!=Running --no-headers 2>/dev/null | wc -l)
