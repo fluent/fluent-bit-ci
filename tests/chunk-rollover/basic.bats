@@ -67,23 +67,14 @@ DETIK_CLIENT_NAMESPACE="${TEST_NAMESPACE}"
     while [ $COUNTER -lt $TOTAL_TIME ]; do
         # Get the number of Fluent Bit DaemonSet pods that are not in the "Running" status
         NOT_RUNNING_PODS=$(kubectl get pods -n $TEST_NAMESPACE -l app.kubernetes.io/name=fluent-bit --field-selector=status.phase!=Running --no-headers 2>/dev/null | wc -l)
-        [ "$NOT_RUNNING_PODS" -eq 0 ]
         
-        if [ $? -eq 0 ]; then
-            COUNTER=$((COUNTER + INTERVAL))
-        else
-            COUNTER=0
+        if [ "$NOT_RUNNING_PODS" -ne 0 ]; then
+            # Fail the test if any fb pods are not in the Running state
+            fail "Fluent Bit DaemonSet pods are not in the Running state."
         fi
         
-        # Exit loop if the pods have been running for the required time
-        if [ $COUNTER -eq $TOTAL_TIME ]; then
-            skip "Fluent Bit DaemonSet pods have been running for at least $TOTAL_TIME seconds."
-        fi
-
+        COUNTER=$((COUNTER + INTERVAL))
         sleep $INTERVAL
     done
-    
-    # If loop exits without reaching the required time, the test will fail
-    false "Fluent Bit DaemonSet pods did not remain in the running state for $TOTAL_TIME seconds."
 
 }
