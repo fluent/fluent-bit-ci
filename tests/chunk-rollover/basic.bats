@@ -33,7 +33,7 @@ teardown_file() {
 }
 
 function teardown() {
-    run kubectl get pods --all-namespaces -o yaml
+    run kubectl get pods --all-namespaces -o yaml 2>/dev/null
     run kubectl describe pod -n "$TEST_NAMESPACE" -l app.kubernetes.io/name=fluent-bit
     run kubectl logs -n "$TEST_NAMESPACE" -l app.kubernetes.io/name=fluent-bit
 }
@@ -46,12 +46,15 @@ DETIK_CLIENT_NAMESPACE="${TEST_NAMESPACE}"
 
 
 @test "chunk rollover test" {
-    helm repo add fluent https://fluent.github.io/helm-charts/ || helm repo add fluent https://fluent.github.io/helm-charts
+    helm repo add --force-update fluent https://fluent.github.io/helm-charts/
     helm repo update --fail-on-repo-update-fail
 
     kubectl create -f ${BATS_TEST_DIRNAME}/resources/manifests -n "$TEST_NAMESPACE"
 
-    sleep 15
+    # use 'wait' to check for Ready status in .status.conditions[]
+    kubectl wait pods -n "$TEST_NAMESPACE" -l app=log-generator --for condition=Ready --timeout=30s
+
+    kubectl wait pods -n "$TEST_NAMESPACE" -l app=payload-receiver --for condition=Ready --timeout=30s
 
     helm upgrade --install --debug --create-namespace --namespace "$TEST_NAMESPACE" fluent-bit fluent/fluent-bit \
         --values ${BATS_TEST_DIRNAME}/resources/helm/fluentbit-basic.yaml \
@@ -69,8 +72,7 @@ DETIK_CLIENT_NAMESPACE="${TEST_NAMESPACE}"
 
     COUNTER=0
 
-    sleep 60
-
+    kubectl wait pods -n "$TEST_NAMESPACE" -l app.kubernetes.io/name=fluent-bit --for condition=Ready --timeout=30s
 
     while [ $COUNTER -lt $TOTAL_TIME ]; do
         # Get the number of Fluent Bit DaemonSet pods that are not in the "Running" status
@@ -85,5 +87,7 @@ DETIK_CLIENT_NAMESPACE="${TEST_NAMESPACE}"
         sleep $INTERVAL
     done
 
+    run kubectl logs -n "$TEST_NAMESPACE" -l app.kubernetes.io/name=fluent-bit --tail=-1
     assert_success
+    refute_output --partial 'fail to drop enough chunks'
 }
