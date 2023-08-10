@@ -66,12 +66,12 @@ DETIK_CLIENT_NAMESPACE="${TEST_NAMESPACE}"
         --timeout "${HELM_FB_TIMEOUT:-5m0s}" \
         --wait
 
-    # create cluster-role if not exist(case for kind tests)
-    kubectl get clusterrole fluent-bit &> /dev/null
-    if [ $? -ne 0 ]; then
-        kubectl create -f ${BATS_TEST_DIRNAME}/resources/manifests/rbac/cluster-role.yaml
-    else
-        echo "Cluster role 'fluent-bit' already exists, no action taken."
+    # case for kind tests
+    run kubectl get clusterrole fluent-bit
+    if [ "$status" -ne 0 ]; then
+        # Create the cluster role if it does not exist
+        run kubectl create -f ${BATS_TEST_DIRNAME}/resources/manifests/rbac/cluster-role.yaml
+        assert_success
     fi
 
     # replace the namespace for crb
