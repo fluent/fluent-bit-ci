@@ -5,6 +5,8 @@ extraVolumes:
 - name: chunks-volume
   emptyDir:
     sizeLimit: 3Mi
+rbac:
+  create: false
 
 config:
   service: |

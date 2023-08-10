@@ -56,6 +56,9 @@ DETIK_CLIENT_NAMESPACE="${TEST_NAMESPACE}"
 
     kubectl wait pods -n "$TEST_NAMESPACE" -l app=payload-receiver --for condition=Ready --timeout=30s
 
+
+    # replace the namespace for svc FQDN
+    sed "s/payload-receiver-service.test.svc.cluster.local/payload-receiver-service.$TEST_NAMESPACE.svc.cluster.local/g" "${BATS_TEST_DIRNAME}/resources/helm/fluentbit-basic.yaml"
     helm upgrade --install --debug --create-namespace --namespace "$TEST_NAMESPACE" fluent-bit fluent/fluent-bit \
         --values ${BATS_TEST_DIRNAME}/resources/helm/fluentbit-basic.yaml \
         --set image.repository=${FLUENTBIT_IMAGE_REPOSITORY},image.tag=${FLUENTBIT_IMAGE_TAG} \
@@ -63,7 +66,18 @@ DETIK_CLIENT_NAMESPACE="${TEST_NAMESPACE}"
         --timeout "${HELM_FB_TIMEOUT:-5m0s}" \
         --wait
 
+    # create cluster-role if not exist(case for kind tests)
+    kubectl get clusterrole fluent-bit &> /dev/null
+    if [ $? -ne 0 ]; then
+        kubectl create -f ${BATS_TEST_DIRNAME}/resources/manifests/rbac/cluster-role.yaml
+    else
+        echo "Cluster role 'fluent-bit' already exists, no action taken."
+    fi
 
+    # replace the namespace for crb
+    sed "s/namespace: test/namespace: $TEST_NAMESPACE/g" "${BATS_TEST_DIRNAME}/resources/manifests/rbac/cluster-role-binding.yaml"
+    kubectl create -f ${BATS_TEST_DIRNAME}/resources/manifests/rbac/cluster-role-binding.yaml
+    
     # Time interval in seconds to check the pods status
     INTERVAL=10
 
