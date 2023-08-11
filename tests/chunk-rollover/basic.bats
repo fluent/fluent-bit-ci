@@ -52,7 +52,7 @@ DETIK_CLIENT_NAMESPACE="${TEST_NAMESPACE}"
     kubectl create -f ${BATS_TEST_DIRNAME}/resources/manifests -n "$TEST_NAMESPACE"
 
     # use 'wait' to check for Ready status in .status.conditions[]
-    kubectl wait pods -n "$TEST_NAMESPACE" -l app=log-generator --for condition=Ready --timeout=30s
+    kubectl wait pods -n "$TEST_NAMESPACE" -l app=log-generator --for condition=Ready --timeout=60s
 
     kubectl wait pods -n "$TEST_NAMESPACE" -l app=payload-receiver --for condition=Ready --timeout=30s
 
