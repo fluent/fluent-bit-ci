@@ -1,0 +1,87 @@
+extraVolumeMounts:
+- mountPath: /chunks
+  name: chunks-volume
+extraVolumes:
+- name: chunks-volume
+  emptyDir:
+    sizeLimit: 3Mi
+rbac:
+  create: false
+
+config:
+  service: |
+    [SERVICE]
+        Grace                     0
+        Flush                     1
+        Log_Level                 debug
+        Storage.Path              chunks
+        Dns.Resolver              legacy
+        Scheduler.Base            5
+        Scheduler.Cap             10
+        Daemon                    Off
+        HTTP_Server               On
+        HTTP_Listen               0.0.0.0
+        HTTP_Port                 2020
+  inputs: |
+    [INPUT]
+        name                      tail
+        read_from_head            true
+        path                      /var/log/containers/log-generator-*.log
+        multiline.parser          docker, cri
+        Tag                       kube.*
+        storage.type              filesystem
+        buffer_chunk_size         2M
+        buffer_max_size           2M
+        threaded                  on
+    [INPUT]
+        name                      tail
+        read_from_head            true
+        path                      /var/log/containers/log-generator-*.log
+        multiline.parser          docker, cri
+        Tag                       kube.*
+        storage.type              filesystem
+        buffer_chunk_size         2M
+        buffer_max_size           2M
+        threaded                  on
+
+  outputs: |
+    [OUTPUT]
+        name                      http
+        match                     *
+        host                      payload-receiver-service.test.svc.cluster.local
+        port                      8088
+        retry_limit               3
+        storage.total_limit_size  300M
+        workers                   8
+        tls                       off
+        tls.verify                off
+    [OUTPUT]
+        name                      http
+        match                     *
+        host                      payload-receiver-service.test.svc.cluster.local
+        port                      8088
+        retry_limit               3
+        storage.total_limit_size  300M
+        workers                   8
+        tls                       off
+        tls.verify                off
+    [OUTPUT]
+        name                      http
+        match                     *
+        host                      payload-receiver-service.test.svc.cluster.local
+        port                      8088
+        retry_limit               3
+        storage.total_limit_size  300M
+        workers                   8
+        tls                       off
+        tls.verify                off
+    [OUTPUT]
+        name                      http
+        match                     *
+        host                      payload-receiver-service.test.svc.cluster.local
+        port                      8088
+        retry_limit               3
+        storage.total_limit_size  300M
+        workers                   8
+        tls                       off
+        tls.verify                off
