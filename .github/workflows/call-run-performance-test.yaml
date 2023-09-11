@@ -48,7 +48,7 @@ jobs:
   setup-vm-instance:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: fluent/fluent-bit-ci
 
@@ -101,7 +101,7 @@ jobs:
     needs:
       - setup-vm-instance
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: fluent/fluent-bit-ci
 
