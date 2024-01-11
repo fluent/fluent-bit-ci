@@ -5,21 +5,17 @@ rbac:
 extraVolumeMounts:
 - mountPath: /var/log
   name: varlog
-- mountPath: /output
-  name: output
 extraVolumes:
 - name: varlog
   hostPath:
     path: /var/log
-- name: output
-  emptyDir:
-    sizeLimit: 5Mi
+
 config:
   service: |
     [SERVICE]
         Flush 5
         Daemon Off
-        Log_Level debug
+        Log_Level error
         HTTP_Server On
         HTTP_Listen 0.0.0.0
         HTTP_Port 2020
@@ -28,12 +24,13 @@ config:
     [INPUT]
         name                      tail
         read_from_head            true
-        path                      /var/log/containers/*.log
+        path                      /var/log/containers/*${TEST_NAMESPACE}*.log
         multiline.parser          docker, cri
         Tag                       kube.*
         buffer_chunk_size         2M
         buffer_max_size           2M
         Exclude_Path              /var/log/containers/fluent-bit*
+        Refresh_Interval          5
 
   filters: |
     [FILTER]
@@ -49,8 +46,13 @@ config:
 
   outputs: |
     [OUTPUT]
-        Name es
+        Name stdout
         Match *
+        Format json_lines
+
+    [OUTPUT]
+        Name es
+        Match *NONE
         Host elasticsearch-master
         Port 9200
         Index fluentbit

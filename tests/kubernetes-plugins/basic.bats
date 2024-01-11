@@ -2,7 +2,7 @@
 
 load "$HELPERS_ROOT/test-helpers.bash"
 
-ensure_variables_set BATS_SUPPORT_ROOT BATS_ASSERT_ROOT BATS_DETIK_ROOT BATS_FILE_ROOT TEST_NAMESPACE FLUENTBIT_IMAGE_REPOSITORY FLUENTBIT_IMAGE_TAG ELASTICSEARCH_IMAGE_REPOSITORY ELASTICSEARCH_IMAGE_TAG
+ensure_variables_set BATS_SUPPORT_ROOT BATS_ASSERT_ROOT BATS_DETIK_ROOT BATS_FILE_ROOT TEST_NAMESPACE FLUENTBIT_IMAGE_REPOSITORY FLUENTBIT_IMAGE_TAG
 
 load "$BATS_DETIK_ROOT/utils.bash"
 load "$BATS_DETIK_ROOT/linter.bash"
@@ -40,24 +40,12 @@ DETIK_CLIENT_NAMESPACE="${TEST_NAMESPACE}"
 
 
 @test "test fluent-bit reads k8s labels" {
-    helm upgrade --install --debug --create-namespace --namespace "$TEST_NAMESPACE" elasticsearch elastic/elasticsearch \
-        --values ${BATS_TEST_DIRNAME}/resources/elasticsearch-basic.yaml \
-        --set image=${ELASTICSEARCH_IMAGE_REPOSITORY} --set imageTag=${ELASTICSEARCH_IMAGE_TAG} \
-        --values "$HELM_VALUES_EXTRA_FILE" \
-        --timeout "${HELM_DEFAULT_TIMEOUT:-10m0s}" \
-        --wait
-
-    try "at most 15 times every 2s " \
-        "to find 1 pods named 'elasticsearch-master-0' " \
-        "with 'status' being 'running'"
-
-    helm repo add elastic https://helm.elastic.co/ ||  helm repo add elastic https://helm.elastic.co
     helm repo add fluent https://fluent.github.io/helm-charts/ || helm repo add fluent https://fluent.github.io/helm-charts
     helm repo update --fail-on-repo-update-fail
 
     helm upgrade --install --debug --create-namespace --namespace "$TEST_NAMESPACE" fluent-bit fluent/fluent-bit \
         --values ${BATS_TEST_DIRNAME}/resources/fluentbit-basic.yaml \
-        --set image.repository=${FLUENTBIT_IMAGE_REPOSITORY},image.tag=${FLUENTBIT_IMAGE_TAG} \
+        --set image.repository=${FLUENTBIT_IMAGE_REPOSITORY},image.tag=${FLUENTBIT_IMAGE_TAG},env[0].name=TEST_NAMESPACE,env[0].value=${TEST_NAMESPACE} \
         --values "$HELM_VALUES_EXTRA_FILE" \
         --timeout "${HELM_FB_TIMEOUT:-5m0s}" \
         --wait
@@ -66,34 +54,31 @@ DETIK_CLIENT_NAMESPACE="${TEST_NAMESPACE}"
         "to find 1 pods named 'fluent-bit' " \
         "with 'status' being 'running'"
 
+    # The hello-world-1 container MUST be on the same node as the fluentbit worker, so we use a nodeSelector to specify the same node name
+    run kubectl get pods -l "app.kubernetes.io/name=fluent-bit" -o jsonpath='{.items[0].spec.nodeName}'
+    node_name=$output
+
+    run kubectl run -n $TEST_NAMESPACE hello-world-1 --image=docker.io/library/alpine:latest -l "this_is_a_test_label=true" \
+        --overrides="{\"apiVersion\":\"v1\",\"spec\":{\"nodeSelector\":{\"kubernetes.io/hostname\":\"$node_name\"}}}" \
+        --command -- sh -c 'while true; do echo "hello world"; sleep 2; done'
+
+    sleep 5
+
     # Wait for initial data to be reported
     attempt=0
     while true; do
-    	run kubectl exec -q -n "$TEST_NAMESPACE" elasticsearch-master-0 -- curl --insecure -s -w "%{http_code}" http://localhost:9200/fluentbit/_search/ -o /dev/null
-        if [[ "$output" != "200" ]]; then
-            if [ "$attempt" -lt 25 ]; then
-                attempt=$(( attempt + 1 ))
-                sleep 5
-            else
-                fail "did not find any index results even after $attempt attempts"
-            fi
-        else
-            break
-        fi
-    done
+    	run kubectl logs -l "app.kubernetes.io/name=fluent-bit" -n "$TEST_NAMESPACE"
 
-    # Search for what we want
-    attempt=0
-    while true; do
-        search="http://localhost:9200/fluentbit/_search/?q=kubernetes.namespace_name:*&size=1&filter_path=hits.hits._source.kubernetes.labels"
-    	run kubectl exec -q -n "$TEST_NAMESPACE" elasticsearch-master-0 -- curl --insecure -s "$search"
-        
-        if [[ "$output" != *'{"kubernetes":{"labels":'* ]]; then
-            if [ "$attempt" -lt 25 ]; then
+        match1='kubernetes":{"pod_name":"hello-world-1","namespace_name":'
+        match1=${match1}{$TEST_NAMESPACE}
+        match2='"labels":{"this_is_a_test_label":"true"}'
+
+        if [[ "$output" != *${match1}*${match2}* && "$output" != *${match2}* ]]; then
+            if [ "$attempt" -lt 15 ]; then
                 attempt=$(( attempt + 1 ))
                 sleep 5
             else
-                fail "did not find any kubernetes pod labels in output after $attempt attempts"
+                fail "did not find any kubernetes enhanced records even after $attempt attempts"
             fi
         else
             break
