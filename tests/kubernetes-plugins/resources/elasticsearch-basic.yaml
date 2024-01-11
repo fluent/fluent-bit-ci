@@ -1,0 +1,13 @@
+protocol: http
+httpPort: 9200
+transportPort: 9300
+replicas: 1
+minimumMasterNodes: 1
+createCert: false
+extraEnvs:
+  - name: xpack.security.enabled
+    value: "false"
+  - name: xpack.security.http.ssl.enabled
+    value: "false"
+  - name: xpack.security.transport.ssl.enabled
+    value: "false"
