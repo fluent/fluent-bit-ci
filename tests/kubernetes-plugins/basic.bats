@@ -57,9 +57,10 @@ DETIK_CLIENT_NAMESPACE="${TEST_NAMESPACE}"
     # The hello-world-1 container MUST be on the same node as the fluentbit worker, so we use a nodeSelector to specify the same node name
     run kubectl get pods -l "app.kubernetes.io/name=fluent-bit" -o jsonpath='{.items[0].spec.nodeName}'
     assert_success
+    refute_output ""
     node_name=$output
 
-    run kubectl run -n $TEST_NAMESPACE hello-world-1 --image=docker.io/library/alpine:latest -l "this_is_a_test_label=true" \
+    kubectl run -n $TEST_NAMESPACE hello-world-1 --image=docker.io/library/alpine:latest -l "this_is_a_test_label=true" \
         --overrides="{\"apiVersion\":\"v1\",\"spec\":{\"nodeSelector\":{\"kubernetes.io/hostname\":\"$node_name\"}}}" \
         --command -- sh -c 'while true; do echo "hello world"; sleep 1; done'
 
@@ -69,10 +70,14 @@ DETIK_CLIENT_NAMESPACE="${TEST_NAMESPACE}"
 
     # We are sleeping here specifically for the Fluent-Bit's tail input's
     # configured Refresh_Interval to have enough time to detect the new pod's log file
-    # and to have processed part of it
-    sleep 3
+    # and to have processed part of it.
+    # A future improvement instead of sleep could use fluentbit's metrics endpoints
+    # to know the tail lugin has processed records
+    sleep 10
 
     run kubectl logs -l "app.kubernetes.io/name=fluent-bit" -n "$TEST_NAMESPACE"
+    assert_success
+    refute_output ""
     match1='kubernetes":{"pod_name":"hello-world-1","namespace_name":'
     match1=${match1}\"${TEST_NAMESPACE}\"
     match2='"labels":{"this_is_a_test_label":"true"}'
