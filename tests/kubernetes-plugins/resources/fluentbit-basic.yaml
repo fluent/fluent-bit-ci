@@ -30,7 +30,7 @@ config:
         buffer_chunk_size         2M
         buffer_max_size           2M
         Exclude_Path              /var/log/containers/fluent-bit*
-        Refresh_Interval          5
+        Refresh_Interval          1
 
   filters: |
     [FILTER]
@@ -49,10 +49,3 @@ config:
         Name stdout
         Match *
         Format json_lines
-
-    [OUTPUT]
-        Name es
-        Match *NONE
-        Host elasticsearch-master
-        Port 9200
-        Index fluentbit

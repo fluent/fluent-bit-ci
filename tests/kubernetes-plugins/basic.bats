@@ -11,7 +11,7 @@ load "$BATS_SUPPORT_ROOT/load.bash"
 load "$BATS_ASSERT_ROOT/load.bash"
 load "$BATS_FILE_ROOT/load.bash"
 
-setup_file() {
+setup() {
     echo "recreating namespace $TEST_NAMESPACE"
     run kubectl delete namespace "$TEST_NAMESPACE"
     run kubectl create namespace "$TEST_NAMESPACE"
@@ -25,7 +25,7 @@ setup_file() {
     fi
 }
 
-teardown_file() {
+teardown() {
     if [[ "${SKIP_TEARDOWN:-no}" != "yes" ]]; then
         run kubectl delete namespace "$TEST_NAMESPACE"
         rm -f ${HELM_VALUES_EXTRA_FILE}
@@ -56,32 +56,28 @@ DETIK_CLIENT_NAMESPACE="${TEST_NAMESPACE}"
 
     # The hello-world-1 container MUST be on the same node as the fluentbit worker, so we use a nodeSelector to specify the same node name
     run kubectl get pods -l "app.kubernetes.io/name=fluent-bit" -o jsonpath='{.items[0].spec.nodeName}'
+    assert_success
     node_name=$output
 
     run kubectl run -n $TEST_NAMESPACE hello-world-1 --image=docker.io/library/alpine:latest -l "this_is_a_test_label=true" \
         --overrides="{\"apiVersion\":\"v1\",\"spec\":{\"nodeSelector\":{\"kubernetes.io/hostname\":\"$node_name\"}}}" \
-        --command -- sh -c 'while true; do echo "hello world"; sleep 2; done'
+        --command -- sh -c 'while true; do echo "hello world"; sleep 1; done'
 
-    sleep 5
+    try "at most 15 times every 5s " \
+        "to find 1 pods named 'hello-world-1' " \
+        "with 'status' being 'Running'"
 
-    # Wait for initial data to be reported
-    attempt=0
-    while true; do
-    	run kubectl logs -l "app.kubernetes.io/name=fluent-bit" -n "$TEST_NAMESPACE"
+    # We are sleeping here specifically for the Fluent-Bit's tail input's
+    # configured Refresh_Interval to have enough time to detect the new pod's log file
+    # and to have processed part of it
+    sleep 3
 
-        match1='kubernetes":{"pod_name":"hello-world-1","namespace_name":'
-        match1=${match1}{$TEST_NAMESPACE}
-        match2='"labels":{"this_is_a_test_label":"true"}'
+    run kubectl logs -l "app.kubernetes.io/name=fluent-bit" -n "$TEST_NAMESPACE"
+    match1='kubernetes":{"pod_name":"hello-world-1","namespace_name":'
+    match1=${match1}\"${TEST_NAMESPACE}\"
+    match2='"labels":{"this_is_a_test_label":"true"}'
 
-        if [[ "$output" != *${match1}*${match2}* && "$output" != *${match2}* ]]; then
-            if [ "$attempt" -lt 15 ]; then
-                attempt=$(( attempt + 1 ))
-                sleep 5
-            else
-                fail "did not find any kubernetes enhanced records even after $attempt attempts"
-            fi
-        else
-            break
-        fi
-    done
+    assert_output --partial $match1
+    assert_output --partial $match2
+
 }
