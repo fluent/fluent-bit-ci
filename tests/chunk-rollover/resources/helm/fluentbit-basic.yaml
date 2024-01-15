@@ -7,6 +7,9 @@ extraVolumes:
     sizeLimit: 3Mi
 rbac:
   create: true
+# fullnameOverride is required so resources don't conflict if we are running
+# in a hosted cluster like gke where the default resource names will already exist
+fullnameOverride: fluentbit-ci-tests
 
 config:
   service: |
