@@ -23,25 +23,7 @@ setup_file() {
       envsubst < "${HELM_VALUES_EXTRA_FILE}" > "${HELM_VALUES_EXTRA_FILE%.*}"
       export HELM_VALUES_EXTRA_FILE="${HELM_VALUES_EXTRA_FILE%.*}"
     fi
-}
 
-teardown_file() {
-    if [[ "${SKIP_TEARDOWN:-no}" != "yes" ]]; then
-        helm uninstall -n $TEST_NAMESPACE elasticsearch
-        helm uninstall -n $TEST_NAMESPACE fluent-bit
-        run kubectl delete namespace "$TEST_NAMESPACE"
-        rm -f ${HELM_VALUES_EXTRA_FILE}
-    fi
-}
-
-# These are required for bats-detik
-# shellcheck disable=SC2034
-DETIK_CLIENT_NAME="kubectl -n $TEST_NAMESPACE"
-# shellcheck disable=SC2034
-DETIK_CLIENT_NAMESPACE="${TEST_NAMESPACE}"
-
-
-@test "test fluent-bit forwards logs to elasticsearch default index" {
     helm repo add elastic https://helm.elastic.co/ ||  helm repo add elastic https://helm.elastic.co
     helm repo add fluent https://fluent.github.io/helm-charts/ || helm repo add fluent https://fluent.github.io/helm-charts
     helm repo update --fail-on-repo-update-fail
@@ -67,10 +49,44 @@ DETIK_CLIENT_NAMESPACE="${TEST_NAMESPACE}"
     try "at most 15 times every 2s " \
         "to find 1 pods named 'fluent-bit' " \
         "with 'status' being 'running'"
+}
 
+teardown_file() {
+    if [[ "${SKIP_TEARDOWN:-no}" != "yes" ]]; then
+        helm uninstall -n $TEST_NAMESPACE elasticsearch
+        helm uninstall -n $TEST_NAMESPACE fluent-bit
+        run kubectl delete namespace "$TEST_NAMESPACE"
+        rm -f ${HELM_VALUES_EXTRA_FILE}
+    fi
+}
+
+# These are required for bats-detik
+# shellcheck disable=SC2034
+DETIK_CLIENT_NAME="kubectl -n $TEST_NAMESPACE"
+# shellcheck disable=SC2034
+DETIK_CLIENT_NAMESPACE="${TEST_NAMESPACE}"
+
+@test "test fluent-bit forwards logs to elasticsearch fluentbit (non-compressed) index" {
     attempt=0
     while true; do
     	run kubectl exec -q -n "$TEST_NAMESPACE" elasticsearch-master-0 -- curl --insecure -s -w "%{http_code}" http://localhost:9200/fluentbit/_search/ -o /dev/null
+        if [[ "$output" != "200" ]]; then
+            if [ "$attempt" -lt 25 ]; then
+                attempt=$(( attempt + 1 ))
+                sleep 5
+            else
+                fail "did not find any index results even after $attempt attempts"
+            fi
+        else
+            break
+        fi
+    done
+}
+
+@test "test fluent-bit forwards logs to elasticsearch fluentbit-compressed (compressed) index" {
+    attempt=0
+    while true; do
+    	run kubectl exec -q -n "$TEST_NAMESPACE" elasticsearch-master-0 -- curl --insecure --compressed -s -w "%{http_code}" http://localhost:9200/fluentbit-compressed/_search/ -o /dev/null
         if [[ "$output" != "200" ]]; then
             if [ "$attempt" -lt 25 ]; then
                 attempt=$(( attempt + 1 ))

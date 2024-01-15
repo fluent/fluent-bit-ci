@@ -20,7 +20,16 @@ config:
   outputs: |
     [OUTPUT]
         Name es
+        Alias es-noncompressed
         Match *
         Host elasticsearch-master
         Port 9200
         Index fluentbit
+    [OUTPUT]
+        Name es
+        Alias es-compressed
+        Match *
+        Host elasticsearch-master
+        Port 9200
+        Index fluentbit-compressed
+        compress gzip
