@@ -55,7 +55,7 @@ function deploy_fluent_bit() {
         --wait
 
     try "at most 15 times every 2s " \
-        "to find 1 pods named 'fluent-bit' " \
+        "to find 1 pods named 'fluentbit-ci-tests' " \
         "with 'status' being 'running'"
 
     FLUENTBIT_POD_NAME=$(kubectl get pods -n "$TEST_NAMESPACE" -l "app.kubernetes.io/name=fluent-bit" --no-headers | awk '{ print $1 }')
