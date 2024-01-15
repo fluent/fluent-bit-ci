@@ -68,7 +68,7 @@ function deploy_fluent_bit() {
     deploy_fluent_bit
 
     # The hello-world-1 container MUST be on the same node as the fluentbit worker, so we use a nodeSelector to specify the same node name
-    run kubectl get pods $FLUENTBIT_POD_NAME -o jsonpath='{.spec.nodeName}'
+    run kubectl get pods $FLUENTBIT_POD_NAME -n $TEST_NAMESPACE -o jsonpath='{.spec.nodeName}'
     assert_success
     refute_output ""
     node_name=$output
