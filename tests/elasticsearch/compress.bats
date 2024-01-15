@@ -27,6 +27,8 @@ setup_file() {
 
 teardown_file() {
     if [[ "${SKIP_TEARDOWN:-no}" != "yes" ]]; then
+        helm uninstall -n $TEST_NAMESPACE elasticsearch
+        helm uninstall -n $TEST_NAMESPACE fluent-bit
         run kubectl delete namespace "$TEST_NAMESPACE"
         rm -f ${HELM_VALUES_EXTRA_FILE}
     fi

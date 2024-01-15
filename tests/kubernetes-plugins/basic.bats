@@ -11,6 +11,13 @@ load "$BATS_SUPPORT_ROOT/load.bash"
 load "$BATS_ASSERT_ROOT/load.bash"
 load "$BATS_FILE_ROOT/load.bash"
 
+# These are required for bats-detik
+# shellcheck disable=SC2034
+DETIK_CLIENT_NAME="kubectl -n $TEST_NAMESPACE"
+# shellcheck disable=SC2034
+DETIK_CLIENT_NAMESPACE="${TEST_NAMESPACE}"
+FLUENTBIT_POD_NAME=""
+
 setup() {
     echo "recreating namespace $TEST_NAMESPACE"
     run kubectl delete namespace "$TEST_NAMESPACE"
@@ -23,23 +30,20 @@ setup() {
       envsubst < "${HELM_VALUES_EXTRA_FILE}" > "${HELM_VALUES_EXTRA_FILE%.*}"
       export HELM_VALUES_EXTRA_FILE="${HELM_VALUES_EXTRA_FILE%.*}"
     fi
+    FLUENTBIT_POD_NAME=""
 }
 
 teardown() {
     if [[ "${SKIP_TEARDOWN:-no}" != "yes" ]]; then
+        helm uninstall fluent-bit -n $TEST_NAMESPACE
         run kubectl delete namespace "$TEST_NAMESPACE"
         rm -f ${HELM_VALUES_EXTRA_FILE}
     fi
+    FLUENTBIT_POD_NAME=""
 }
 
-# These are required for bats-detik
-# shellcheck disable=SC2034
-DETIK_CLIENT_NAME="kubectl -n $TEST_NAMESPACE"
-# shellcheck disable=SC2034
-DETIK_CLIENT_NAMESPACE="${TEST_NAMESPACE}"
 
-
-@test "test fluent-bit reads k8s labels" {
+function deploy_fluent_bit() {
     helm repo add fluent https://fluent.github.io/helm-charts/ || helm repo add fluent https://fluent.github.io/helm-charts
     helm repo update --fail-on-repo-update-fail
 
@@ -54,8 +58,17 @@ DETIK_CLIENT_NAMESPACE="${TEST_NAMESPACE}"
         "to find 1 pods named 'fluent-bit' " \
         "with 'status' being 'running'"
 
+    FLUENTBIT_POD_NAME=$(kubectl get pods -n "$TEST_NAMESPACE" -l "app.kubernetes.io/name=fluent-bit" --no-headers | awk '{ print $1 }')
+    if [ -z "$FLUENTBIT_POD_NAME" ]; then
+        fail "Unable to get running fluent-bit pod's name"
+    fi
+}
+
+@test "test fluent-bit adds k8s labels to records" {
+    deploy_fluent_bit
+
     # The hello-world-1 container MUST be on the same node as the fluentbit worker, so we use a nodeSelector to specify the same node name
-    run kubectl get pods -l "app.kubernetes.io/name=fluent-bit" -o jsonpath='{.items[0].spec.nodeName}'
+    run kubectl get pods $FLUENTBIT_POD_NAME -o jsonpath='{.spec.nodeName}'
     assert_success
     refute_output ""
     node_name=$output
