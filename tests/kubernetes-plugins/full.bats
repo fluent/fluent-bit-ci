@@ -20,6 +20,15 @@ FLUENTBIT_POD_NAME=""
 TEST_POD_NAME=""
 
 setup_file() {
+    # HELM_VALUES_EXTRA_FILE is a default file containing global helm
+    # options that can be optionally applied on helm install/upgrade
+    # by the test. This will fall back to $TEST_ROOT/defaults/values.yaml.tpl
+    # if not passed.
+    if [ -e  "${HELM_VALUES_EXTRA_FILE}" ]; then
+      envsubst < "${HELM_VALUES_EXTRA_FILE}" > "${HELM_VALUES_EXTRA_FILE%.*}"
+      export HELM_VALUES_EXTRA_FILE="${HELM_VALUES_EXTRA_FILE%.*}"
+    fi
+
     # First check that we should run these conditional tests at all
     run docker run --rm -t $FLUENTBIT_IMAGE_REPOSITORY:$FLUENTBIT_IMAGE_TAG /fluent-bit/bin/fluent-bit -F kubernetes --help
     if [[ "$output" != *"namespace_labels"* ]]; then
@@ -31,14 +40,6 @@ setup_file() {
     run kubectl delete namespace "$TEST_NAMESPACE"
     run kubectl create namespace "$TEST_NAMESPACE"
     run kubectl label namespace "$TEST_NAMESPACE" "this_is_a_namespace_label=true"
-    # HELM_VALUES_EXTRA_FILE is a default file containing global helm
-    # options that can be optionally applied on helm install/upgrade
-    # by the test. This will fall back to $TEST_ROOT/defaults/values.yaml.tpl
-    # if not passed.
-    if [ -e  "${HELM_VALUES_EXTRA_FILE}" ]; then
-      envsubst < "${HELM_VALUES_EXTRA_FILE}" > "${HELM_VALUES_EXTRA_FILE%.*}"
-      export HELM_VALUES_EXTRA_FILE="${HELM_VALUES_EXTRA_FILE%.*}"
-    fi
 
     helm repo add fluent https://fluent.github.io/helm-charts/ || helm repo add fluent https://fluent.github.io/helm-charts
     helm repo update --fail-on-repo-update-fail
