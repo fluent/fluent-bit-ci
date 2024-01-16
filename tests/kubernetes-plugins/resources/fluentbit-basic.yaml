@@ -5,8 +5,6 @@ replicaCount: 1
 fullnameOverride: fluentbit-ci-tests
 rbac:
   create: true
-  nodeAccess: true
-  eventsAccess: true
 extraVolumeMounts:
 - mountPath: /var/log
   name: varlog
@@ -40,22 +38,8 @@ config:
   filters: |
     [FILTER]
         Name             kubernetes
-        Alias            k8s_namespace_labels_only
-        Match            kube.*k8s-namespace-label-tester*
-        Kube_URL         https://kubernetes.default.svc:443
-        Kube_CA_File     /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
-        Kube_Token_File  /var/run/secrets/kubernetes.io/serviceaccount/token
-        Kube_Tag_Prefix  kube.var.log.containers.
-        Merge_Log        Off
-        Annotations      Off
-        Labels           Off
-        Namespace_labels On
-        Namespace_annotations Off
-
-    [FILTER]
-        Name             kubernetes
-        Alias            k8s_namespace_and_pod_labels_without_kubelet
-        Match            kube.*k8s-pod-and-namespace-label-tester*
+        Alias            k8s_pod_labels_only
+        Match            kube.*
         Kube_URL         https://kubernetes.default.svc:443
         Kube_CA_File     /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
         Kube_Token_File  /var/run/secrets/kubernetes.io/serviceaccount/token
@@ -63,24 +47,6 @@ config:
         Merge_Log        Off
         Annotations      Off
         Labels           On
-        Namespace_labels On
-
-    [FILTER]
-        Name             kubernetes
-        Alias            k8s_namespace_and_pod_labels_with_kubelet
-        Match            kube.*k8s-pod-and-namespace-label-kubelet-tester*
-        Kube_URL         https://kubernetes.default.svc:443
-        Kube_CA_File     /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
-        Kube_Token_File  /var/run/secrets/kubernetes.io/serviceaccount/token
-        Kube_Tag_Prefix  kube.var.log.containers.
-        Merge_Log        Off
-        Annotations      Off
-        Labels           On
-        Use_Kubelet      On
-        Kubelet_Host     ${NODE_IP}
-        tls.verify       Off
-        Namespace_labels On
-
 
   outputs: |
     [OUTPUT]
