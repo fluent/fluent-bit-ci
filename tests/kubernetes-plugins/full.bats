@@ -31,6 +31,7 @@ setup_file() {
 
     # First check that we should run these conditional tests at all
     run docker run --rm -t $FLUENTBIT_IMAGE_REPOSITORY:$FLUENTBIT_IMAGE_TAG /fluent-bit/bin/fluent-bit -F kubernetes --help
+    assert_success
     if [[ "$output" != *"namespace_labels"* ]]; then
         skip "kubernetes namespace_labels not available in this image"
         return
