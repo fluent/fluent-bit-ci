@@ -18,7 +18,7 @@ extraVolumes:
 config:
   service: |
     [SERVICE]
-        Flush 5
+        Flush 0.25
         Daemon Off
         Log_Level error
         HTTP_Server On
