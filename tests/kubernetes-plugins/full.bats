@@ -70,7 +70,7 @@ setup() {
 teardown() {
     if [[ "${SKIP_TEARDOWN:-no}" != "yes" ]]; then
         if [[ ! -z "$TEST_POD_NAME" ]]; then
-            run kubectl delete pod $TEST_POD_NAME --grace-period 1 --wait
+            run kubectl delete pod $TEST_POD_NAME -n $TEST_NAMESPACE --grace-period 1 --wait
         fi
     fi
 }
