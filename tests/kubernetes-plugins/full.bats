@@ -19,7 +19,7 @@ DETIK_CLIENT_NAMESPACE="${TEST_NAMESPACE}"
 FLUENTBIT_POD_NAME=""
 TEST_POD_NAME=""
 
-setup_file() {
+setup() {
     # HELM_VALUES_EXTRA_FILE is a default file containing global helm
     # options that can be optionally applied on helm install/upgrade
     # by the test. This will fall back to $TEST_ROOT/defaults/values.yaml.tpl
@@ -52,26 +52,16 @@ setup_file() {
         --values "$HELM_VALUES_EXTRA_FILE" \
         --timeout "${HELM_FB_TIMEOUT:-5m0s}" \
         --wait
-}
 
-teardown_file() {
-    if [[ "${SKIP_TEARDOWN:-no}" != "yes" ]]; then
-        helm uninstall fluent-bit -n $TEST_NAMESPACE
-        run kubectl delete namespace "$TEST_NAMESPACE"
-        rm -f ${HELM_VALUES_EXTRA_FILE}
-    fi
-}
-
-setup() {
     FLUENTBIT_POD_NAME=""
     TEST_POD_NAME=""
 }
 
 teardown() {
     if [[ "${SKIP_TEARDOWN:-no}" != "yes" ]]; then
-        if [[ ! -z "$TEST_POD_NAME" ]]; then
-            run kubectl delete pod $TEST_POD_NAME --grace-period 1 --wait
-        fi
+        helm uninstall fluent-bit -n $TEST_NAMESPACE
+        run kubectl delete namespace "$TEST_NAMESPACE"
+        rm -f ${HELM_VALUES_EXTRA_FILE}
     fi
 }
 
