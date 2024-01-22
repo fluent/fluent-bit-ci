@@ -97,7 +97,7 @@ function create_test_pod() {
 
     kubectl run -n $TEST_NAMESPACE $TEST_POD_NAME --image=docker.io/library/alpine:latest -l "this_is_a_test_label=true" \
         --overrides="{\"apiVersion\":\"v1\",\"spec\":{\"nodeSelector\":{\"kubernetes.io/hostname\":\"$node_name\"}}}" \
-        --command -- sh -c 'while true; do echo "hello world"; sleep 1; done'
+        --command -- sh -c "while true; do echo 'hello world from ${TEST_POD_NAME}'; sleep 1; done"
 
     try "at most 30 times every 2s " \
         "to find 1 pods named '$TEST_POD_NAME' " \
