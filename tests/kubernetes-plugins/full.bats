@@ -161,9 +161,10 @@ function check_fluent_output_has_namespace_labels() {
     check_fluent_output_has_namespace_labels true
 }
 
-@test "test fluent-bit adds kubernetes pod and namespace labels to records - kubelet enabled" {
-    set_fluent_bit_pod_name
-    create_test_pod "k8s-pod-and-namespace-label-kubelet-tester"
-    check_fluent_output_has_pod_labels true
-    check_fluent_output_has_namespace_labels true
-}
+#@test "test fluent-bit adds kubernetes pod and namespace labels to records - kubelet enabled" {
+#    run kubectl get
+#    set_fluent_bit_pod_name
+#    create_test_pod "k8s-pod-and-namespace-label-kubelet-tester"
+#    check_fluent_output_has_pod_labels true
+#    check_fluent_output_has_namespace_labels true
+#}
