@@ -1,8 +1,5 @@
 kind: Deployment
 replicaCount: 1
-# fullnameOverride is required so resources don't conflict if we are running
-# in a hosted cluster like gke where the default resource names will already exist
-fullnameOverride: fluentbit-ci-tests
 rbac:
   create: true
 extraVolumeMounts:

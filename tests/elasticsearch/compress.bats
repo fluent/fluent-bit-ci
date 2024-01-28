@@ -2,7 +2,7 @@
 
 load "$HELPERS_ROOT/test-helpers.bash"
 
-ensure_variables_set BATS_SUPPORT_ROOT BATS_ASSERT_ROOT BATS_DETIK_ROOT BATS_FILE_ROOT TEST_NAMESPACE FLUENTBIT_IMAGE_REPOSITORY FLUENTBIT_IMAGE_TAG ELASTICSEARCH_IMAGE_REPOSITORY ELASTICSEARCH_IMAGE_TAG
+ensure_variables_set BATS_SUPPORT_ROOT BATS_ASSERT_ROOT BATS_DETIK_ROOT BATS_FILE_ROOT FLUENTBIT_IMAGE_REPOSITORY FLUENTBIT_IMAGE_TAG ELASTICSEARCH_IMAGE_REPOSITORY ELASTICSEARCH_IMAGE_TAG
 
 load "$BATS_DETIK_ROOT/utils.bash"
 load "$BATS_DETIK_ROOT/linter.bash"
@@ -12,17 +12,11 @@ load "$BATS_ASSERT_ROOT/load.bash"
 load "$BATS_FILE_ROOT/load.bash"
 
 setup_file() {
+    export TEST_NAMESPACE=${TEST_NAMESPACE:-elasticsearch-compress}
     echo "recreating namespace $TEST_NAMESPACE"
     run kubectl delete namespace "$TEST_NAMESPACE"
     run kubectl create namespace "$TEST_NAMESPACE"
-    # HELM_VALUES_EXTRA_FILE is a default file containing global helm
-    # options that can be optionally applied on helm install/upgrade
-    # by the test. This will fall back to $TEST_ROOT/defaults/values.yaml.tpl
-    # if not passed.
-    if [ -e  "${HELM_VALUES_EXTRA_FILE}" ]; then
-      envsubst < "${HELM_VALUES_EXTRA_FILE}" > "${HELM_VALUES_EXTRA_FILE%.*}"
-      export HELM_VALUES_EXTRA_FILE="${HELM_VALUES_EXTRA_FILE%.*}"
-    fi
+    create_helm_extra_values_file
 }
 
 teardown_file() {
@@ -32,6 +26,7 @@ teardown_file() {
         run kubectl delete namespace "$TEST_NAMESPACE"
         rm -f ${HELM_VALUES_EXTRA_FILE}
     fi
+    unset TEST_NAMESPACE
 }
 
 # These are required for bats-detik
@@ -49,7 +44,6 @@ DETIK_CLIENT_NAMESPACE="${TEST_NAMESPACE}"
     helm upgrade --install --debug --create-namespace --namespace "$TEST_NAMESPACE" elasticsearch elastic/elasticsearch \
         --values ${BATS_TEST_DIRNAME}/resources/helm/elasticsearch-compress.yaml \
         --set image=${ELASTICSEARCH_IMAGE_REPOSITORY} --set imageTag=${ELASTICSEARCH_IMAGE_TAG} \
-        --values "$HELM_VALUES_EXTRA_FILE" \
         --timeout "${HELM_DEFAULT_TIMEOUT:-10m0s}" \
         --wait
 
@@ -64,9 +58,7 @@ DETIK_CLIENT_NAMESPACE="${TEST_NAMESPACE}"
         --timeout "${HELM_DEFAULT_TIMEOUT:-10m0s}" \
         --wait
 
-    try "at most 15 times every 2s " \
-        "to find 1 pods named 'fluent-bit' " \
-        "with 'status' being 'running'"
+    kubectl wait pods -n "$TEST_NAMESPACE" -l app.kubernetes.io/name=fluent-bit --for condition=Ready --timeout=30s
 
     attempt=0
     while true; do
