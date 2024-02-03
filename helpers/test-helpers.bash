@@ -108,7 +108,9 @@ function create_helm_extra_values_file() {
     # by the test. This will fall back to $TEST_ROOT/defaults/values.yaml.tpl
     # if not passed.
     if [ -e  "${HELM_VALUES_EXTRA_FILE}" ]; then
+      # shellcheck disable=SC2086,SC2155
       envsubst < "${HELM_VALUES_EXTRA_FILE}" > "$(dirname ${HELM_VALUES_EXTRA_FILE})/${TEST_NAMESPACE}.values.yaml"
+      # shellcheck disable=SC2086,SC2155
       export HELM_VALUES_EXTRA_FILE="$(dirname ${HELM_VALUES_EXTRA_FILE})/${TEST_NAMESPACE}.values.yaml"
     fi
 }

@@ -82,7 +82,7 @@ function run_tests() {
     # If TEST_NAMESPACE is not set (the default), we run jobs in parallel
     # otherwise, if it is set we can only run 1 job at a time and need to remove
     # all BATS_JOBS_PARAMS
-    if [[ ! -z "${TEST_NAMESPACE:-}" ]]; then
+    if [[ -n "${TEST_NAMESPACE:-}" ]]; then
         BATS_JOBS_PARAMS=""
     fi
 
