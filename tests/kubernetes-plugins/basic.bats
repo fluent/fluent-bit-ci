@@ -62,7 +62,9 @@ teardown() {
 
 
 function set_fluent_bit_pod_name() {
-    kubectl wait pods -n "$TEST_NAMESPACE" -l app.kubernetes.io/name=fluent-bit --for condition=Ready --timeout=30s
+    try "at most 30 times every 2s " \
+        "to find 1 pods named 'fluent-bit' " \
+        "with 'status' being 'running'"
 
     FLUENTBIT_POD_NAME=$(kubectl get pods -n "$TEST_NAMESPACE" -l "app.kubernetes.io/name=fluent-bit" --no-headers | awk '{ print $1 }')
     if [ -z "$FLUENTBIT_POD_NAME" ]; then

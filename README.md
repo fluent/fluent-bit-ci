@@ -56,8 +56,8 @@ The following is the list of environment variables that controls the behavior
 of running the test suites:
 
 ```bash
-SKIP_TEARDOWN=yes # don't remove the testing namespace
-TEST_NAMESPACE=test # k8s namespace to use
+SKIP_TEARDOWN=yes # don't remove the testing namespace(s)
+TEST_NAMESPACE=test # k8s namespace to use, setting this env to any value forces tests to run in sequence
 # HELM_VALUES_EXTRA_FILE is a default file containing global helm
 # options that can be optionally applied on helm install/upgrade
 # by the test. This will fall back to $TEST_ROOT/defaults/values.yaml.tpl
@@ -65,6 +65,10 @@ TEST_NAMESPACE=test # k8s namespace to use
 HELM_VALUES_EXTRA_FILE=./path/to/your/default/values.yaml
 # The BATS formatter to use: https://bats-core.readthedocs.io/en/stable/usage.html
 BATS_FORMATTER=tap
+#BATS_JOBS_PARAMS (default below) will run 8 tests in parallel,
+# this can be disabled by changing this variable OR by setting a TEST_NAMESPACE env
+# which will force jobs to run in sequence
+BATS_JOBS_PARAMS="--jobs 8 --no-parallelize-within-files"
 # The Fluent Bit image to use
 FLUENTBIT_IMAGE_REPOSITORY=ghcr.io/fluent/fluent-bit
 FLUENTBIT_IMAGE_TAG=latest

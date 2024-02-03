@@ -58,7 +58,9 @@ DETIK_CLIENT_NAMESPACE="${TEST_NAMESPACE}"
         --timeout "${HELM_FB_TIMEOUT:-5m0s}" \
         --wait
 
-    kubectl wait pods -n "$TEST_NAMESPACE" -l app.kubernetes.io/name=fluent-bit --for condition=Ready --timeout=30s
+    try "at most 15 times every 2s " \
+        "to find 1 pods named 'fluent-bit' " \
+        "with 'status' being 'running'"
 
     attempt=0
     while true; do

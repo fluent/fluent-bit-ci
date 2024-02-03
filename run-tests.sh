@@ -25,6 +25,7 @@ export RESOURCES_ROOT="${SCRIPT_DIR}/resources/"
 export BATS_FORMATTER=${BATS_FORMATTER:-tap}
 export BATS_ROOT=${BATS_ROOT:-$SCRIPT_DIR/tools/bats}
 export BATS_ARGS=${BATS_ARGS:---timing --verbose-run}
+export BATS_JOBS_PARAMS=${BATS_JOBS_PARAMS:---jobs 8 --no-parallelize-within-files}
 
 export BATS_FILE_ROOT=$BATS_ROOT/lib/bats-file
 export BATS_SUPPORT_ROOT=$BATS_ROOT/lib/bats-support
@@ -78,11 +79,11 @@ function run_tests() {
     echo
     echo
 
-    # If TEST_NAMESPACE is not set (the default), we run 8 jobs in parallel
-    # otherwise, if it is set we can only run 1 job at a time
-    BATS_JOBS_PARAMS=""
-    if [[ -z "$TEST_NAMESPACE" ]]; then
-        BATS_JOBS_PARAMS="--jobs $BATS_JOBS_COUNT --no-parallelize-within-files"
+    # If TEST_NAMESPACE is not set (the default), we run jobs in parallel
+    # otherwise, if it is set we can only run 1 job at a time and need to remove
+    # all BATS_JOBS_PARAMS
+    if [[ ! -z "${TEST_NAMESPACE:-}" ]]; then
+        BATS_JOBS_PARAMS=""
     fi
 
     # We run BATS in a subshell to prevent it from inheriting our exit/err trap, which can mess up its internals
