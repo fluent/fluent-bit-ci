@@ -26,7 +26,6 @@ function teardown_file() {
         run kubectl delete namespace "$TEST_NAMESPACE"
         rm -f ${HELM_VALUES_EXTRA_FILE}
     fi
-    unset TEST_NAMESPACE
 }
 
 function teardown() {
@@ -79,7 +78,7 @@ DETIK_CLIENT_NAMESPACE="${TEST_NAMESPACE}"
     try "at most 15 times every 2s " \
         "to find 1 pods named 'fluent-bit' " \
         "with 'status' being 'running'"
-        
+
     attempt=0
     while true; do
     	run kubectl exec -q -n $TEST_NAMESPACE opensearch-cluster-master-0 -- curl --insecure -s -w "%{http_code}" https://admin:admin@localhost:9200/fluentbit/_search/ -o /dev/null

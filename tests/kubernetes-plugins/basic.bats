@@ -44,7 +44,6 @@ teardown_file() {
         run kubectl delete namespace "$TEST_NAMESPACE"
         rm -f ${HELM_VALUES_EXTRA_FILE}
     fi
-    unset TEST_NAMESPACE
 }
 
 setup() {

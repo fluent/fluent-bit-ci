@@ -25,7 +25,6 @@ teardown_file() {
         run kubectl delete namespace "$TEST_NAMESPACE"
         rm -f ${HELM_VALUES_EXTRA_FILE}
     fi
-    unset TEST_NAMESPACE
 }
 
 function teardown() {
@@ -68,7 +67,7 @@ DETIK_CLIENT_NAMESPACE="${TEST_NAMESPACE}"
 
     COUNTER=0
 
-    kubectl wait pods -n "$TEST_NAMESPACE" -l app.kubernetes.io/name=fluent-bit --for condition=Ready --timeout=30s
+    kubectl wait pods -n "$TEST_NAMESPACE" -l app.kubernetes.io/name=fluent-bit --for condition=Ready --timeout=60s
 
     while [ $COUNTER -lt $TOTAL_TIME ]; do
         # Get the number of Fluent Bit DaemonSet pods that are not in the "Running" status

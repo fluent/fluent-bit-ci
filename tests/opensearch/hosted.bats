@@ -12,6 +12,9 @@ load "$BATS_ASSERT_ROOT/load.bash"
 load "$BATS_FILE_ROOT/load.bash"
 
 setup_file() {
+    if [[ $HOSTED_OPENSEARCH_HOST == "localhost" ]]; then
+        skip "Skipping Hosted OpenSearch When 'HOSTED_OPENSEARCH_HOST=localhost'"
+    fi
     export TEST_NAMESPACE=${TEST_NAMESPACE:-opensearch-hosted}
     echo "recreating namespace $TEST_NAMESPACE"
     run kubectl delete namespace "$TEST_NAMESPACE"
@@ -28,7 +31,6 @@ teardown_file() {
             rm -f ${BATS_TEST_DIRNAME}/resources/helm/fluentbit-hosted.yaml
         fi
     fi
-    unset TEST_NAMESPACE
 }
 
 function teardown() {
@@ -45,10 +47,6 @@ DETIK_CLIENT_NAMESPACE="${TEST_NAMESPACE}"
 
 
 @test "test fluent-bit forwards logs to AWS OpenSearch hosted service default index" {
-    if [[ $HOSTED_OPENSEARCH_HOST == "localhost" ]]; then
-        skip "Skipping Hosted OpenSearch When 'HOSTED_OPENSEARCH_HOST=localhost'"
-    fi
-
     envsubst < "${BATS_TEST_DIRNAME}/resources/helm/fluentbit-hosted.yaml.tpl" > "${BATS_TEST_DIRNAME}/resources/helm/fluentbit-hosted.yaml"
 
     helm upgrade --install --debug --create-namespace --namespace "$TEST_NAMESPACE" fluent-bit fluent/fluent-bit \
