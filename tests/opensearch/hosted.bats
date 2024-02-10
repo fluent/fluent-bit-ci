@@ -60,7 +60,7 @@ DETIK_CLIENT_NAMESPACE="${TEST_NAMESPACE}"
     try "at most 15 times every 2s " \
         "to find 1 pods named 'fluent-bit' " \
         "with 'status' being 'running'"
-        
+
     attempt=0
     while true; do
         run curl -XGET --header 'Content-Type: application/json' --insecure -s -w "%{http_code}" https://${HOSTED_OPENSEARCH_USERNAME}:${HOSTED_OPENSEARCH_PASSWORD}@${HOSTED_OPENSEARCH_HOST}/fluentbit/_search/ -d '{ "query": { "range": { "timestamp": { "gte": "now-15s" }}}}' -o /dev/null
