@@ -101,3 +101,16 @@ function wait_for_url() {
     # shellcheck disable=SC2086
     wait_for_curl "$MAX_ATTEMPTS" "$URL" $extra_args
 }
+
+function create_helm_extra_values_file() {
+    # HELM_VALUES_EXTRA_FILE is a default file containing global helm
+    # options that can be optionally applied on helm install/upgrade
+    # by the test. This will fall back to $TEST_ROOT/defaults/values.yaml.tpl
+    # if not passed.
+    if [ -e  "${HELM_VALUES_EXTRA_FILE}" ]; then
+      # shellcheck disable=SC2086,SC2155
+      envsubst < "${HELM_VALUES_EXTRA_FILE}" > "$(dirname ${HELM_VALUES_EXTRA_FILE})/${TEST_NAMESPACE}.values.yaml"
+      # shellcheck disable=SC2086,SC2155
+      export HELM_VALUES_EXTRA_FILE="$(dirname ${HELM_VALUES_EXTRA_FILE})/${TEST_NAMESPACE}.values.yaml"
+    fi
+}

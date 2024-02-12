@@ -25,12 +25,12 @@ export RESOURCES_ROOT="${SCRIPT_DIR}/resources/"
 export BATS_FORMATTER=${BATS_FORMATTER:-tap}
 export BATS_ROOT=${BATS_ROOT:-$SCRIPT_DIR/tools/bats}
 export BATS_ARGS=${BATS_ARGS:---timing --verbose-run}
+export BATS_JOBS_PARAMS=${BATS_JOBS_PARAMS:---jobs 8 --no-parallelize-within-files}
 
 export BATS_FILE_ROOT=$BATS_ROOT/lib/bats-file
 export BATS_SUPPORT_ROOT=$BATS_ROOT/lib/bats-support
 export BATS_ASSERT_ROOT=$BATS_ROOT/lib/bats-assert
 export BATS_DETIK_ROOT=$BATS_ROOT/lib/bats-detik
-export TEST_NAMESPACE=${TEST_NAMESPACE:-test}
 
 export FLUENTBIT_IMAGE_REPOSITORY=${FLUENTBIT_IMAGE_REPOSITORY:-ghcr.io/fluent/fluent-bit}
 export FLUENTBIT_IMAGE_TAG=${FLUENTBIT_IMAGE_TAG:-latest}
@@ -79,11 +79,18 @@ function run_tests() {
     echo
     echo
 
+    # If TEST_NAMESPACE is not set (the default), we run jobs in parallel
+    # otherwise, if it is set we can only run 1 job at a time and need to remove
+    # all BATS_JOBS_PARAMS
+    if [[ -n "${TEST_NAMESPACE:-}" ]]; then
+        BATS_JOBS_PARAMS=""
+    fi
+
     # We run BATS in a subshell to prevent it from inheriting our exit/err trap, which can mess up its internals
     # We set +exu because unbound variables can cause test failures with zero context
     set +xeu
     # shellcheck disable=SC2086
-    (bats --formatter "${BATS_FORMATTER}" $run $BATS_ARGS)
+    (bats $BATS_JOBS_PARAMS --formatter "${BATS_FORMATTER}" $run $BATS_ARGS)
     local bats_retval=$?
 
     echo

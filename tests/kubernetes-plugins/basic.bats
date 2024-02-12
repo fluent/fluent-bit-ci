@@ -2,7 +2,7 @@
 
 load "$HELPERS_ROOT/test-helpers.bash"
 
-ensure_variables_set BATS_SUPPORT_ROOT BATS_ASSERT_ROOT BATS_DETIK_ROOT BATS_FILE_ROOT TEST_NAMESPACE FLUENTBIT_IMAGE_REPOSITORY FLUENTBIT_IMAGE_TAG
+ensure_variables_set BATS_SUPPORT_ROOT BATS_ASSERT_ROOT BATS_DETIK_ROOT BATS_FILE_ROOT FLUENTBIT_IMAGE_REPOSITORY FLUENTBIT_IMAGE_TAG
 
 load "$BATS_DETIK_ROOT/utils.bash"
 load "$BATS_DETIK_ROOT/linter.bash"
@@ -20,17 +20,11 @@ FLUENTBIT_POD_NAME=""
 TEST_POD_NAME=""
 
 setup_file() {
+    export TEST_NAMESPACE=${TEST_NAMESPACE:-kubernetes-plugins-basic}
     echo "recreating namespace $TEST_NAMESPACE"
     run kubectl delete namespace "$TEST_NAMESPACE"
     run kubectl create namespace "$TEST_NAMESPACE"
-    # HELM_VALUES_EXTRA_FILE is a default file containing global helm
-    # options that can be optionally applied on helm install/upgrade
-    # by the test. This will fall back to $TEST_ROOT/defaults/values.yaml.tpl
-    # if not passed.
-    if [ -e  "${HELM_VALUES_EXTRA_FILE}" ]; then
-      envsubst < "${HELM_VALUES_EXTRA_FILE}" > "${HELM_VALUES_EXTRA_FILE%.*}"
-      export HELM_VALUES_EXTRA_FILE="${HELM_VALUES_EXTRA_FILE%.*}"
-    fi
+    create_helm_extra_values_file
 
     helm repo add fluent https://fluent.github.io/helm-charts/ || helm repo add fluent https://fluent.github.io/helm-charts
     helm repo update --fail-on-repo-update-fail
@@ -68,8 +62,8 @@ teardown() {
 
 function set_fluent_bit_pod_name() {
     try "at most 30 times every 2s " \
-        "to find 1 pods named 'fluentbit-ci-tests' " \
-        "with 'status' being 'Running'"
+        "to find 1 pods named 'fluent-bit' " \
+        "with 'status' being 'running'"
 
     FLUENTBIT_POD_NAME=$(kubectl get pods -n "$TEST_NAMESPACE" -l "app.kubernetes.io/name=fluent-bit" --no-headers | awk '{ print $1 }')
     if [ -z "$FLUENTBIT_POD_NAME" ]; then
