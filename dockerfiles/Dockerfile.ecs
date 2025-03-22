@@ -1,0 +1,2 @@
+FROM ghcr.io/fluent/fluent-bit/master:x86_64
+ADD fluent-bit.conf /fluent-bit/etc/
