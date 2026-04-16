@@ -11,9 +11,7 @@ nparallel=$(( $(getconf _NPROCESSORS_ONLN) > 8 ? 8 : $(getconf _NPROCESSORS_ONLN
 
 echo "use $ASAN_SYMBOLIZER_PATH"
 
-SKIP_TESTS="flb-rt-out_elasticsearch
-flb-rt-out_td
-flb-rt-out_forward
+SKIP_TESTS="flb-rt-out_td
 flb-rt-in_disk
 flb-rt-in_proc"
 
